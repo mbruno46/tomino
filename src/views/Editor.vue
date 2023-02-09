@@ -1,7 +1,7 @@
 <template>
-  <div style="height: 100%; background: var(--background-light);">
+  <div class="editor">
     <div class="tabbar">
-      <tab-label v-for="(val, key) in files" :key="key" :open="val.open" :name="key">
+      <tab-label v-for="(val, key) in files" :key="key" :open="val.open" :name="key.toString()">
       </tab-label>
     </div>
     <code-editor v-for="(val, key) in files" :path="val.path"
@@ -12,9 +12,9 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
-import CodeEditor from './CodeEditor.vue';
+import CodeEditor from '@/components/CodeEditor.vue';
 import store from '@/helpers/Store'
-import TabLabel from './TabLabel.vue';
+import TabLabel from '@/components/TabLabel.vue';
 
 export default defineComponent({
   components: { CodeEditor, TabLabel },
@@ -29,10 +29,20 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.editor {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--background-light);
+  position: relative;
+}
+
 .tabbar {
   display: flex;
   flex-direction: row;
   width: 100%;
+  overflow-y: hidden;
+  overflow-x: scroll;
   background: var(--background-dark);
 }
 

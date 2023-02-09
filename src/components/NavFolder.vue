@@ -1,10 +1,10 @@
 <template>
   <nav-item @click="expand = !expand" 
-    :icon="(expand) ? 'ri-arrow-down-s-line' : 'ri-arrow-right-s-line'">{{ ftree?.name }}</nav-item>
+    :icon="(expand) ? 'down' : 'right'">{{ ftree?.name }}</nav-item>
   <div class="nav-folder" :class="(expand) ? '' : 'nested'">
     <nav-folder v-for="sf in ftree?.subfolders" :key="sf.path" :ftree="sf">{{ sf.name }}</nav-folder>
-    <nav-item v-for="f in ftree?.files" :key="f.path" 
-      :icon="getIcon(f.name)" @click="openFile(f.path, f.name)">
+    <nav-item v-for="f in ftree?.files" :key="f.path"
+      :icon="getExt(f.name)" @click="openFile(f.path, f.name)">
       {{ f.name }}
     </nav-item>
   </div>
@@ -16,10 +16,6 @@ import type { PropType } from 'vue'
 import NavItem from './NavItem.vue';
 import type { FileTree } from '../helpers/FileTree';
 import store from '@/helpers/Store';
-
-function getExt(name: String) {
-  return name.substring(name.lastIndexOf('.')+1)
-}
 
 export default defineComponent({
   components: {
@@ -38,22 +34,25 @@ export default defineComponent({
   },
   methods:{
     openFile(path: String, name: String) {
-      var ext = getExt(name);
+      var ext = this.getExt(name);
       if (['tex','bib','bbl'].includes(ext)) { 
         store.Editor.openFile(path as string, name as string);
       }
     },
-    getIcon(name: String) {
-      var ext = getExt(name);
-      if (ext=='tex') {
-        return 'ri-text';
-      } else if (ext=='bib') {
-        return 'ri-file-text-line';
-      } else if (ext=='pdf') {
-        return "ri-file-pdf-line"
-      }
-      return 'ri-file-line'
-    }
+    getExt(name: String) {
+      return name.substring(name.lastIndexOf('.')+1)
+    },
+    // getIcon(name: String) {
+    //   var ext = getExt(name);
+    //   if (ext=='tex') {
+    //     return 'ri-text';
+    //   } else if (ext=='bib') {
+    //     return 'ri-file-text-line';
+    //   } else if (ext=='pdf') {
+    //     return "ri-file-pdf-line"
+    //   }
+    //   return 'ri-file-line'
+    // }
   }
 })
 </script>

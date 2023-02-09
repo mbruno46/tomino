@@ -85,6 +85,7 @@ export default defineComponent({
   word-wrap: break-word;
   color: var(--text);
   hyphens: auto;
+  -webkit-hyphens:auto;
 }
 
 </style>

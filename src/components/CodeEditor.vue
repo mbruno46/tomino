@@ -275,13 +275,18 @@ export default defineComponent({
   font-family: 'Source Code Pro', monospace;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% - 2rem);
+  /* width: 100%; */
+  /* overflow-x: scroll; */
+  overflow-y: scroll;
   background: var(--background-light);
   padding-top: 1rem;
   visibility: visible;
   opacity: 1;
   transition: opacity 0.5s, visibility 0.5s;
   position: absolute;
+  left: 0;
+  right: 0;
 }
 
 </style>

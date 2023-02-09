@@ -11,7 +11,10 @@ import store from '@/helpers/Store'
 
 export default defineComponent({
   props: {
-    name: String,
+    name: {
+      type: String,
+      default: ''
+    },
     open: {
       type: Boolean,
       default: false,
@@ -33,7 +36,7 @@ export default defineComponent({
 <style scoped>
 .tab {
   width: fit-content;
-  /* margin: 0.5rem; */
+  height: 2rem;
   padding: 0.5rem;
 }
 .tab:hover {

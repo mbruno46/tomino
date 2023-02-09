@@ -1,5 +1,5 @@
 <template>
-  <div style="display: grid; grid-template-rows: auto 1fr;">
+  <div class="browser">
     <div class="upperbar">
       <div style="width: min-content" class="padding">Browser</div>
     </div>
@@ -12,9 +12,9 @@
 <script lang="ts">
 import { defineComponent, onBeforeMount, ref } from 'vue'
 import { readDir } from '@tauri-apps/api/fs';
-import NavFolder from './NavFolder.vue';
-import { FileTree } from '../helpers/FileTree';
-import store from '../helpers/Store';
+import NavFolder from '@/components/NavFolder.vue';
+import { FileTree } from '@/helpers/FileTree';
+import store from '@/helpers/Store';
 
 const folder = '/Users/mbruno/Physics/ToM/dummy';
 
@@ -49,6 +49,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.browser {
+  display: grid; 
+  grid-template-rows: auto 1fr;
+  overflow: scroll;
+}
+
 .upperbar {
   width: 100%;
   height: 2rem;

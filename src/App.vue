@@ -1,23 +1,25 @@
 <template>
   <div :class="browser_visible ? '' : 'folded'" class="container">
-    <tool-bar></tool-bar>
+    <side-bar></side-bar>
     <browser id="browser"></browser>
     <div class="main">
       <editor></editor>
+      <viewer></viewer>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import Editor from "./components/Editor.vue";
-import Browser from "./components/Browser.vue"
-import ToolBar from "./components/ToolBar.vue";
+import Editor from "@/views/Editor.vue";
+import Viewer from "@/views/Viewer.vue";
+import Browser from "@/views/Browser.vue"
+import SideBar from "@/views/SideBar.vue";
 import { computed, defineComponent } from 'vue'
 import store from '@/helpers/Store'
 
 export default defineComponent({
   components: {
-    Editor, Browser, ToolBar,
+    Editor, Viewer, Browser, SideBar,
   },
   setup() {
     const browser_visible = computed(() => store.browser.value.visible);
@@ -49,7 +51,10 @@ export default defineComponent({
 }
 
 .main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   height: 100%;
+  overflow: hidden;
 }
 
 </style>

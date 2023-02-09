@@ -1,6 +1,8 @@
 <template>
   <div class="nav-item">
-    <i :class="icon"></i>
+    <span>
+      <iconify :icon="icon"></iconify>
+    </span>
     <span>
       <slot></slot>
     </span>
@@ -9,8 +11,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import Iconify from './Iconify.vue';
 
 export default defineComponent({
+  components: { Iconify },
   props: {
     icon: String,
   },
@@ -25,8 +29,8 @@ export default defineComponent({
   padding-bottom: 0.2rem;
 }
 
-.nav-item i {
-  vertical-align: middle;
+.nav-item span {
+  vertical-align: top;
   padding: 0.2rem;
 }
 
