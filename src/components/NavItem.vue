@@ -1,7 +1,7 @@
 <template>
   <div class="nav-item">
     <span>
-      <iconify :icon="icon"></iconify>
+      <iconify :tag="icon"></iconify>
     </span>
     <span>
       <slot></slot>
@@ -20,7 +20,7 @@ export default defineComponent({
   },
   // setup() {
   // },
-})
+});
 </script>
 
 <style scoped>

@@ -1,15 +1,18 @@
 <template>
   <div class="tab" :class="open ? 'open' : ''">
-    <span @click="focus(name)" class="padding">{{ name }}</span>
-    <i class="ri-close-line padding" @click="close(name)"></i>
+    <nav-label @click="focus(name)" :name="name"></nav-label>
+    <iconify class="close" @click="close(name)" :tag="'close'"></iconify>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import Iconify from './Iconify.vue';
+import NavLabel from './NavLabel.vue';
 import store from '@/helpers/Store'
 
 export default defineComponent({
+  components: { Iconify, NavLabel },
   props: {
     name: {
       type: String,
@@ -35,10 +38,12 @@ export default defineComponent({
 
 <style scoped>
 .tab {
-  width: fit-content;
-  height: 2rem;
+  height: min-content;
   padding: 0.5rem;
+  display: grid;
+  grid-template-columns: min-content min-content;
 }
+
 .tab:hover {
   cursor: pointer;
 }
@@ -48,15 +53,8 @@ export default defineComponent({
   color: var(--text);
 }
 
-.tab i {
-  vertical-align: middle;
-}
-
-.tab i:hover {
-  background: var(--selection);
-}
-
-.padding {
-  padding: 0.5rem;
+.tab .close:hover {
+  background-color: var(--selection-dark);
+  border-radius: 4px;
 }
 </style>

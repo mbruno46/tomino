@@ -14,7 +14,7 @@
     "allowlist": {
       "all": false,
       "fs": {
-        "scope": ["/Users/mbruno/Physics/ToM/dummy","/Users/mbruno/Physics/ToM/dummy/*"],
+        "scope": ["/Users/mbruno/Physics/ToM/dummy/","/Users/mbruno/Physics/ToM/dummy/*"],
         "all": false,
         "readFile": true,
         "writeFile": true,
@@ -25,6 +25,14 @@
         "removeFile": false,
         "renameFile": false,
         "exists": true
+      },
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
       }
     },
     "bundle": {

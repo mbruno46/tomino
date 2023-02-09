@@ -2,9 +2,11 @@
   --background-dark: rgb(28,31,38);
   --background: rgb(35, 40, 48);
   --background-light: rgb(43, 48, 59);
+  --divider: rgb(51, 61, 70);
   --text: rgb(223, 225, 232);
   --foreground: rgb(101, 115, 127);
-  --selection: rgb(38, 194, 255);;
+  --selection: rgb(38, 194, 255);
+  --selection-dark: #1f4b70;
   --latex-basic: #82c448;
   --latex-square: #f1727f;
   --latex-curly: #ff84e8;

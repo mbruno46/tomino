@@ -12,12 +12,10 @@
 <script lang="ts">
 import { defineComponent, onBeforeMount, ref } from 'vue'
 import { readDir } from '@tauri-apps/api/fs';
+import { open } from '@tauri-apps/api/dialog';
 import NavFolder from '@/components/NavFolder.vue';
 import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
-
-const folder = '/Users/mbruno/Physics/ToM/dummy';
-
 
 export default defineComponent({
   components: {
@@ -28,10 +26,17 @@ export default defineComponent({
     const filetree = ref<FileTree>();
 
     onBeforeMount(() => {
-      readDir(folder, {recursive: true}).then((entries) => {
-        filetree.value = new FileTree(folder, 'main', entries);
+      // open({directory: true, multiple: false, recursive: true}).then((folder) => {
+      //   if ((folder!=null) && !Array.isArray(folder)) {
+      //     readDir(folder, {recursive: true}).then((entries) => {
+      //       filetree.value = new FileTree(folder, 'main', entries);
+      //       render.value = true;
+      //     });
+      //   }
+      // });
+      readDir("/Users/mbruno/Physics/ToM/dummy", {recursive: true}).then((entries) => {
+        filetree.value = new FileTree("/Users/mbruno/Physics/ToM/dummy", 'main', entries);
         render.value = true;
-        console.log(filetree.value);
       });
     });
 
@@ -58,8 +63,6 @@ export default defineComponent({
 .upperbar {
   width: 100%;
   height: 2rem;
-  /* display: grid; */
-  /* grid-template-columns: min-content; */
 }
 
 .filebrowser {

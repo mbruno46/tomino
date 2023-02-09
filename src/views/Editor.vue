@@ -46,6 +46,10 @@ export default defineComponent({
   background: var(--background-dark);
 }
 
+.tabbar::-webkit-scrollbar {
+  display: none;
+}
+
 .hide {
   visibility: hidden;
   opacity: 0;

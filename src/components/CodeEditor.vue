@@ -10,7 +10,7 @@ import CodeLine from './CodeLine.vue';
 import { defineComponent, onMounted, onUpdated, ref } from 'vue';
 import type { Ref } from 'vue'
 import { Selection, Caret } from '@/helpers/Selection';
-import { readTextFile } from '@tauri-apps/api/fs';
+import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 
 const ntabs = 4;
 
@@ -135,7 +135,6 @@ export default defineComponent({
     });
 
     onUpdated(() => {
-      console.log(props.path, s.anchor, lines.value);
       if (code_editor.value) s.updateDOM(code_editor.value);
     });
 
@@ -167,7 +166,6 @@ export default defineComponent({
     function insertText(text: String) {
       deleteSelectedText();
       editor?.insertText(s.focus,text);
-      // editor?.moveCaret(s.focus, 'ArrowRight');
       s.anchor.copyFrom(s.focus);
     }
 
@@ -195,7 +193,6 @@ export default defineComponent({
           }
         }
       }
-      // s.updateDOM();
       if (code_editor.value) s.updateDOM(code_editor.value);
     }
 
@@ -213,6 +210,10 @@ export default defineComponent({
       s.getFromDOM();
     }
 
+    function saveToDisk() {
+      if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
+    }
+
     return {
       code_editor,
       lines,
@@ -223,6 +224,7 @@ export default defineComponent({
       indent,
       comment,
       handleMouseUp,
+      saveToDisk,
     }
   },
   methods: {
@@ -232,6 +234,8 @@ export default defineComponent({
           case '/':
             this.comment();
             break;
+          case 's':
+            this.saveToDisk();
         }
       }
       else {
@@ -276,8 +280,6 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   height: calc(100% - 2rem);
-  /* width: 100%; */
-  /* overflow-x: scroll; */
   overflow-y: scroll;
   background: var(--background-light);
   padding-top: 1rem;

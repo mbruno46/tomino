@@ -1,7 +1,10 @@
 <template>
   <div class="toolbar">
     <button @click="hide_browser">
-      <i :class="browser_icon"></i>
+      <iconify class='icons' :tag="browser_icon"></iconify>
+    </button>
+    <button>
+      <iconify class='icons' :tag="'refresh'"></iconify>
     </button>
   </div>
 </template>
@@ -9,14 +12,18 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import store from '@/helpers/Store'
+import Iconify from '@/components/Iconify.vue';
 
 export default defineComponent({
+  components: {
+    Iconify,
+  },
   setup() {
-    const browser_icon = ref('ri-arrow-left-s-fill');
+    const browser_icon = ref('left-fill');
 
     function hide_browser() {
       store.browser.value.visible = !store.browser.value.visible;
-      browser_icon.value = (store.browser.value.visible) ? 'ri-arrow-left-s-fill' : 'ri-folder-5-line';
+      browser_icon.value = (store.browser.value.visible) ? 'left-fill' : 'files';
     }
 
     return {
@@ -46,7 +53,11 @@ export default defineComponent({
   box-sizing: border-box;
   width: 3rem;
   height: 3rem;
-  font-size: x-large;
+}
+
+.icons {
+  vertical-align: top;
+  font-size: 1.6rem;
 }
 
 .toolbar button:hover {
