@@ -36,7 +36,7 @@ export default defineComponent({
   height: 100vh;
   width: 100vw;
   display: grid;
-  grid-template-columns: 3rem auto 1fr;
+  grid-template-columns: auto auto 1fr;
 }
 .container #browser {
   width: 16rem;

@@ -1,22 +1,18 @@
 <template>
   <div class="toolbar">
-    <button @click="hide_browser">
-      <iconify class='icons' :tag="browser_icon"></iconify>
-    </button>
-    <button>
-      <iconify class='icons' :tag="'refresh'"></iconify>
-    </button>
+    <icon-button :tag="browser_icon" @click="hide_browser" :fontsize="2"></icon-button>
+    <icon-button :tag="'refresh'" :fontsize="2"></icon-button>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import store from '@/helpers/Store'
-import Iconify from '@/components/Iconify.vue';
+import IconButton from '@/components/IconButton.vue';
 
 export default defineComponent({
   components: {
-    Iconify,
+    IconButton,
   },
   setup() {
     const browser_icon = ref('left-fill');
@@ -36,12 +32,13 @@ export default defineComponent({
 
 <style scoped>
 .toolbar {
-  width: 3rem;
+  display: flex;
+  flex-flow: column;
   height: 100vh;
   background-color: var(--background-dark);
 }
 
-.toolbar button {
+/* .toolbar button {
   background-color: inherit;
   color: var(--foreground);
   border: none;
@@ -54,14 +51,8 @@ export default defineComponent({
   width: 3rem;
   height: 3rem;
 }
-
-.icons {
-  vertical-align: top;
-  font-size: 1.6rem;
-}
-
 .toolbar button:hover {
   background-color: var(--selected);
-}
+} */
 
 </style>

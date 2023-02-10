@@ -46,6 +46,7 @@ export default defineComponent({
   display: flex;
   flex-flow: column;
   padding-left: 1rem;
+  /* border-left: 1px solid white; */
   /* transition: height 0.2s; */
 }
 
@@ -54,5 +55,14 @@ export default defineComponent({
   /* height: 0px; */
 }
 
+.nav-folder div {
+  border: 1px solid transparent;
+}
+
+.nav-folder div:hover {
+  cursor: pointer;
+  background-color: var(--background-light);
+  border: 1px solid var(--selection-dark);
+}
 </style>
 

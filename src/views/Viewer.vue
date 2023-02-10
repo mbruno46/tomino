@@ -1,25 +1,35 @@
 <template>
   <div class="viewer">
-
+    <div class="toolbar">
+      <icon-button :tag="'fitH'" @click="pdfviewer?.zoom('fitH')"></icon-button>
+      <icon-button :tag="'fitV'" @click="pdfviewer?.zoom('fitV')"></icon-button>
+      <icon-button :tag="'+'" @click="pdfviewer?.zoom('zoomIn')"></icon-button>
+      <icon-button :tag="'-'" @click="pdfviewer?.zoom('zoomOut')"></icon-button>
+    </div>
+    <PDFViewer ref="pdfviewer"></PDFViewer>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue'
-import * as pdfjsLib from "pdfjs-dist";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "../../node_modules/pdfjs-dist/build/pdf.worker.js";
-import { readBinaryFile } from '@tauri-apps/api/fs';
-
+import { defineComponent, onMounted, ref } from 'vue'
+import PDFViewer from '@/components/PDFViewer.vue';
+import IconButton from '@/components/IconButton.vue';
 
 export default defineComponent({
+  components: {
+    PDFViewer,
+    IconButton,
+  },
   setup() {
+    const pdfviewer = ref<typeof PDFViewer|null>(null);
+
     onMounted(() => {
-      readBinaryFile('/Users/mbruno/Physics/ToM/dummy/main.pdf').then((data) => {
-        pdfjsLib.getDocument(data).promise.then((pdfDoc: any) => {
-          console.log(pdfDoc.numPages);
-        });
-      });
+      // if (pdfviewer.value) pdfviewer.value.performAction('fitH');
     });
+
+    return {
+      pdfviewer,
+    }
   },
 })
 </script>
@@ -27,6 +37,15 @@ export default defineComponent({
 <style scoped>
 .viewer {
   background-color: var(--background);
-  height: 100%;
+  height: 100vh;
+  width: 100%;
+  display: grid;
+  grid-template-rows: fit-content 1fr;
+}
+
+.toolbar {
+  text-align: center;
+  /* border-bottom: 2px solid black; */
+  /* box-shadow: 0px 15px 10px -15px #111; */
 }
 </style>

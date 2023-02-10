@@ -4,7 +4,7 @@
       <div style="width: min-content" class="padding">Browser</div>
     </div>
     <div class="filebrowser">
-      <nav-folder v-if="render" :ftree="filetree"></nav-folder>
+      <nav-folder v-if="filetree" :ftree="filetree"></nav-folder>
     </div>
   </div>
 </template>
@@ -22,7 +22,6 @@ export default defineComponent({
     NavFolder,
   },
   setup() {
-    const render = ref(false);
     const filetree = ref<FileTree>();
 
     onBeforeMount(() => {
@@ -36,13 +35,11 @@ export default defineComponent({
       // });
       readDir("/Users/mbruno/Physics/ToM/dummy", {recursive: true}).then((entries) => {
         filetree.value = new FileTree("/Users/mbruno/Physics/ToM/dummy", 'main', entries);
-        render.value = true;
       });
     });
 
     return {
       filetree,
-      render,
     }
   },
   methods: {
