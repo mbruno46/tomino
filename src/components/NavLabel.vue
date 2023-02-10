@@ -24,12 +24,16 @@ export default defineComponent({
 .nav-label {
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
-  display: grid;
-  grid-template-columns: min-content min-content;
+  /* display: grid; */
+  /* grid-template-columns: min-content min-content; */
+  display: inline-flex;
+  /* vertical-align: middle; */
+  /* line-height: 1; */
 }
 
 .nav-label span {
-  vertical-align: top;
+  display: inline-flex;
+  align-items: center;
   padding-left: 0.4rem;
   padding-right: 0.4rem;
 }

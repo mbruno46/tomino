@@ -63,7 +63,7 @@ export default defineComponent({
 }
 
 .filebrowser {
-  color: var(--text);
+  color: var(--foreground);
   height: max-content;
 }
 

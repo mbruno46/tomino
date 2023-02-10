@@ -62,6 +62,7 @@ export default defineComponent({
 .nav-folder div:hover {
   cursor: pointer;
   background-color: var(--background-light);
+  color: var(--text);
   border: 1px solid var(--selection-dark);
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="tab" :class="open ? 'open' : ''">
     <nav-label @click="focus(name)" :name="name"></nav-label>
-    <iconify class="close" @click="close(name)" :tag="'close'"></iconify>
+    <icon-button @click="close(name)" :tag="'close'" :fontsize="1.2"></icon-button>
   </div>
 </template>
 
@@ -10,9 +10,10 @@ import { defineComponent } from 'vue'
 import Iconify from './Iconify.vue';
 import NavLabel from './NavLabel.vue';
 import store from '@/helpers/Store'
+import IconButton from './IconButton.vue';
 
 export default defineComponent({
-  components: { Iconify, NavLabel },
+  components: { IconButton, NavLabel },
   props: {
     name: {
       type: String,
@@ -51,10 +52,5 @@ export default defineComponent({
 .tab.open {
   background: var(--background-light);
   color: var(--text);
-}
-
-.tab .close:hover {
-  background-color: var(--selection-dark);
-  border-radius: 4px;
 }
 </style>
