@@ -11,6 +11,7 @@ import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import * as pdfjsLib from "pdfjs-dist";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "../../node_modules/pdfjs-dist/build/pdf.worker.js";
 import { readBinaryFile } from '@tauri-apps/api/fs';
+import store from '@/helpers/Store';
 
 export default defineComponent({
   setup() {
@@ -48,8 +49,8 @@ export default defineComponent({
       else if (viewport.zoom>4) scale.value = 12;
     };
 
-    function load(callback: Function) {
-      readBinaryFile('/Users/mbruno/Physics/ToM/dummy/main.pdf').then((data) => {
+    function load(cwd: string, name: string, callback: Function=()=>{}) {
+      readBinaryFile(`${cwd}/${name}.pdf`).then((data) => {
         pdfjsLib.getDocument(data).promise.then((pdfDoc: any) => {
           numpages.value = pdfDoc.numPages;
 
@@ -88,10 +89,14 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      load(()=>zoom('fitH'));
+      // load(store.pdf.value.cwd, store.pdf.value.main, ()=>zoom('fitH'));
 
-      watchEffect(() => {
-        for (const page of pages) renderPage(page, scale.value)
+      watchEffect(()=>{
+        let pdf = store.pdf.value;
+        if (pdf.refresh) {
+          load(pdf.cwd, pdf.main);
+          pdf.refresh = false;
+        }
       })
     });
 
@@ -100,6 +105,7 @@ export default defineComponent({
       pdfviewer,
       width,
       zoom,
+      load,
     }
   },
 })

@@ -33,6 +33,17 @@
         "message": false,
         "open": true,
         "save": false
+      },
+      "shell": {
+        "all": false,
+        "execute": true,
+        "open": false,
+        "scope": [
+          {"name": "latexmk", "cmd": "latexmk", "args": true},
+          {"name": "pdflatex", "cmd": "pdflatex", "args": true},
+          {"name": "bibtex", "cmd": "bibtex", "args": true}
+        ],
+        "sidecar": false
       }
     },
     "bundle": {

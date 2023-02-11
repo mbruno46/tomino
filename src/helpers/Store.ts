@@ -1,13 +1,5 @@
 import { ref, reactive } from 'vue'
 
-const browser = ref({
-  'visible': true,
-})
-
-// const editor = ref({
-//   files: [{path: '', name: '', open: true}],
-//   selected: 0,
-// });
 export interface LooseObject {
   [key: string]: any
 }
@@ -49,7 +41,14 @@ function _editor() {
 
 var Editor = _editor();
 
+const pdf = ref({
+  cwd: '',
+  main: '',
+  compile: false,
+  refresh: false,
+});
+
 export default {
-  browser,
+  pdf,
   Editor,
 }

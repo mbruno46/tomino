@@ -11,9 +11,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import PDFViewer from '@/components/PDFViewer.vue';
 import IconButton from '@/components/IconButton.vue';
+import store from '@/helpers/Store';
+import { Command } from '@tauri-apps/api/shell';
+
+export async function compile(cwd: string, name: string, callback: Function) {
+  const output = await new Command('latexmk', ['-pdf', '-silent', name], {cwd: cwd}).execute();
+  if (output.code==0) {
+    console.log(output.stdout);
+    callback();
+  } else {
+    console.log(output.stderr);
+  }
+}
 
 export default defineComponent({
   components: {
@@ -24,7 +36,12 @@ export default defineComponent({
     const pdfviewer = ref<typeof PDFViewer|null>(null);
 
     onMounted(() => {
-      // if (pdfviewer.value) pdfviewer.value.performAction('fitH');
+      watchEffect(() => {
+        let pdf = store.pdf.value;
+        if (pdf.compile) {
+          compile(pdf.cwd,pdf.main, ()=>{pdf.refresh=true})
+        }
+      });
     });
 
     return {

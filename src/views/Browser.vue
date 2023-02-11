@@ -12,7 +12,9 @@
 <script lang="ts">
 import { defineComponent, onBeforeMount, ref } from 'vue'
 import { readDir } from '@tauri-apps/api/fs';
+import { basename } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
+
 import NavFolder from '@/components/NavFolder.vue';
 import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
@@ -25,16 +27,16 @@ export default defineComponent({
     const filetree = ref<FileTree>();
 
     onBeforeMount(() => {
-      // open({directory: true, multiple: false, recursive: true}).then((folder) => {
-      //   if ((folder!=null) && !Array.isArray(folder)) {
-      //     readDir(folder, {recursive: true}).then((entries) => {
-      //       filetree.value = new FileTree(folder, 'main', entries);
-      //       render.value = true;
-      //     });
-      //   }
-      // });
-      readDir("/Users/mbruno/Physics/ToM/dummy", {recursive: true}).then((entries) => {
-        filetree.value = new FileTree("/Users/mbruno/Physics/ToM/dummy", 'main', entries);
+      open({directory: true, multiple: false, recursive: true}).then((folder) => {
+        if ((folder!=null) && !Array.isArray(folder)) {
+          const base = folder.substring(folder.lastIndexOf('/')+1);
+          console.log(base, folder);
+          readDir(folder, {recursive: true}).then((entries) => {
+            filetree.value = new FileTree(folder, base, entries);
+            store.pdf.value.cwd = folder;
+            store.pdf.value.main = 'main';
+          });
+        }
       });
     });
 
@@ -42,11 +44,6 @@ export default defineComponent({
       filetree,
     }
   },
-  methods: {
-    hide() {
-      store.browser.value.visible = false;
-    }
-  }
 });
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <div :class="browser_visible ? '' : 'folded'" class="container">
-    <side-bar></side-bar>
+    <side-bar @toggle-browser="browser_visible = !browser_visible"></side-bar>
     <browser id="browser"></browser>
     <div class="main">
       <editor></editor>
@@ -14,16 +14,14 @@ import Editor from "@/views/Editor.vue";
 import Viewer from "@/views/Viewer.vue";
 import Browser from "@/views/Browser.vue"
 import SideBar from "@/views/SideBar.vue";
-import { computed, defineComponent } from 'vue'
-import store from '@/helpers/Store'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   components: {
     Editor, Viewer, Browser, SideBar,
   },
   setup() {
-    const browser_visible = computed(() => store.browser.value.visible);
-
+    const browser_visible = ref(true);
     return {
       browser_visible,
     }
