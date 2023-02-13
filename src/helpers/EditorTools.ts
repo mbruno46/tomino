@@ -1,3 +1,5 @@
+import { debounce } from "./Utils";
+
 export class Caret {
   idx: number;
   pos: number;
@@ -124,4 +126,83 @@ export function Selection() {
 }
 
 
-// export const selection = Selection();
+export function History(sel: any) {
+  interface Record {
+    anchor: Caret
+    focus: Caret
+    action: Function
+  }
+  interface Stack {
+    undo: Record[];
+    redo: Record[];
+  } 
+
+  let stack:Stack[] = [];
+  let stack_undo:Record[] = [];
+  let stack_redo:Record[] = [];
+  let idx = 0;
+  let max = 10;
+  let composing = false;
+
+  return {
+    stack,
+    startRecord() {
+      composing = true;
+      stack_undo = [];
+      stack_redo = [];
+    },
+    endRecord() {
+      if ((!composing) || (stack_undo.length==0)) {return;}
+      if(stack_redo.length != stack_undo.length) {console.log('error')}
+
+      stack.splice(idx, max-idx, {undo: stack_undo, redo: stack_redo});
+      idx++;
+      if (idx==max) {
+        stack.splice(0,1);
+        idx--;
+      }
+    },
+    add(action: Function, reverse: Function) {
+      stack_redo.push({
+        anchor: new Caret(sel.anchor.idx, sel.anchor.pos),
+        focus: new Caret(sel.focus.idx, sel.focus.pos),
+        action: action,
+      });
+
+      let out = action();
+
+      stack_undo.push({
+        anchor: new Caret(sel.anchor.idx, sel.anchor.pos),
+        focus: new Caret(sel.focus.idx, sel.focus.pos),
+        action: (out) ? ()=>{reverse(out)} : reverse,
+      });
+    },
+    backward() {
+      if (idx==0) {return;}
+      idx--;
+      console.log(idx, stack, stack[idx]);
+
+      for (const s of stack[idx].undo) {
+        sel.anchor.copyFrom(s.anchor);
+        sel.focus.copyFrom(s.focus);
+        s.action();        
+      }
+    },
+    forward() {
+      if ((idx==max)||(idx==stack.length)) {return;}
+
+      for (const s of stack[idx].redo) {
+        sel.anchor.copyFrom(s.anchor);
+        sel.focus.copyFrom(s.focus);
+        s.action();        
+      }
+      idx++;
+    },
+  }
+}
+
+export default {
+  Caret,
+  Selection,
+  History,
+}

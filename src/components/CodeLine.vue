@@ -10,7 +10,6 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
-// import {selection, Caret} from '../helpers/Selection';
 
 function textToHTML(text: String) {
   if (text=="") {
@@ -30,10 +29,13 @@ function textToHTML(text: String) {
 
 function highlightTeX(text: String) {
   if (text.match(/^\s*%/)) {
-    return `<span style="color: azure">${textToHTML(text)}</span>`
+    return `<span style="color: var(--latex-comment)">${textToHTML(text)}</span>`
   }
+  let keywords = '\\\\' + ['begin','end','documentclass'].join('|\\\\');
+
   return textToHTML(text)
-    .replace(/(\\begin|\\end){(.*?)}/g,'$1{<span style="color: var(--latex-curly)">$2</span>}')
+    .replace(RegExp(`(${keywords})\\[(.*?)\\]{(.*?)}`),'$1[<span style="color: var(--latex-square)">$2</span>]{<span style="color: var(--latex-curly)">$3</span>}')
+    .replace(RegExp(`(${keywords}){(.*?)}`),'$1{<span style="color: var(--latex-curly)">$2</span>}')
     .replace(/(\\[a-zA-Z]+)/g,'<span style="color: var(--latex-basic)">$1</span>')
 }
 

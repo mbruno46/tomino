@@ -10,7 +10,7 @@
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import * as pdfjsLib from "pdfjs-dist";
 pdfjsLib.GlobalWorkerOptions.workerSrc = "../../node_modules/pdfjs-dist/build/pdf.worker.js";
-import { readBinaryFile } from '@tauri-apps/api/fs';
+import { readBinaryFile, exists } from '@tauri-apps/api/fs';
 import store from '@/helpers/Store';
 
 export default defineComponent({
@@ -50,7 +50,10 @@ export default defineComponent({
     };
 
     function load(cwd: string, name: string, callback: Function=()=>{}) {
-      readBinaryFile(`${cwd}/${name}.pdf`).then((data) => {
+      let fname = `${cwd}/${name}.pdf`;
+      if (!exists(fname)) {return;}
+      
+      readBinaryFile(fname).then((data) => {
         pdfjsLib.getDocument(data).promise.then((pdfDoc: any) => {
           numpages.value = pdfDoc.numPages;
 

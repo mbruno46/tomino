@@ -12,7 +12,6 @@
 <script lang="ts">
 import { defineComponent, onBeforeMount, ref } from 'vue'
 import { readDir } from '@tauri-apps/api/fs';
-import { basename } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
 
 import NavFolder from '@/components/NavFolder.vue';

@@ -9,7 +9,7 @@
 import CodeLine from './CodeLine.vue';
 import { defineComponent, onMounted, onUpdated, ref } from 'vue';
 import type { Ref } from 'vue'
-import { Selection, Caret } from '@/helpers/Selection';
+import { History, Selection, Caret } from '@/helpers/EditorTools';
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 
 const ntabs = 4;
@@ -68,7 +68,9 @@ function Editor() {
     deleteText(start: Caret, end: Caret) {
       let t0 = lines.value[start.idx].substring(0,start.pos);
       let t1 = lines.value[end.idx].substring(end.pos);
-      lines.value.splice(start.idx, end.idx+1-start.idx, t0 + t1);
+      let idx = lines.value[end.idx].length - end.pos;
+      let old = lines.value.splice(start.idx, end.idx+1-start.idx, t0 + t1).join('\n');
+      return old.substring(start.pos, old.length-idx);
     },
     insertText(c: Caret, text: String) {
       let ll = text.split('\n');
@@ -125,6 +127,7 @@ export default defineComponent({
     const editor = Editor();
     const s = Selection();
     const lines: Ref<string[]> = editor.lines;
+    const history = History(s);
 
     onMounted(() => {
       if (props.path) {
@@ -139,20 +142,22 @@ export default defineComponent({
     });
 
     function deleteSelectedText() {
+      let t = '';
       if (!s.anchor.isEqual(s.focus)) {
         if (s.focusIsStart()) {
-          editor?.deleteText(s.focus, s.anchor);
+          t = editor?.deleteText(s.focus, s.anchor);
           s.anchor.copyFrom(s.focus);
         } else {
-          editor?.deleteText(s.anchor, s.focus);
+          t = editor?.deleteText(s.anchor, s.focus);
           s.focus.copyFrom(s.anchor);
         } 
       }
+      return t;
     }
 
     function deleteChar(right: boolean) {
       if (s.anchor.isEqual(s.focus)) editor?.moveCaret(s.focus, (right) ? 'ArrowRight' : 'ArrowLeft')
-      deleteSelectedText();
+      return deleteSelectedText();
     }
 
     function newLine() {
@@ -225,22 +230,29 @@ export default defineComponent({
       comment,
       handleMouseUp,
       saveToDisk,
+      history,
     }
   },
   methods: {
     handleKeyBoard: function(event: KeyboardEvent) {
+      this.history.startRecord();
+
       if ((event.ctrlKey || event.metaKey)) {
         switch (event.key) {
+          case 'z':
+            (event.shiftKey) ? this.history.forward() : this.history.backward();
+            break;
           case '/':
-            this.comment();
+            this.history.add(this.comment, this.comment);
             break;
           case 's':
             this.saveToDisk();
+            break;
         }
       }
       else {
         if (event.key.length==1) {
-          this.insertText(event.key)
+          this.history.add(()=>{this.insertText(event.key)}, ()=>{this.deleteChar(false)})
         } else {
           switch (event.key) {
             case 'ArrowUp':
@@ -250,24 +262,25 @@ export default defineComponent({
               this.arrows(event.key, event.shiftKey);
               break;
             case 'WhiteSpace':
-              this.insertText(" ");
+              this.history.add(()=>{this.insertText(" ")}, ()=>{this.deleteChar(false)});
               break;
             case 'Tab':
-              this.indent(event.shiftKey);
+              this.history.add(()=>{this.indent(event.shiftKey)}, ()=>{this.indent(!event.shiftKey)});
               break;
             case 'Enter':
-              this.newLine();
+              this.history.add(this.newLine, ()=>{this.deleteChar(false)});
               break;
             case 'Backspace':
-              this.deleteChar(false);
+              this.history.add(()=>{return this.deleteChar(false)}, (arg:string)=>{this.insertText(arg)});
               break;
             case 'Delete':
-              this.deleteChar(true);
+              this.history.add(()=>{return this.deleteChar(true)}, (arg:string)=>{this.insertText(arg)});
               break;
           }
         }
       }
 
+      this.history.endRecord();
       event.preventDefault();
     }
   }

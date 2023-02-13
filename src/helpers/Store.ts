@@ -33,8 +33,7 @@ function _editor() {
       if (selected==name) {
         selected = Object.keys(files)[0];
       }
-      files[selected].open =true;
-      console.log(files, selected, name);
+      if (files.length>0) files[selected].open =true;
     }
   }
 }
