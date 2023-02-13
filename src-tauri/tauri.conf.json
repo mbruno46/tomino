@@ -44,6 +44,11 @@
           {"name": "bibtex", "cmd": "bibtex", "args": true}
         ],
         "sidecar": false
+      },
+      "clipboard": {
+        "all": true,
+        "readText": true,
+        "writeText": true
       }
     },
     "bundle": {

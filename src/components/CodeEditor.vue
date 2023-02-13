@@ -11,6 +11,7 @@ import { defineComponent, onMounted, onUpdated, ref } from 'vue';
 import type { Ref } from 'vue'
 import { History, Selection, Caret } from '@/helpers/EditorTools';
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
+import { writeText, readText } from '@tauri-apps/api/clipboard';
 
 const ntabs = 4;
 
@@ -28,9 +29,8 @@ function Editor() {
       lines.value = text.split('\n');
     },
     selectedText(start: Caret, end: Caret) {
-      let t = '';
-      forLoop(start, end, (i: number) => {t += lines.value[i]});
-      return t.substring(start.pos, -lines.value[end.idx].length+end.pos);
+      let t = lines.value.slice(start.idx, end.idx+1).join('\n');
+      return t.substring(start.pos, t.length + end.pos - lines.value[end.idx].length);
     },
     moveCaret(c: Caret, dir: String) {
       switch (dir) {
@@ -68,9 +68,9 @@ function Editor() {
     deleteText(start: Caret, end: Caret) {
       let t0 = lines.value[start.idx].substring(0,start.pos);
       let t1 = lines.value[end.idx].substring(end.pos);
-      let idx = lines.value[end.idx].length - end.pos;
-      let old = lines.value.splice(start.idx, end.idx+1-start.idx, t0 + t1).join('\n');
-      return old.substring(start.pos, old.length-idx);
+      let t = this.selectedText(start, end);
+      lines.value.splice(start.idx, end.idx+1-start.idx, t0 + t1);
+      return t;
     },
     insertText(c: Caret, text: String) {
       let ll = text.split('\n');
@@ -211,6 +211,22 @@ export default defineComponent({
       else editor?.comment(s.anchor, s.focus);
     }
 
+    function CCP(action: string) {
+      if (action=='cut') {
+        writeText(deleteSelectedText());
+      } else if (action=='copy') {
+        let [start, end] = s.getStartEnd();
+        writeText(editor.selectedText(start, end));
+      } else if (action=='paste') {
+        readText().then((data)=>{
+          if (data) {
+            deleteSelectedText();
+            editor?.insertText(s.focus, data);
+          }
+        });
+      }
+    }
+
     function handleMouseUp(event: MouseEvent) {
       s.getFromDOM();
     }
@@ -231,6 +247,7 @@ export default defineComponent({
       handleMouseUp,
       saveToDisk,
       history,
+      CCP,
     }
   },
   methods: {
@@ -239,6 +256,15 @@ export default defineComponent({
 
       if ((event.ctrlKey || event.metaKey)) {
         switch (event.key) {
+          case 'x':
+            this.history.add(()=>{return this.CCP('cut')}, (arg:string)=>{this.insertText(arg)});
+            break;
+          case 'c':
+            this.CCP('copy');
+            break;
+          case 'v':
+            this.history.add(()=>{return this.CCP('paste')}, ()=>{this.CCP('cut')});
+            break;
           case 'z':
             (event.shiftKey) ? this.history.forward() : this.history.backward();
             break;
