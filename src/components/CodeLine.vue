@@ -1,5 +1,5 @@
 <template>
-  <div class="line">
+  <div class="line" contenteditable="true">
     <div class="number">
       {{ (index+1) }}
     </div>

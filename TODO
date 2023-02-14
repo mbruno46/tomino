@@ -1,0 +1,5 @@
+ - autocomplete
+ - main.tex detection
+ - open/create project menu
+ - selection multiline problem with addRange not supported
+ - parsin tex files for suggestions

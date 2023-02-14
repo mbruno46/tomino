@@ -1,4 +1,4 @@
-import { debounce } from "./Utils";
+// import { debounce } from "./Utils";
 
 export class Caret {
   idx: number;
@@ -89,6 +89,9 @@ export function Selection() {
       return [this.anchor, this.focus];
     },
     updateDOM(parent: HTMLElement) {
+      let el = parent.querySelector(`[linenumber="${this.focus.idx}"]`);
+      el?.scrollIntoView({behavior: 'auto', block: 'nearest', inline: 'nearest'});
+
       var sel = document.getSelection();
       sel?.removeAllRanges();
       let [start, end] = this.getStartEnd();
@@ -100,6 +103,7 @@ export function Selection() {
 
         if (i==start.idx) {
           let [c, o] = getNodeOffset(el, start.pos)
+          // console.log(el, c, o, start);
           r.setStart(c!, o);    
         }
         if (i==end.idx) {
@@ -107,6 +111,7 @@ export function Selection() {
           r.setEnd(c!, o);
         }
         sel?.addRange(r);
+        console.log(el, r, sel);
       }
       // console.log(this.anchor, this.focus, sel);
     },
@@ -142,27 +147,36 @@ export function History(sel: any) {
   let stack_redo:Record[] = [];
   let idx = 0;
   let max = 10;
-  let composing = false;
+  let composing = false; 
+  let timer = 0;
 
-  return {
-    stack,
-    startRecord() {
-      composing = true;
-      stack_undo = [];
-      stack_redo = [];
-    },
-    endRecord() {
-      if ((!composing) || (stack_undo.length==0)) {return;}
-      if(stack_redo.length != stack_undo.length) {console.log('error')}
+  function reset() {
+    if(stack_redo.length != stack_undo.length) {console.log('error')}
 
+    if (stack_redo.length>0) {
       stack.splice(idx, max-idx, {undo: stack_undo, redo: stack_redo});
       idx++;
       if (idx==max) {
         stack.splice(0,1);
         idx--;
       }
+    }
+
+    stack_undo = [];
+    stack_redo = [];
+  }
+
+  return {
+    stack,
+    stop() {
+      if (!composing) {return}
+      reset();
     },
     add(action: Function, reverse: Function) {
+      if (!composing) {
+        composing = true;
+      }
+
       stack_redo.push({
         anchor: new Caret(sel.anchor.idx, sel.anchor.pos),
         focus: new Caret(sel.focus.idx, sel.focus.pos),
@@ -170,11 +184,12 @@ export function History(sel: any) {
       });
 
       let out = action();
+      // console.log('qua qua ', out);
 
       stack_undo.push({
         anchor: new Caret(sel.anchor.idx, sel.anchor.pos),
         focus: new Caret(sel.focus.idx, sel.focus.pos),
-        action: (out) ? ()=>{reverse(out)} : reverse,
+        action: (out!=undefined) ? ()=>{reverse(out)} : reverse,
       });
     },
     backward() {
@@ -182,7 +197,7 @@ export function History(sel: any) {
       idx--;
       console.log(idx, stack, stack[idx]);
 
-      for (const s of stack[idx].undo) {
+      for (const s of stack[idx].undo.reverse()) {
         sel.anchor.copyFrom(s.anchor);
         sel.focus.copyFrom(s.focus);
         s.action();        

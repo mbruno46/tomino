@@ -32,6 +32,16 @@ function Editor() {
       let t = lines.value.slice(start.idx, end.idx+1).join('\n');
       return t.substring(start.pos, t.length + end.pos - lines.value[end.idx].length);
     },
+    shiftCaret(c: Caret, shift: number) {
+      if (c.pos>=shift) {
+        c.pos -= shift;
+      } else {
+        c.idx--;
+        shift -= c.pos+1;
+        c.pos = lines.value[c.idx].length;
+        this.shiftCaret(c, shift);
+      }
+    },
     moveCaret(c: Caret, dir: String) {
       switch (dir) {
         case 'ArrowUp': //moveup
@@ -76,18 +86,22 @@ function Editor() {
       let ll = text.split('\n');
       let t = lines.value[c.idx].substring(c.pos);
       lines.value[c.idx] = lines.value[c.idx].substring(0,c.pos) + ll[0];
-      c.pos += ll[0].length;
       for (var i=1; i<ll.length; i++) {
         c.idx++;
         c.pos = 0;
         lines.value.splice(c.idx, 0, ll[i]);
       }
+      c.pos += ll[ll.length-1].length;
       lines.value[c.idx] += t;
     },
-    newLine(caret: Caret) {
+    newLine(caret: Caret, indent:boolean=false) {
       let t = lines.value[caret.idx].substring(caret.pos);
       lines.value[caret.idx] = lines.value[caret.idx].substring(0,caret.pos);
-      lines.value.splice(caret.idx+1, 0, t);
+      let n = lines.value[caret.idx].search(/\S|$/);
+      let m = Math.floor(n/ntabs)+(indent ? 1: 0);
+      console.log(n,m,lines.value[caret.idx]);
+      lines.value.splice(caret.idx+1, 0, " ".repeat(m*ntabs) + t);
+      return m*ntabs;
     },
     indent(start: Caret, end: Caret, dir: number) {
       forLoop(start, end, (i: number) => {
@@ -117,6 +131,8 @@ function Editor() {
   }
 }
 
+
+
 export default defineComponent({
   components: {CodeLine},
   props: {
@@ -141,37 +157,78 @@ export default defineComponent({
       if (code_editor.value) s.updateDOM(code_editor.value);
     });
 
-    function deleteSelectedText() {
+    function _deleteSelectedText() {
       let t = '';
       if (!s.anchor.isEqual(s.focus)) {
+        let [start, end] = s.getStartEnd();
+        t = editor?.deleteText(start, end);
         if (s.focusIsStart()) {
-          t = editor?.deleteText(s.focus, s.anchor);
           s.anchor.copyFrom(s.focus);
         } else {
-          t = editor?.deleteText(s.anchor, s.focus);
           s.focus.copyFrom(s.anchor);
         } 
       }
+      console.log('dddd',s);
       return t;
     }
 
+    function _insertText(text: String) {
+      if (text=="") {return}
+      editor?.insertText(s.focus, text);
+    }
+
+    function _collapse() {
+      s.anchor.copyFrom(s.focus);
+    }
+
+    function deleteSelectedText() {
+      history.add(
+        ()=>{return _deleteSelectedText()},
+        (arg:string)=>{_insertText(arg)}
+      )
+      history.stop();
+    }
+
     function deleteChar(right: boolean) {
-      if (s.anchor.isEqual(s.focus)) editor?.moveCaret(s.focus, (right) ? 'ArrowRight' : 'ArrowLeft')
-      return deleteSelectedText();
+      history.add(
+        ()=>{
+          if (s.anchor.isEqual(s.focus)) editor?.moveCaret(s.focus, (right) ? 'ArrowRight' : 'ArrowLeft')
+          return _deleteSelectedText();
+        },
+        (arg:String)=>{_insertText(arg); _collapse();}
+      )
+      history.stop();
     }
 
     function newLine() {
-      deleteSelectedText();
-      editor?.newLine(s.anchor);
-      s.anchor.idx++;
-      s.anchor.pos=0;
-      s.focus.copyFrom(s.anchor);
+      history.add(
+        ()=>{return _deleteSelectedText()},
+        (arg:string)=>{_insertText(arg)}
+      )
+      history.add(
+        ()=>{
+          let n = editor?.newLine(s.anchor); 
+          s.anchor.idx++;
+          s.anchor.pos=n;
+          s.focus.copyFrom(s.anchor);
+          return n;
+        },
+        (n:number)=>{editor?.shiftCaret(s.focus, n+1); _deleteSelectedText();},
+      )
+      history.stop();
     }
 
     function insertText(text: String) {
-      deleteSelectedText();
-      editor?.insertText(s.focus,text);
-      s.anchor.copyFrom(s.focus);
+      history.add(
+        ()=>{return _deleteSelectedText()},
+        (arg:string)=>{_insertText(arg)}
+      )
+      history.add(
+        ()=>{_insertText(text); _collapse();},
+        ()=>{editor?.shiftCaret(s.anchor, text.length); console.log(text.length); _deleteSelectedText()}
+      );
+      history.stop();
+      console.log(history);
     }
 
     function arrows(direction: String, shiftKey: boolean) {
@@ -201,38 +258,35 @@ export default defineComponent({
       if (code_editor.value) s.updateDOM(code_editor.value);
     }
 
+    function _indent(rm: boolean) {
+      let [start, end] = s.getStartEnd();
+      editor?.indent(start, end, (rm) ? -1:+1);
+    }
+
     function indent(rm: boolean) {
-      if (s.focusIsStart()) editor?.indent(s.focus, s.anchor, (rm) ? -1:+1);
-      else editor?.indent(s.anchor, s.focus, (rm) ? -1:+1);
+      history.add(()=>{_indent(rm)},()=>{_indent(!rm)})
+      history.stop();
+    }
+
+    function _comment() {
+      let [start, end] = s.getStartEnd();
+      editor?.comment(start, end);
     }
 
     function comment() {
-      if (s.focusIsStart()) editor?.comment(s.focus, s.anchor);
-      else editor?.comment(s.anchor, s.focus);
+      history.add(()=>{_comment()},()=>{_comment()});
+      history.stop();
     }
 
-    function CCP(action: string) {
-      if (action=='cut') {
-        writeText(deleteSelectedText());
-      } else if (action=='copy') {
+    async function clipboard(read: boolean): Promise<string|null> {
+      if (read) {
+        const text = await readText();
+        return text;
+      } else {
         let [start, end] = s.getStartEnd();
         writeText(editor.selectedText(start, end));
-      } else if (action=='paste') {
-        readText().then((data)=>{
-          if (data) {
-            deleteSelectedText();
-            editor?.insertText(s.focus, data);
-          }
-        });
       }
-    }
-
-    function handleMouseUp(event: MouseEvent) {
-      s.getFromDOM();
-    }
-
-    function saveToDisk() {
-      if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
+      return null;      
     }
 
     return {
@@ -241,35 +295,40 @@ export default defineComponent({
       newLine,
       insertText,
       deleteChar,
+      deleteSelectedText,
       arrows,
       indent,
       comment,
-      handleMouseUp,
-      saveToDisk,
-      history,
-      CCP,
+      clipboard,
+      undo() {history.backward();},
+      redo() {history.forward();},
+      handleMouseUp(event: MouseEvent) {s.getFromDOM();},
+      saveToDisk() {
+        if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
+      }
     }
   },
   methods: {
     handleKeyBoard: function(event: KeyboardEvent) {
-      this.history.startRecord();
-
       if ((event.ctrlKey || event.metaKey)) {
         switch (event.key) {
           case 'x':
-            this.history.add(()=>{return this.CCP('cut')}, (arg:string)=>{this.insertText(arg)});
+            this.clipboard(false);
+            this.deleteSelectedText();
             break;
           case 'c':
-            this.CCP('copy');
+            this.clipboard(false);
             break;
           case 'v':
-            this.history.add(()=>{return this.CCP('paste')}, ()=>{this.CCP('cut')});
+            this.clipboard(true).then((t) => {
+              if (t) this.insertText(t);
+            });
             break;
           case 'z':
-            (event.shiftKey) ? this.history.forward() : this.history.backward();
+            (event.shiftKey) ? this.redo() : this.undo();
             break;
           case '/':
-            this.history.add(this.comment, this.comment);
+            this.comment();
             break;
           case 's':
             this.saveToDisk();
@@ -278,7 +337,8 @@ export default defineComponent({
       }
       else {
         if (event.key.length==1) {
-          this.history.add(()=>{this.insertText(event.key)}, ()=>{this.deleteChar(false)})
+          if (event.key=='o') this.insertText('AA\nBB');
+          else this.insertText(event.key);
         } else {
           switch (event.key) {
             case 'ArrowUp':
@@ -288,25 +348,24 @@ export default defineComponent({
               this.arrows(event.key, event.shiftKey);
               break;
             case 'WhiteSpace':
-              this.history.add(()=>{this.insertText(" ")}, ()=>{this.deleteChar(false)});
+              this.insertText(" ");
               break;
             case 'Tab':
-              this.history.add(()=>{this.indent(event.shiftKey)}, ()=>{this.indent(!event.shiftKey)});
+              this.indent(event.shiftKey);
               break;
             case 'Enter':
-              this.history.add(this.newLine, ()=>{this.deleteChar(false)});
+              this.newLine();
               break;
             case 'Backspace':
-              this.history.add(()=>{return this.deleteChar(false)}, (arg:string)=>{this.insertText(arg)});
+              this.deleteChar(false);
               break;
             case 'Delete':
-              this.history.add(()=>{return this.deleteChar(true)}, (arg:string)=>{this.insertText(arg)});
+              this.deleteChar(true);
               break;
           }
         }
       }
 
-      this.history.endRecord();
       event.preventDefault();
     }
   }
@@ -318,7 +377,7 @@ export default defineComponent({
   font-family: 'Source Code Pro', monospace;
   display: flex;
   flex-direction: column;
-  height: calc(100% - 2rem);
+  height: calc(100% - 4rem);
   overflow-y: scroll;
   background: var(--background-light);
   padding-top: 1rem;
