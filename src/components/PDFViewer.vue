@@ -16,8 +16,8 @@ import store from '@/helpers/Store';
 export default defineComponent({
   setup() {
     let pages: pdfjsLib.PDFPageProxy[] = [];
-    const scale = ref(4);
-    var viewport = {aspect_ratio: 1, original_width: 1, zoom: 1};
+    let scale = 4;
+    var viewport = {aspect_ratio: 1, original_width: 10000, zoom: 1};
 
     const numpages = ref(0);
     const width = ref(0);
@@ -44,9 +44,9 @@ export default defineComponent({
       pdfviewer.value.scrollTop *= viewport.zoom / old_zoom;
       pdfviewer.value.scrollLeft *= viewport.zoom / old_zoom;
 
-      if (viewport.zoom<2) scale.value = 4;
-      else if (viewport.zoom>2 && viewport.zoom<4) scale.value = 8;
-      else if (viewport.zoom>4) scale.value = 12;
+      if (viewport.zoom<2) scale = 4;
+      else if (viewport.zoom>2 && viewport.zoom<4) scale = 8;
+      else if (viewport.zoom>4) scale = 12;
     };
 
     function load(cwd: string, name: string, callback: Function=()=>{}) {
@@ -61,7 +61,7 @@ export default defineComponent({
           for (let i = 0; i < pdfDoc.numPages; i++) {
             pdfDoc.getPage(i+1).then((page: pdfjsLib.PDFPageProxy) => {
                 pages.push(page);
-                renderPage(page, scale.value);
+                renderPage(page, scale);
                 callback();
             });
           }
@@ -92,7 +92,7 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      // load(store.pdf.value.cwd, store.pdf.value.main, ()=>zoom('fitH'));
+      zoom('fitH');
 
       watchEffect(()=>{
         let pdf = store.pdf.value;

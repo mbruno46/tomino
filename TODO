@@ -1,5 +1,6 @@
  - autocomplete
- - main.tex detection
  - open/create project menu
  - selection multiline problem with addRange not supported
- - parsin tex files for suggestions
+ - context menu browser (setmain|preview|delete)
+ - new-file function in browser
+ - synctex

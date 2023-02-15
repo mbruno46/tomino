@@ -1,7 +1,7 @@
 <template>
   <div class="nav-label">
     <iconify :tag="(icon!='') ? icon : name"></iconify>
-    <span>{{ name }}</span>
+    <span :class="(ismain) ? 'main' : ''">{{ name }}</span>
   </div>
 </template>
 
@@ -13,7 +13,8 @@ export default defineComponent({
   components: { Iconify },
   props: {
     name: String,
-    icon: {type: String, default: ''}
+    icon: {type: String, default: ''},
+    ismain: Boolean,
   },
   // setup() {    
   // },
@@ -36,5 +37,9 @@ export default defineComponent({
   align-items: center;
   padding-left: 0.4rem;
   padding-right: 0.4rem;
+}
+
+.main {
+  text-decoration: underline;
 }
 </style>

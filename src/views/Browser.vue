@@ -1,7 +1,11 @@
 <template>
   <div class="browser">
     <div class="upperbar">
-      <div style="width: min-content" class="padding">Browser</div>
+      <span>Browser</span>
+      <div class="buttons right">
+        <icon-button :tag="'add-file'"></icon-button>
+        <icon-button :tag="'add-folder'"></icon-button>
+      </div>
     </div>
     <div class="filebrowser">
       <nav-folder v-if="filetree" :ftree="filetree"></nav-folder>
@@ -10,34 +14,50 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, ref } from 'vue'
-import { readDir } from '@tauri-apps/api/fs';
+import { defineComponent, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { readDir, exists } from '@tauri-apps/api/fs';
 import { open } from '@tauri-apps/api/dialog';
+import { listen } from '@tauri-apps/api/event';
 
 import NavFolder from '@/components/NavFolder.vue';
+import IconButton from '@/components/IconButton.vue';
 import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
+import database from '@/helpers/LatexData';
+
+const folder = ref('');
+const unlisten = await listen('openfolder', ()=>{
+  open({directory: true, multiple: false, recursive: true}).then((dir) => {
+    if ((dir!=null) && !Array.isArray(dir)) {
+      folder.value = dir;
+    }
+  });
+});
 
 export default defineComponent({
   components: {
-    NavFolder,
+    NavFolder, IconButton,
   },
   setup() {
     const filetree = ref<FileTree>();
 
-    onBeforeMount(() => {
-      open({directory: true, multiple: false, recursive: true}).then((folder) => {
-        if ((folder!=null) && !Array.isArray(folder)) {
+    function openProject(folder: string) {
+      exists(folder).then((yes)=>{
+        if (yes) {
           const base = folder.substring(folder.lastIndexOf('/')+1);
-          console.log(base, folder);
           readDir(folder, {recursive: true}).then((entries) => {
             filetree.value = new FileTree(folder, base, entries);
+            database.importFromFileTree(filetree.value);
             store.pdf.value.cwd = folder;
-            store.pdf.value.main = 'main';
           });
         }
-      });
-    });
+      })
+    }
+
+    onMounted(()=>{
+      watchEffect(()=>{if (folder.value!='') openProject(folder.value);})
+    })
+    onUnmounted(()=>{unlisten();});
 
     return {
       filetree,
@@ -53,14 +73,24 @@ export default defineComponent({
   overflow: scroll;
 }
 
+.buttons {
+  display: none;
+}
+.browser:hover > .upperbar .buttons{
+  display: block;
+}
+
 .upperbar {
   width: 100%;
-  height: 2rem;
+  height: 3rem;
+  box-shadow: 0px 4px 6px 2px var(--background-dark);
+  display: grid;
+  grid-template-columns: 1fr max-content;
 }
 
 .filebrowser {
   color: var(--foreground);
-  height: max-content;
+  overflow-y: scroll;
 }
 
 .right {

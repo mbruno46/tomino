@@ -31,9 +31,11 @@ function _editor() {
     closeFile(name: string) {
       if (name in files) delete files[name];
       if (selected==name) {
-        selected = Object.keys(files)[0];
+        if (Object.keys(files)[0]) {
+          selected = Object.keys(files)[0];
+          files[selected].open =true;
+        }
       }
-      if (files.length>0) files[selected].open =true;
     }
   }
 }

@@ -20,7 +20,7 @@ import { Command } from '@tauri-apps/api/shell';
 export async function compile(cwd: string, name: string, callback: Function) {
   const output = await new Command('latexmk', ['-pdf', '-silent', name], {cwd: cwd}).execute();
   if (output.code==0) {
-    console.log(output.stdout);
+    console.log('compiled ', output.stdout);
     callback();
   } else {
     console.log(output.stderr);
@@ -39,7 +39,7 @@ export default defineComponent({
       watchEffect(() => {
         let pdf = store.pdf.value;
         if (pdf.compile) {
-          compile(pdf.cwd,pdf.main, ()=>{pdf.refresh=true})
+          compile(pdf.cwd, pdf.main, ()=>{pdf.refresh=true})
         }
       });
     });
@@ -57,12 +57,11 @@ export default defineComponent({
   height: 100vh;
   width: 100%;
   display: grid;
-  grid-template-rows: fit-content 1fr;
+  grid-template-rows: min-content 1fr;
 }
 
 .toolbar {
   text-align: center;
-  /* border-bottom: 2px solid black; */
-  /* box-shadow: 0px 15px 10px -15px #111; */
+  box-shadow: 0px 4px 6px 2px var(--background-dark);
 }
 </style>

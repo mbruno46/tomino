@@ -31,7 +31,7 @@ export default defineComponent({
   border: none;
   text-decoration:none;
   outline: none;
-  display: inline-block;
+  display: -webkit-inline-flex;
   align-items: center;
   margin: 0rem;
   padding: 0.5rem;

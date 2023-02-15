@@ -3,13 +3,14 @@
     :icon="(expand) ? 'down' : 'right'" :name="ftree?.name"></nav-label>
   <div class="nav-folder" :class="(expand) ? '' : 'nested'">
     <nav-folder v-for="sf in ftree?.subfolders" :key="sf.path" :ftree="sf">{{ sf.name }}</nav-folder>
-    <nav-label v-for="f in ftree?.files" :key="f.path" :name="f.name" @click="openFile(f.path, f.name)">
+    <nav-label v-for="f in ftree?.files" :key="f.path" :name="f.name" 
+      @click="openFile(f.path, f.name)" :ismain="f.name==main">
     </nav-label>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 import type { PropType } from 'vue'
 import NavLabel from './NavLabel.vue';
 import type { FileTree } from '@/helpers/FileTree';
@@ -26,8 +27,10 @@ export default defineComponent({
   },
   setup() {
     const expand = ref(true);
+    const main = computed(()=>store.pdf.value.main+'.tex');
     return {
       expand,
+      main
     }
   },
   methods:{

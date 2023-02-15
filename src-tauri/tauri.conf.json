@@ -14,7 +14,6 @@
     "allowlist": {
       "all": false,
       "fs": {
-        "scope": ["/Users/mbruno/Physics/ToM/dummy/","/Users/mbruno/Physics/ToM/dummy/*"],
         "all": false,
         "readFile": true,
         "writeFile": true,
@@ -30,7 +29,7 @@
         "all": false,
         "ask": false,
         "confirm": false,
-        "message": false,
+        "message": true,
         "open": true,
         "save": false
       },
@@ -96,7 +95,8 @@
         "height": 600,
         "resizable": true,
         "title": "tomino",
-        "width": 800
+        "width": 1000,
+        "minWidth": 1000
       }
     ]
   }

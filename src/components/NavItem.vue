@@ -3,7 +3,7 @@
     <span>
       <iconify :tag="icon"></iconify>
     </span>
-    <span>
+    <span class="isMain">
       <slot></slot>
     </span>
   </div>
@@ -36,5 +36,9 @@ export default defineComponent({
 
 .nav-item:hover {
   background-color: var(--background-light);
+}
+
+.nav-item .ismain {
+  color: red;
 }
 </style>
