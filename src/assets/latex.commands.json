@@ -1,0 +1,20 @@
+[
+  "\\begin{}",
+  "\\end{}",
+  "\\documentclass",
+  "\\usepackage{}",
+  "\\usepackage[]{}",
+  "\\author{}",
+  "\\title{}",
+  "\\date{}",
+  "\\today",
+  "\\maketitle",
+  "\\tableofcontents",
+  "\\chapter{}",
+  "\\section{}",
+  "\\subsection{}",
+  "\\subsubsection{}",
+  "\\paragraph",
+  "\\newline",
+  "\\clearpage"
+]

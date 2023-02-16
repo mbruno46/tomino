@@ -31,10 +31,11 @@ export default defineComponent({
 <style scoped>
 .editor {
   height: 100%;
-  width: 100%;
   overflow: hidden;
   background: var(--background-light);
   position: relative;
+  /* min-width: 1rem; */
+  /* resize: horizontal; */
 }
 
 .tabbar {

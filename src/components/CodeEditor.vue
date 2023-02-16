@@ -1,7 +1,8 @@
 <template>
-  <div ref="code_editor" class="code-editor" @keydown="handleKeyBoard" @mouseup="handleMouseUp">
+  <div ref="code_editor" class="code-editor" @keydown="handleKeyBoard" @mouseup="handleMouseUp" contenteditable="true">
     <code-line v-for="(val, index) in lines" 
       :key="val" :text="val" :index="index"></code-line>
+    <auto-complete ref="autocomplete" :input="input"></auto-complete>
   </div>
 </template>
 
@@ -12,6 +13,9 @@ import type { Ref } from 'vue'
 import { History, Selection, Caret } from '@/helpers/EditorTools';
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 import { writeText, readText } from '@tauri-apps/api/clipboard';
+
+import AutoComplete from './AutoComplete.vue';
+import { Suggestions } from '@/helpers/AutoComplete';
 
 const ntabs = 4;
 
@@ -31,6 +35,9 @@ function Editor() {
     selectedText(start: Caret, end: Caret) {
       let t = lines.value.slice(start.idx, end.idx+1).join('\n');
       return t.substring(start.pos, t.length + end.pos - lines.value[end.idx].length);
+    },
+    textBeforeCaret(c: Caret) {
+      return lines.value[c.idx].substring(0,c.pos);
     },
     shiftCaret(c: Caret, shift: number) {
       if (c.pos>=shift) {
@@ -134,7 +141,9 @@ function Editor() {
 
 
 export default defineComponent({
-  components: {CodeLine},
+  components: {
+    CodeLine, AutoComplete,
+  },
   props: {
     path: String,
   },
@@ -144,6 +153,8 @@ export default defineComponent({
     const s = Selection();
     const lines: Ref<string[]> = editor.lines;
     const history = History(s);
+    const input = ref('');
+    const autocomplete = ref<typeof AutoComplete|null>(null);
 
     onMounted(() => {
       if (props.path) {
@@ -225,10 +236,9 @@ export default defineComponent({
       )
       history.add(
         ()=>{_insertText(text); _collapse();},
-        ()=>{editor?.shiftCaret(s.anchor, text.length); console.log(text.length); _deleteSelectedText()}
+        ()=>{editor?.shiftCaret(s.anchor, text.length); _deleteSelectedText()}
       );
       history.stop();
-      console.log(history);
     }
 
     function arrows(direction: String, shiftKey: boolean) {
@@ -287,11 +297,14 @@ export default defineComponent({
         writeText(editor.selectedText(start, end));
       }
       return null;      
-    }
+    } 
+
 
     return {
       code_editor,
       lines,
+      input,
+      autocomplete,
       newLine,
       insertText,
       deleteChar,
@@ -302,14 +315,27 @@ export default defineComponent({
       clipboard,
       undo() {history.backward();},
       redo() {history.forward();},
-      handleMouseUp(event: MouseEvent) {s.getFromDOM();},
+      handleMouseUp(event: MouseEvent) {
+        if (!(autocomplete?.value?.isActive())) s.getFromDOM();
+      },
       saveToDisk() {
         if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
+      },
+      textBeforeCaret() {
+        return (editor) ? editor.textBeforeCaret(s.focus) : '';
+      },
+      autoComplete(word: String) {
+        insertText(word);
+        let n = word.replace(/\\?\w+/,'').length;
+        if (n>0) {
+          editor?.shiftCaret(s.focus, n-1);
+          _collapse();
+        }
       }
     }
   },
   methods: {
-    handleKeyBoard: function(event: KeyboardEvent) {
+    handleKeyBoard: async function(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey)) {
         switch (event.key) {
           case 'x':
@@ -337,12 +363,14 @@ export default defineComponent({
       }
       else {
         if (event.key.length==1) {
-          if (event.key=='o') this.insertText('AA\nBB');
-          else this.insertText(event.key);
+          this.insertText(event.key);
         } else {
           switch (event.key) {
             case 'ArrowUp':
             case 'ArrowDown':
+              if (this.autocomplete?.isActive()) this.autocomplete?.updown(event.key);
+              else this.arrows(event.key, event.shiftKey);
+              break;
             case 'ArrowLeft':
             case 'ArrowRight':
               this.arrows(event.key, event.shiftKey);
@@ -354,7 +382,8 @@ export default defineComponent({
               this.indent(event.shiftKey);
               break;
             case 'Enter':
-              this.newLine();
+              if (this.autocomplete?.isActive()) this.autoComplete(this.autocomplete?.choose());
+              else this.newLine();
               break;
             case 'Backspace':
               this.deleteChar(false);
@@ -367,6 +396,10 @@ export default defineComponent({
       }
 
       event.preventDefault();
+
+      // wait for DOM to update
+      await this.$nextTick();
+      this.input = this.textBeforeCaret();
     }
   }
 })

@@ -83,7 +83,8 @@ export default defineComponent({
 .upperbar {
   width: 100%;
   height: 3rem;
-  box-shadow: 0px 4px 6px 2px var(--background-dark);
+  /* box-shadow: 0px 4px 6px 2px var(--background-dark); */
+  box-shadow: 0px 10px 8px -8px var(--background-dark);
   display: grid;
   grid-template-columns: 1fr max-content;
 }

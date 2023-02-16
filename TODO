@@ -1,6 +1,10 @@
- - autocomplete
- - open/create project menu
- - selection multiline problem with addRange not supported
+ - autocomplete: envs, cite, refs, input, \def\newcommand
+ - resizable editor
+ - lower bar
+ - find/replace
+ - syntax helpers for unclosed {}
+ - display error instead of pdf
+ - create project menu
  - context menu browser (setmain|preview|delete)
  - new-file function in browser
  - synctex

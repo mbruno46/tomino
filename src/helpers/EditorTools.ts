@@ -88,32 +88,49 @@ export function Selection() {
       if (this.anchor.isGreater(this.focus)) return [this.focus, this.anchor];
       return [this.anchor, this.focus];
     },
+    getRange(parent: HTMLElement) {
+      let r = document.createRange();
+      let el: Element, c: Node|null, o: number;
+      let [start, end] = this.getStartEnd();
+
+      el = parent.querySelector(`[linenumber="${start.idx}"]`)!;
+      [c, o] = getNodeOffset(el, start.pos);
+      console.log(start, c, o, el);
+      r.setStart(c!, o);
+
+      el = parent.querySelector(`[linenumber="${end.idx}"]`)!;
+      [c, o] = getNodeOffset(el, end.pos);
+      r.setEnd(c!, o);    
+
+      return r;
+    },
     updateDOM(parent: HTMLElement) {
       let el = parent.querySelector(`[linenumber="${this.focus.idx}"]`);
       el?.scrollIntoView({behavior: 'auto', block: 'nearest', inline: 'nearest'});
 
       var sel = document.getSelection();
       sel?.removeAllRanges();
-      let [start, end] = this.getStartEnd();
+      sel?.addRange(this.getRange(parent));
+      // let [start, end] = this.getStartEnd();
 
-      for (var i=start.idx; i<=end.idx; i++) {
-        let el = parent.querySelector(`[linenumber="${i}"]`) as Node;
-        let r = document.createRange();
-        r.selectNodeContents(el);
+      // let r = document.createRange();
+      // for (var i=start.idx; i<=end.idx; i++) {
+      //   let el = parent.querySelector(`[linenumber="${i}"]`) as Node;
+      //   // r.selectNodeContents(el);
 
-        if (i==start.idx) {
-          let [c, o] = getNodeOffset(el, start.pos)
-          // console.log(el, c, o, start);
-          r.setStart(c!, o);    
-        }
-        if (i==end.idx) {
-          let [c, o] = getNodeOffset(el, end.pos)
-          r.setEnd(c!, o);
-        }
-        sel?.addRange(r);
-        console.log(el, r, sel);
-      }
-      // console.log(this.anchor, this.focus, sel);
+      //   if (i==start.idx) {
+      //     let [c, o] = getNodeOffset(el, start.pos)
+      //     // console.log(el, c, o, start);
+      //     r.setStart(c!, o);    
+      //   }
+      //   if (i==end.idx) {
+      //     let [c, o] = getNodeOffset(el, end.pos)
+      //     r.setEnd(c!, o);
+      //   }
+      // }
+      // sel?.addRange(r);
+      // console.log(el, r, sel);
+    // console.log(this.anchor, this.focus, sel);
     },
     getFromDOM() {
       var s = document.getSelection();
@@ -126,7 +143,7 @@ export function Selection() {
         this.focus.idx = idx;
         this.focus.pos = getLength(el, s.focusNode, s.focusOffset);
       }
-    }
+    },
   }
 }
 

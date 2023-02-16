@@ -55,13 +55,13 @@ export default defineComponent({
 .viewer {
   background-color: var(--background);
   height: 100vh;
-  width: 100%;
   display: grid;
-  grid-template-rows: min-content 1fr;
+  grid-template-rows: auto 1fr;
 }
 
 .toolbar {
   text-align: center;
-  box-shadow: 0px 4px 6px 2px var(--background-dark);
+  box-shadow: 0px 10px 8px -8px var(--background-dark);
+  position: relative;
 }
 </style>
