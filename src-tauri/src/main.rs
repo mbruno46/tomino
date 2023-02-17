@@ -28,7 +28,13 @@ pub fn create_menu() -> Menu {
   }
 
   let mut file_menu = Menu::new();
-  file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project..."));
+  file_menu = file_menu.add_item(CustomMenuItem::new("newfile".to_string(), "New File").accelerator("cmdOrControl+N"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("newproject".to_string(), "New Project..."));
+  file_menu = file_menu.add_native_item(MenuItem::Separator);
+  file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project...").accelerator("cmdOrControl+O"));
+  file_menu = file_menu.add_native_item(MenuItem::Separator);
+  // file_menu = file_menu.add_item(CustomMenuItem::new("save".to_string(), "Save").accelerator("cmdOrControl+S"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("recompile".to_string(), "Recompile").accelerator("cmdOrControl+R"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_native_item(MenuItem::CloseWindow);
   #[cfg(not(target_os = "macos"))]
@@ -76,6 +82,10 @@ fn main() {
         "openfolder" => {
           let window = event.window();
           window.emit_all("openfolder", {}).unwrap();
+        }
+        "recompile" => {
+          let window = event.window();
+          window.emit_all("recompile", {}).unwrap();
         }
         _ => {}
       }

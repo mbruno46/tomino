@@ -1,7 +1,8 @@
 [
   "\\begin{}",
   "\\end{}",
-  "\\documentclass",
+  "\\documentclass{}",
+  "\\documentclass[]{}",
   "\\usepackage{}",
   "\\usepackage[]{}",
   "\\author{}",
@@ -16,5 +17,20 @@
   "\\subsubsection{}",
   "\\paragraph",
   "\\newline",
-  "\\clearpage"
+  "\\clearpage",
+  "\\input{}",
+  "\\include{}",
+  "\\item",
+  "\\label{}",
+  "\\ref{}",
+  "\\pageref",
+  "\\footnote{}",
+  "\\bibliography{}",
+  "\\bibliographystyle{}",
+  "\\bibitem{}",
+  "\\bibitem[]{}",
+  "\\cite{}",
+  "\\includegraphics{}",
+  "\\includegraphics[]{}",
+  "\\caption{}"
 ]

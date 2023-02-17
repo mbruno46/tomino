@@ -7,12 +7,17 @@ const rbib = RegExp(/@\w+{(.*),/);
 const rbibg = RegExp(/@\w+{(.*),/g);
 const rtex = RegExp(/\\label{(.*)}/);
 const rtexg = RegExp(/\\label{(.*)}/g);
+const rnewcmd = RegExp(/\\newcommand{(.*)}(\[.*\])?{.*}/);
+const rnewcmdg = RegExp(/\\newcommand{(.*)}(\[.*\])?{.*}/g);
+const rdef = RegExp(/\\def(\s?\\\w+)/);
+const rdefg = RegExp(/\\def(\s?\\\w+)/g);
 
 function LatexData() {
   let cwd: String;
-  let texfiles: {[key:string]: {included:false, labels:String[]}};
-  let bibfiles: {[key:string]: {included:false, refs:String[]}};
+  let texfiles: {[key:string]: {included:boolean, labels:String[], newcmds: String[]}};
+  let bibfiles: {[key:string]: {included:boolean, refs:String[]}};
   let figures:String[];
+  let maintex = '';
 
   function isMain(text: String) {
     return text.match(/^\\documentclass/g);
@@ -38,7 +43,7 @@ function LatexData() {
     var name = path.substring(cwd.length+1);
     if (ext=='tex') {
       if (!(name in texfiles)) {
-        texfiles[name] = {included: false, labels: []};
+        texfiles[name] = {included: false, labels: [], newcmds: []};
       }
     } else if (ext=='bib') {
       if (!(name in bibfiles)) {
@@ -47,6 +52,39 @@ function LatexData() {
     } else if (['pdf','jpg','png','jpeg','eps'].includes(ext)) {
       figures.push(name);
     }
+  }
+
+  async function parseMain() {
+    let content = await readTextFile(`${cwd}/${maintex}`);
+    let mm = content.match(/\\bibliography{.*}/g);
+    if (mm) {
+      for (const m of mm) {
+        let fname = m.replace(/\\bibliography{(.*)}/,'$1').replace(/(.*)(.bib)?/,'$1.bib');
+        if (fname in bibfiles) {
+          bibfiles[fname].included = true;
+        }
+      }
+    }
+
+    mm = content.match(/\\input{.*}/g);
+    if (mm) {
+      for (const m of mm) {
+        let fname = m.replace(/\\input{(.*)}/,'$1').replace(/(.*)(.tex)?/,'$1.tex');
+        if (fname in bibfiles) {
+          texfiles[fname].included = true;
+        }
+      }
+    }
+
+    mm = content.match(/\\include{.*}/g);
+    if (mm) {
+      for (const m of mm) {
+        let fname = m.replace(/\\include{(.*)}/,'$1').replace(/(.*)(.tex)?/,'$1.tex');
+        if (fname in bibfiles) {
+          texfiles[fname].included = true;
+        }
+      }
+    } 
   }
 
   return {
@@ -63,26 +101,55 @@ function LatexData() {
           parser(bibfiles[f].refs, content, rbibg, rbib);
         })
       }
-      for (const f in texfiles) {
-        readTextFile(`${cwd}/${f}`).then((content) => {
-          parser(texfiles[f].labels, content, rtexg, rtex);
-          if (isMain(content)) {
-            if (store.pdf.value.main=='') {
-              store.pdf.value.main = f.substring(0,f.lastIndexOf('.'));
-              // store.pdf.value.compile = true;
-            }
-            else message(`Multiple main files detected: ${f}`);
-          }
-        });
-      }
+      for (const f in texfiles) this.parseTex(`${cwd}/${f}`);
+    },
+    setMain(fname: string) {
+      store.pdf.value.main = fname.substring(0,fname.lastIndexOf('.'));
+      maintex = fname;
+      for (const key in texfiles) texfiles[key].included = false;
+      texfiles[fname].included = true;
+      parseMain();
+      // store.pdf.value.compile = true;
     },
     parseTex(path: string) {
       var key = path.substring(cwd.length+1);
       texfiles[key].labels = [];
+      texfiles[key].newcmds = [];
       readTextFile(`${cwd}/${key}`).then((content) => {
         parser(texfiles[key].labels, content, rtexg, rtex);
+        parser(texfiles[key].newcmds, content, rnewcmdg, rnewcmd);
+        parser(texfiles[key].newcmds, content, rdefg, rdef);
+        
+        for (const l of content.split('\n')) {
+          if (l.match(/\s*\\documentclass/)) {
+            if (store.pdf.value.main=='') this.setMain(key);
+            else message(`Multiple main files detected: ${key}`);
+          } 
+        }
       });
-    }
+    },
+    getLabels() {
+      let out = <String[]>[];
+      for (const key in texfiles) {
+        if (texfiles[key].included) out = out.concat(texfiles[key].labels);
+      }
+      return out;
+    },
+    getNewCommands() {
+      let out = <String[]>[];
+      for (const key in texfiles) {
+        if (texfiles[key].included) out = out.concat(texfiles[key].newcmds);
+      }
+      return out;
+    },
+    getCites() {
+      let out = <String[]>[];
+      for (const key in bibfiles) {
+        if (bibfiles[key].included) out = out.concat(bibfiles[key].refs);
+      }
+      return out;      
+    },
+    getFigures() {return figures;}
   }
 }
 

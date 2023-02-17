@@ -70,7 +70,8 @@ export default defineComponent({
 .browser {
   display: grid; 
   grid-template-rows: auto 1fr;
-  overflow: scroll;
+  height: 100%;
+  overflow: hidden;
 }
 
 .buttons {
@@ -91,7 +92,7 @@ export default defineComponent({
 
 .filebrowser {
   color: var(--foreground);
-  overflow-y: scroll;
+  overflow: scroll;
 }
 
 .right {

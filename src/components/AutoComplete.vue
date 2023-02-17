@@ -8,31 +8,46 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, type StyleValue, watchEffect } from 'vue'
 import cmds from '@/assets/latex.commands.json';
+import envs from '@/assets/latex.environments.json';
+import database from '@/helpers/LatexData';
 
 const rcmds = RegExp(/^.*(\\\w+)$/);
-// const rargs = RegExp(/^.*(\\\w+)(?:\[.*\])?{([^}]*)$/);
+const rargs = RegExp(/^.*(\\\w+)(?:\[.*\])?{([^}]*)$/);
 
 function _filter(list: String[], word: string) {
   return list.filter(e => e.replace(/\[?\]?{}/g,'').slice(0,-1).substring(0,word.length)==word)
 }
 
-
 export function Suggestions(text: string): {word: String, suggestions: String[]} {
   if (text.match(rcmds)) {
     let w = text.match(rcmds)![1];
-    return {word: w, suggestions: _filter(cmds, w)}
+    return {word: w, suggestions: _filter(database.getNewCommands().concat(cmds), w)}
   }
-    
-  // let m = text.match(rargs);
-  // if (m==undefined) {return []}
+  
+  let m = text.match(rargs);
+  console.log(text, text.match(rargs))
+  let out = {word:'', suggestions: <String[]>[]};
+  if (m) {
+    let c = m[1];
+    let w = m[2];
+    switch (c) {
+      case '\\begin':
+      case '\\end':
+        out = {word: w, suggestions: _filter(envs, w)};
+        break;
+      case '\\cite':
+        out = {word: w, suggestions: _filter(database.getCites(), w)};
+        break;
+      case '\\includegraphics':
+        out = {word: w, suggestions: _filter(database.getFigures(), w)};
+        break;
+      default: //includes \ref{}
+        out = {word: w, suggestions: _filter(database.getLabels(), w)};
+        break;
+    }
+  }
 
-  // switch (m[1]) {
-  //   case '\\begin':
-  //   case '\\end':
-  //     return _filter(envs, m[2]);
-  // }
-
-  return {word:'', suggestions: []};
+  return out;
 }
 
 let word: String;

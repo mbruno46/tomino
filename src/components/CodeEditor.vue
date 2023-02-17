@@ -320,13 +320,14 @@ export default defineComponent({
       },
       saveToDisk() {
         if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
+        console.log('saving')
       },
       textBeforeCaret() {
         return (editor) ? editor.textBeforeCaret(s.focus) : '';
       },
       autoComplete(word: String) {
         insertText(word);
-        let n = word.replace(/\\?\w+/,'').length;
+        let n = (word.match(/\[\]{}|{}/g) ?? [[]])[0].length;
         if (n>0) {
           editor?.shiftCaret(s.focus, n-1);
           _collapse();

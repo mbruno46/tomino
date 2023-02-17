@@ -1,10 +1,18 @@
- - autocomplete: envs, cite, refs, input, \def\newcommand
- - resizable editor
- - lower bar
- - find/replace
- - syntax helpers for unclosed {}
- - display error instead of pdf
- - create project menu
- - context menu browser (setmain|preview|delete)
- - new-file function in browser
- - synctex
+ - Globa:
+  - resizable editor
+  - lower bar
+ - Editor:
+  - find/replace
+  - syntax helpers for unclosed {}
+ - Browser:
+   - context menu (setmain|preview|delete)
+ - Viewer:
+   - improve error message of failed latex compilation fails
+   - synctex
+ - Footer:
+   - ..
+ - Menu.File:
+   - new-file cmd+N + button in browser + implement it
+   - new-project item in File menu
+ - Menu.Edit:
+   - shortcuts for undo/redo/cut.. + link them to do something

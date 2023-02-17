@@ -37,7 +37,7 @@ export default defineComponent({
 .toolbar {
   display: flex;
   flex-flow: column;
-  height: 100vh;
+  height: 100%;
   background-color: var(--background-dark);
 }
 
