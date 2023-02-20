@@ -49,7 +49,7 @@ export default defineComponent({
       else if (viewport.zoom>4) scale = 12;
     };
 
-    function load(cwd: string, name: string, callback: Function=()=>{}) {
+    function load(cwd: string, name: string) {
       let fname = `${cwd}/${name}.pdf`;
       if (!exists(fname)) {return;}
       
@@ -60,9 +60,8 @@ export default defineComponent({
           pages = [];
           for (let i = 0; i < pdfDoc.numPages; i++) {
             pdfDoc.getPage(i+1).then((page: pdfjsLib.PDFPageProxy) => {
-                pages.push(page);
-                renderPage(page, scale);
-                callback();
+              pages.push(page);
+              renderPage(page, scale);
             });
           }
         });

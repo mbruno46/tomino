@@ -1,11 +1,12 @@
 <template>
   <div class="editor">
     <div class="tabbar">
-      <tab-label v-for="(val, key) in files" :key="key" :open="val.open" :name="key.toString()">
+      <tab-label v-for="(val, key) in files" :key="key" 
+        :open="val.open" :modified="val.modified" :name="key.toString()">
       </tab-label>
     </div>
     <code-editor v-for="(val, key) in files" :path="val.path"
-      :key="`code_${key}`" :class="val.open ? '': 'hide'"> -->
+      :key="`code_${key}`" :class="val.open ? '': 'hide'" @status="(n)=>{getStatus(key.toString(),n);}"> -->
     </code-editor>
   </div>
 </template>
@@ -23,6 +24,10 @@ export default defineComponent({
 
     return {
       files,
+      getStatus(name: string, status: number) {
+        if (status==1) {files.value[name].modified = true}
+        else if (status==2) {files.value[name].modified = false}
+      }
     }
   },
 });
@@ -34,7 +39,7 @@ export default defineComponent({
   overflow: hidden;
   background: var(--background-light);
   position: relative;
-  /* min-width: 1rem; */
+  /* min-width: 8rem; */
   /* resize: horizontal; */
 }
 

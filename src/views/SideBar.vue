@@ -27,7 +27,7 @@ export default defineComponent({
       this.browser_visible = !this.browser_visible;
     },
     recompile() {
-      store.pdf.value.compile = true;
+      store.pdf.value.compile = 2;
     }
   }
 })

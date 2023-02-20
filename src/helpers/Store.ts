@@ -24,6 +24,7 @@ function _editor() {
         files[name] = {
           path: path,
           open: true,
+          modified: false,
         }
       }
       focusFile(name);
@@ -36,7 +37,7 @@ function _editor() {
           files[selected].open =true;
         }
       }
-    }
+    },
   }
 }
 
@@ -45,8 +46,9 @@ var Editor = _editor();
 const pdf = ref({
   cwd: '',
   main: '',
-  compile: false,
+  compile: 0,
   refresh: false,
+  loader: false,
 });
 
 export default {

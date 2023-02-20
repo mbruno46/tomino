@@ -1,13 +1,12 @@
 <template>
-  <div class="tab" :class="open ? 'open' : ''">
+  <div class="tab" :class="(open ? 'open' : '') + ' ' + (modified ? 'modified' : '')">
     <nav-label @click="focus(name)" :name="name"></nav-label>
     <icon-button @click="close(name)" :tag="'close'" :fontsize="1.2"></icon-button>
   </div>
 </template>
-
+<!-- :class="open ? 'open' : ''"  -->
 <script lang="ts">
 import { defineComponent } from 'vue'
-import Iconify from './Iconify.vue';
 import NavLabel from './NavLabel.vue';
 import store from '@/helpers/Store'
 import IconButton from './IconButton.vue';
@@ -20,6 +19,10 @@ export default defineComponent({
       default: ''
     },
     open: {
+      type: Boolean,
+      default: false,
+    },
+    modified: {
       type: Boolean,
       default: false,
     }
@@ -52,5 +55,9 @@ export default defineComponent({
 .tab.open {
   background: var(--background-light);
   color: var(--text);
+}
+.modified {
+  font-style: italic;
+  color: var(--red) !important;
 }
 </style>

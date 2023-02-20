@@ -1,13 +1,10 @@
- - Globa:
-  - resizable editor
-  - lower bar
  - Editor:
   - find/replace
   - syntax helpers for unclosed {}
  - Browser:
    - context menu (setmain|preview|delete)
  - Viewer:
-   - improve error message of failed latex compilation fails
+   - improve error message of failed latex compilation
    - synctex
  - Footer:
    - ..

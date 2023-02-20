@@ -15,7 +15,7 @@ import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 import { writeText, readText } from '@tauri-apps/api/clipboard';
 
 import AutoComplete from './AutoComplete.vue';
-import { Suggestions } from '@/helpers/AutoComplete';
+// import { Suggestions } from '@/helpers/AutoComplete';
 
 const ntabs = 4;
 
@@ -147,6 +147,7 @@ export default defineComponent({
   props: {
     path: String,
   },
+  emits: ['status'],
   setup(props) {
     const code_editor = ref<HTMLDivElement|null>(null);
     const editor = Editor();
@@ -316,7 +317,8 @@ export default defineComponent({
       undo() {history.backward();},
       redo() {history.forward();},
       handleMouseUp(event: MouseEvent) {
-        if (!(autocomplete?.value?.isActive())) s.getFromDOM();
+        input.value = '';
+        s.getFromDOM();
       },
       saveToDisk() {
         if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
@@ -337,6 +339,8 @@ export default defineComponent({
   },
   methods: {
     handleKeyBoard: async function(event: KeyboardEvent) {
+      let status = 1;
+
       if ((event.ctrlKey || event.metaKey)) {
         switch (event.key) {
           case 'x':
@@ -359,6 +363,7 @@ export default defineComponent({
             break;
           case 's':
             this.saveToDisk();
+            status = 2;
             break;
         }
       }
@@ -371,10 +376,12 @@ export default defineComponent({
             case 'ArrowDown':
               if (this.autocomplete?.isActive()) this.autocomplete?.updown(event.key);
               else this.arrows(event.key, event.shiftKey);
+              status = 0;
               break;
             case 'ArrowLeft':
             case 'ArrowRight':
               this.arrows(event.key, event.shiftKey);
+              status = 0;
               break;
             case 'WhiteSpace':
               this.insertText(" ");
@@ -397,10 +404,12 @@ export default defineComponent({
       }
 
       event.preventDefault();
+      this.$emit('status', status);
 
       // wait for DOM to update
       await this.$nextTick();
-      this.input = this.textBeforeCaret();
+      if (status==1) this.input = this.textBeforeCaret(); //fires autocomplete
+      if (event.key=="Escape" && this.autocomplete?.isActive()) this.input = ''; // kills autocomplete
     }
   }
 })
@@ -421,6 +430,8 @@ export default defineComponent({
   position: absolute;
   left: 0;
   right: 0;
+  -webkit-user-select: text;
+  user-select: text; 
 }
 
 </style>
