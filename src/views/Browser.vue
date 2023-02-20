@@ -14,13 +14,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { defineComponent, onMounted, onUnmounted, ref, watchEffect, computed } from 'vue'
 import { readDir, exists } from '@tauri-apps/api/fs';
 import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event';
 
 import NavFolder from '@/components/NavFolder.vue';
 import IconButton from '@/components/IconButton.vue';
+
 import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
 import database from '@/helpers/LatexData';

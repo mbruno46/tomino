@@ -65,12 +65,14 @@ export function Selection() {
   }
 
   function getDivLine(node: Node): [HTMLElement, number] {
-    if (node.parentElement?.hasAttribute("linenumber")) {
-      let idx = node.parentElement.getAttribute('linenumber');
-      return [node.parentElement, parseInt(idx ? idx : '0')]
-    } else {
-      return getDivLine(node.parentNode as Node);
+    if (node.nodeType == node.ELEMENT_NODE) {
+      let el = node as HTMLElement;
+      if (el.hasAttribute("linenumber")) {
+        let idx = el.getAttribute('linenumber');
+        return [el, parseInt(idx ? idx : '0')]
+      }
     }
+    return getDivLine(node.parentNode as Node);
   }
 
   function getLength(el: HTMLElement, n: Node, ofs: number) {
@@ -110,31 +112,13 @@ export function Selection() {
 
       var sel = document.getSelection();
       sel?.removeAllRanges();
-      sel?.addRange(this.getRange(parent));
-      // let [start, end] = this.getStartEnd();
-
-      // let r = document.createRange();
-      // for (var i=start.idx; i<=end.idx; i++) {
-      //   let el = parent.querySelector(`[linenumber="${i}"]`) as Node;
-      //   // r.selectNodeContents(el);
-
-      //   if (i==start.idx) {
-      //     let [c, o] = getNodeOffset(el, start.pos)
-      //     // console.log(el, c, o, start);
-      //     r.setStart(c!, o);    
-      //   }
-      //   if (i==end.idx) {
-      //     let [c, o] = getNodeOffset(el, end.pos)
-      //     r.setEnd(c!, o);
-      //   }
-      // }
-      // sel?.addRange(r);
-      // console.log(el, r, sel);
-    // console.log(this.anchor, this.focus, sel);
+      sel?.addRange(this.getRange(parent))
     },
     getFromDOM() {
       var s = document.getSelection();
       if ((s != null) && (s.anchorNode) && (s.focusNode)) {
+        console.log(getDivLine(s.anchorNode));
+
         let [el, idx] = getDivLine(s.anchorNode);
         this.anchor.idx = idx;
         this.anchor.pos = getLength(el, s.anchorNode, s.anchorOffset);

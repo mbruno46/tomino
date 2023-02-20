@@ -32,6 +32,13 @@ export default defineComponent({
   /* line-height: 1; */
 }
 
+.nav-label:hover {
+  cursor: pointer;
+  background-color: var(--background-light);
+  color: var(--text);
+  border: 1px solid var(--selection-dark);
+}
+
 .nav-label span {
   display: inline-flex;
   align-items: center;

@@ -2,6 +2,7 @@
   <div class="toolbar">
     <icon-button :tag="browser_visible ? 'left-fill' : 'files'" @click="browserVisibility" :fontsize="2"></icon-button>
     <icon-button :tag="'refresh'" :fontsize="2" @click="recompile"></icon-button>
+    <icon-button :tag="'settings'" :fontsize="2" style="position: absolute; bottom: 0"></icon-button>
   </div>
 </template>
 
@@ -39,6 +40,7 @@ export default defineComponent({
   flex-flow: column;
   height: 100%;
   background-color: var(--background-dark);
+  position: relative;
 }
 
 </style>

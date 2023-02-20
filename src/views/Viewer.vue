@@ -75,8 +75,7 @@ export default defineComponent({
     onMounted(() => {
       watchEffect(() => {
         let pdf = store.pdf.value;
-        console.log(pdf)
-        if (pdf.compile>0) compile(pdf.cwd, pdf.main, pdf.compile)
+        if (pdf.compile>0) exists(`${pdf.cwd}/${pdf.main}.tex`).then(()=>compile(pdf.cwd, pdf.main, pdf.compile));
       });
     });
     onUnmounted(()=>{unlisten1(); unlisten2();});

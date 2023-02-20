@@ -33,13 +33,16 @@ function Resizer() {
     start(event: MouseEvent) {
       active = true;
       origin = event.x;
+      event.stopPropagation();
     },
     move(event: MouseEvent) {
       if (active) parent.style.gridTemplateColumns = `minmax(8rem,${width + (event.x-origin)}px) 4px minmax(11rem,1fr)`;
+      event.stopPropagation();
     },
     end(event: MouseEvent) {
       this.move(event);
       active = false;
+      event.stopPropagation();
     }
   }
 }

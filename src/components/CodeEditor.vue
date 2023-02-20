@@ -1,8 +1,10 @@
 <template>
-  <div ref="code_editor" class="code-editor" @keydown="handleKeyBoard" @mouseup="handleMouseUp" contenteditable="true">
-    <code-line v-for="(val, index) in lines" 
-      :key="val" :text="val" :index="index"></code-line>
+  <div ref="code_editor" class="code-editor" @keydown="handleKeyBoard" @mouseup="input=''" contenteditable="true">
+    <code-line v-for="(val, index) in lines" :key="val" :text="val" :index="index" 
+      @mouseup="handleMouseUp" >
+    </code-line>
     <auto-complete ref="autocomplete" :input="input"></auto-complete>
+    <find-replace></find-replace>
   </div>
 </template>
 
@@ -15,7 +17,7 @@ import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 import { writeText, readText } from '@tauri-apps/api/clipboard';
 
 import AutoComplete from './AutoComplete.vue';
-// import { Suggestions } from '@/helpers/AutoComplete';
+import FindReplace from './FindReplace.vue';
 
 const ntabs = 4;
 
@@ -142,7 +144,7 @@ function Editor() {
 
 export default defineComponent({
   components: {
-    CodeLine, AutoComplete,
+    CodeLine, AutoComplete, FindReplace,
   },
   props: {
     path: String,

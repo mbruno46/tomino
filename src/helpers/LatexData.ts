@@ -17,11 +17,6 @@ function LatexData() {
   let texfiles: {[key:string]: {included:boolean, labels:String[], newcmds: String[]}};
   let bibfiles: {[key:string]: {included:boolean, refs:String[]}};
   let figures:String[];
-  let maintex = '';
-
-  function isMain(text: String) {
-    return text.match(/^\\documentclass/g);
-  }
   
   async function parser(arr: String[], text: String, rexg: RegExp, rex: RegExp) {
     text.match(rexg)?.forEach((m) => {
@@ -54,7 +49,7 @@ function LatexData() {
     }
   }
 
-  async function parseMain() {
+  async function parseMain(maintex: string) {
     let content = await readTextFile(`${cwd}/${maintex}`);
     let mm = content.match(/\\bibliography{.*}/g);
     if (mm) {
@@ -104,11 +99,11 @@ function LatexData() {
       for (const f in texfiles) this.parseTex(`${cwd}/${f}`);
     },
     setMain(fname: string) {
+      if (fname.includes('/')) {return;}
       store.pdf.value.main = fname.substring(0,fname.lastIndexOf('.'));
-      maintex = fname;
       for (const key in texfiles) texfiles[key].included = false;
       texfiles[fname].included = true;
-      parseMain();
+      parseMain(fname);
       // store.pdf.value.compile = true;
     },
     parseTex(path: string) {
