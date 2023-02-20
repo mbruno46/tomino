@@ -17,7 +17,7 @@ export default defineComponent({
   setup() {
     let pages: pdfjsLib.PDFPageProxy[] = [];
     let scale = 4;
-    var viewport = {aspect_ratio: 1, original_width: 10000, zoom: 1};
+    var viewport = {aspect_ratio: 1, original_width: 1, zoom: -1};
 
     const numpages = ref(0);
     const width = ref(0);
@@ -25,6 +25,7 @@ export default defineComponent({
 
     function zoom(action: String) {
       if (!pdfviewer.value) {return}
+      if (viewport.zoom==-1) {viewport.zoom = width.value / viewport.original_width;}
       let old_zoom = viewport.zoom;
 
       if (action=='fitH') {
@@ -36,7 +37,7 @@ export default defineComponent({
         viewport.zoom *= 1.10;
         width.value = viewport.zoom * viewport.original_width;
       } else if (action=='zoomOut') {
-        if (viewport.zoom>0.05) {return}
+        if (viewport.zoom<0.05) {return}
         viewport.zoom /= 1.10;
         width.value = viewport.zoom * viewport.original_width;
       }
@@ -91,7 +92,7 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      zoom('fitH');
+      width.value = pdfviewer.value!.offsetWidth;
 
       watchEffect(()=>{
         let pdf = store.pdf.value;

@@ -70,6 +70,7 @@ export default defineComponent({
       let r0 = parent?.getBoundingClientRect();
       let ofs = parent?.scrollTop ?? 0;
       
+      if (document.getSelection()?.rangeCount==0) {return '';}
       let r1 = document.getSelection()?.getRangeAt(0).getClientRects()[0];
       if ((!r1)||(!r0)) {return '';}
 

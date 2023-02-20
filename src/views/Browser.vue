@@ -1,7 +1,7 @@
 <template>
   <div class="browser">
     <div class="upperbar">
-      <span>Browser</span>
+      <div class="title">PROJECT</div>
       <div class="buttons right">
         <icon-button :tag="'add-file'"></icon-button>
         <icon-button :tag="'add-folder'"></icon-button>
@@ -78,7 +78,8 @@ export default defineComponent({
   display: none;
 }
 .browser:hover > .upperbar .buttons{
-  display: block;
+  display: -webkit-flex;
+  align-items: center;
 }
 
 .upperbar {
@@ -88,6 +89,12 @@ export default defineComponent({
   box-shadow: 0px 10px 8px -8px var(--background-dark);
   display: grid;
   grid-template-columns: 1fr max-content;
+}
+
+.title {
+  display: -webkit-flex;
+  align-items: center;
+  padding-left: 2rem;
 }
 
 .filebrowser {
