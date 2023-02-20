@@ -108,4 +108,12 @@ export default defineComponent({
 #footer {
   grid-area: footer;
 }
+
+@font-face{
+    font-family: 'Source Code Pro';
+    font-weight: 200;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('@/assets/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
+}
 </style>
