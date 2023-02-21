@@ -25,7 +25,6 @@ export function Suggestions(text: string): {word: String, suggestions: String[]}
   }
   
   let m = text.match(rargs);
-  console.log(text, text.match(rargs))
   let out = {word:'', suggestions: <String[]>[]};
   if (m) {
     let c = m[1];
@@ -86,7 +85,6 @@ export default defineComponent({
         s += `bottom: ${r0.bottom - r1.top - ofs}px;`;
         s += `max-height: ${above}px;`
       }
-      console.log(s);
       return s;
     }
 

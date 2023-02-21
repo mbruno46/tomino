@@ -4,19 +4,19 @@
       @mouseup="handleMouseUp" >
     </code-line>
     <auto-complete ref="autocomplete" :input="input"></auto-complete>
-    <find-replace></find-replace>
+    <find-replace ref="findreplace" @findword="findWord" @replace="replaceWord"></find-replace>
   </div>
 </template>
 
 <script lang="ts">
-import CodeLine from './CodeLine.vue';
 import { defineComponent, onMounted, onUpdated, ref } from 'vue';
 import type { Ref } from 'vue'
-import { History, Selection, Caret } from '@/helpers/EditorTools';
+import { History, Selection, Caret, Finder } from '@/helpers/EditorTools';
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 import { writeText, readText } from '@tauri-apps/api/clipboard';
 
 import AutoComplete from './AutoComplete.vue';
+import CodeLine from './CodeLine.vue';
 import FindReplace from './FindReplace.vue';
 
 const ntabs = 4;
@@ -108,7 +108,6 @@ function Editor() {
       lines.value[caret.idx] = lines.value[caret.idx].substring(0,caret.pos);
       let n = lines.value[caret.idx].search(/\S|$/);
       let m = Math.floor(n/ntabs)+(indent ? 1: 0);
-      console.log(n,m,lines.value[caret.idx]);
       lines.value.splice(caret.idx+1, 0, " ".repeat(m*ntabs) + t);
       return m*ntabs;
     },
@@ -151,13 +150,17 @@ export default defineComponent({
   },
   emits: ['status'],
   setup(props) {
-    const code_editor = ref<HTMLDivElement|null>(null);
     const editor = Editor();
     const s = Selection();
-    const lines: Ref<string[]> = editor.lines;
     const history = History(s);
+    const finder = Finder();
+
     const input = ref('');
+    
+    const code_editor = ref<HTMLDivElement|null>(null);
+    const lines: Ref<string[]> = editor.lines;
     const autocomplete = ref<typeof AutoComplete|null>(null);
+    const findreplace = ref<typeof FindReplace|null>(null);
 
     onMounted(() => {
       if (props.path) {
@@ -182,7 +185,6 @@ export default defineComponent({
           s.focus.copyFrom(s.anchor);
         } 
       }
-      console.log('dddd',s);
       return t;
     }
 
@@ -302,12 +304,32 @@ export default defineComponent({
       return null;      
     } 
 
+    function findWord(word: string, next: boolean) {
+      let nfound = finder.init(word, lines.value);
+      if (nfound==0) {return;}
+      
+      let [start, end] = s.getStartEnd();
+      let c0 = (next) ? finder.findClosest(end, true) : finder.findClosest(start, false);
+
+      s.anchor.copyFrom(c0);
+      s.focus.copyFrom(c0);
+      s.focus.pos += word.length;
+      if (code_editor.value) s.updateDOM(code_editor.value);
+    }
+
+    function replaceWord(oldw: string, neww: string) {
+      if (oldw=='' || neww=='') {return}
+      let [start, end] = s.getStartEnd();
+      if (editor.selectedText(start, end)==oldw) insertText(neww)
+      else findWord(oldw, true);
+    }
 
     return {
       code_editor,
       lines,
       input,
       autocomplete,
+      findreplace,
       newLine,
       insertText,
       deleteChar,
@@ -324,7 +346,6 @@ export default defineComponent({
       },
       saveToDisk() {
         if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
-        console.log('saving')
       },
       textBeforeCaret() {
         return (editor) ? editor.textBeforeCaret(s.focus) : '';
@@ -336,7 +357,9 @@ export default defineComponent({
           editor?.shiftCaret(s.focus, n-1);
           _collapse();
         }
-      }
+      },
+      findWord,
+      replaceWord,
     }
   },
   methods: {
@@ -366,6 +389,9 @@ export default defineComponent({
           case 's':
             this.saveToDisk();
             status = 2;
+            break;
+          case 'f':
+            this.findreplace?.activate();
             break;
         }
       }

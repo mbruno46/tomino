@@ -1,5 +1,3 @@
-// import { debounce } from "./Utils";
-
 export class Caret {
   idx: number;
   pos: number;
@@ -46,7 +44,6 @@ export function Selection() {
     if (node.hasChildNodes()) {
       for (const child of node.childNodes) {
         let tmp = getNodeOffset(child, pos);
-        // console.log(node, child, tmp);
         if (tmp[0]!=null) {
           node = tmp[0];
           pos = tmp[1];
@@ -97,7 +94,6 @@ export function Selection() {
 
       el = parent.querySelector(`[linenumber="${start.idx}"]`)!;
       [c, o] = getNodeOffset(el, start.pos);
-      console.log(start, c, o, el);
       r.setStart(c!, o);
 
       el = parent.querySelector(`[linenumber="${end.idx}"]`)!;
@@ -117,8 +113,6 @@ export function Selection() {
     getFromDOM() {
       var s = document.getSelection();
       if ((s != null) && (s.anchorNode) && (s.focusNode)) {
-        console.log(getDivLine(s.anchorNode));
-
         let [el, idx] = getDivLine(s.anchorNode);
         this.anchor.idx = idx;
         this.anchor.pos = getLength(el, s.anchorNode, s.anchorOffset);
@@ -149,7 +143,6 @@ export function History(sel: any) {
   let idx = 0;
   let max = 10;
   let composing = false; 
-  let timer = 0;
 
   function reset() {
     if(stack_redo.length != stack_undo.length) {console.log('error')}
@@ -185,7 +178,6 @@ export function History(sel: any) {
       });
 
       let out = action();
-      // console.log('qua qua ', out);
 
       stack_undo.push({
         anchor: new Caret(sel.anchor.idx, sel.anchor.pos),
@@ -196,7 +188,6 @@ export function History(sel: any) {
     backward() {
       if (idx==0) {return;}
       idx--;
-      console.log(idx, stack, stack[idx]);
 
       for (const s of stack[idx].undo.reverse()) {
         sel.anchor.copyFrom(s.anchor);
@@ -214,6 +205,59 @@ export function History(sel: any) {
       }
       idx++;
     },
+  }
+}
+
+export function Finder() {
+  let found = [<number[]>[]];
+  let nfound = 0;
+  let word = '';
+
+  function findClosest(c: Caret, next: Boolean): Caret {
+    for (const pos of found[c.idx]) {
+      if (pos>=c.pos) {
+        c.pos = pos;
+        return c;
+      }
+    }
+    if (next) {
+      c.idx++;
+      c.idx -= (c.idx >= found.length) ? found.length : 0;  
+    } else {
+      c.idx--;
+      c.idx += (c.idx<0) ? found.length : 0;  
+    }
+    c.pos = 0;
+    return findClosest(c, next);
+  }
+
+  return {
+    init(w: string, lines: String[]) {
+      // should check also if lines have changed to improve perf
+      // if (word == w) {return;}
+  
+      function search_line(line: String) {
+        let n=0;
+        let out = <number[]>[];
+        while (n<line.length) {
+          let m = line.substring(n).lastIndexOf(word);
+          if (m>=0) {
+            out.push(n+m);
+            n += m + word.length;
+            nfound++;
+          } else {
+            break;
+          }
+        }
+        return out;
+      }
+  
+      word = w;
+      nfound = 0;
+      found = Array.from(lines, (line)=>search_line(line));
+      return nfound;
+    },
+    findClosest,
   }
 }
 

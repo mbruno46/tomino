@@ -26,6 +26,9 @@
     <svg v-else-if="parseTag(tag) == 'up'" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
       <path fill="currentColor" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6l1.41 1.41Z"/>
     </svg>
+    <svg v-else-if="parseTag(tag) == 'replace'" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M21.5 14.5L16 20l-5.5-5.5l1.41-1.41L15 16.17V10.5C15 8 13 6 10.5 6S6 8 6 10.5V18H4v-7.5a6.5 6.5 0 1 1 13 0v5.67l3.09-3.09l1.41 1.42Z"/>
+    </svg>
     <svg v-else-if="parseTag(tag) == 'close'" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
       <g transform="rotate(180 12 12)"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/></g>
     </svg>
