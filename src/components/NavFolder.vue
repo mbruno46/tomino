@@ -49,24 +49,21 @@ export default defineComponent({
   display: flex;
   flex-flow: column;
   padding-left: 1rem;
-  /* border-left: 1px solid white; */
-  /* transition: height 0.2s; */
 }
 
 .nested {
   display: none;
-  /* height: 0px; */
 }
 
 .nav-folder div {
   border: 1px solid transparent;
 }
 
-/* .nav-folder div:hover {
+.nav-folder > .nav-label:hover {
   cursor: pointer;
   background-color: var(--background-light);
   color: var(--text);
   border: 1px solid var(--selection-dark);
-} */
+}
 </style>
 

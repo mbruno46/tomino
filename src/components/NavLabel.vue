@@ -25,18 +25,7 @@ export default defineComponent({
 .nav-label {
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
-  /* display: grid; */
-  /* grid-template-columns: min-content min-content; */
   display: inline-flex;
-  /* vertical-align: middle; */
-  /* line-height: 1; */
-}
-
-.nav-label:hover {
-  cursor: pointer;
-  background-color: var(--background-light);
-  color: var(--text);
-  border: 1px solid var(--selection-dark);
 }
 
 .nav-label span {

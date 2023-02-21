@@ -99,7 +99,14 @@ function LatexData() {
       for (const f in texfiles) this.parseTex(`${cwd}/${f}`);
     },
     setMain(fname: string) {
-      if (fname.includes('/')) {return;}
+      if (fname.includes('/')) {
+        message('Main tex file should be in project root directory');
+        return
+      }
+      if (!(fname in texfiles)) {
+        message(`Cannot set ${fname} as main tex file`);
+        return;
+      }
       store.pdf.value.main = fname.substring(0,fname.lastIndexOf('.'));
       for (const key in texfiles) texfiles[key].included = false;
       texfiles[fname].included = true;

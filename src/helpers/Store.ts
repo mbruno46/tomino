@@ -38,6 +38,7 @@ function _editor() {
         }
       }
     },
+    currentFile() {return selected;}
   }
 }
 

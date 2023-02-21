@@ -21,10 +21,16 @@ import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { readTextFile, exists } from '@tauri-apps/api/fs';
 
-const unlisten1 = await listen('recompile1', ()=>{
+function wrapper(name:string, f: Function) {
+  (async ()=> {
+    const out = await listen(name, ()=>{f()});
+  })();
+}
+
+wrapper('recompile1', ()=>{
   store.pdf.value.compile = 1;
 });
-const unlisten2 = await listen('recompile2', ()=>{
+wrapper('recompile2', ()=>{
   store.pdf.value.compile = 2;
 });
 
@@ -78,7 +84,7 @@ export default defineComponent({
         if (pdf.compile>0) exists(`${pdf.cwd}/${pdf.main}.tex`).then(()=>compile(pdf.cwd, pdf.main, pdf.compile));
       });
     });
-    onUnmounted(()=>{unlisten1(); unlisten2();});
+    // onUnmounted(()=>{unlisten1(); unlisten2();});
 
     return {
       pdfviewer,

@@ -27,12 +27,24 @@ import store from '@/helpers/Store';
 import database from '@/helpers/LatexData';
 
 const folder = ref('');
-const unlisten = await listen('openfolder', ()=>{
+
+function wrapper(name:string, f: Function) {
+  (async ()=> {
+    const out = await listen(name, ()=>{f()});
+  })();
+}
+
+wrapper('openfolder', ()=>{
   open({directory: true, multiple: false, recursive: true}).then((dir) => {
     if ((dir!=null) && !Array.isArray(dir)) {
       folder.value = dir;
     }
   });
+});
+
+wrapper('setmain', ()=>{
+  let fname = store.Editor.currentFile();
+  exists(`${folder.value}/${fname}`).then(()=>{database.setMain(fname)});
 });
 
 export default defineComponent({
@@ -58,7 +70,7 @@ export default defineComponent({
     onMounted(()=>{
       watchEffect(()=>{if (folder.value!='') openProject(folder.value);})
     })
-    onUnmounted(()=>{unlisten();});
+    // onUnmounted(()=>{unlisten();});
 
     return {
       filetree,

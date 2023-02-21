@@ -1,15 +1,14 @@
+ - Icon
  - Editor:
-  - find/replace
   - syntax helpers for unclosed {}
  - Browser:
-   - context menu (setmain|preview|delete)
+   - context menu (setmain|preview|delete) -> temporary solution 'setmain' under Menu.File
  - Viewer:
-   - improve error message of failed latex compilation
    - synctex
  - Footer:
-   - ..
+   - github
+ - Settings panel
  - Menu.File:
-   - new-file cmd+N + button in browser + implement it
-   - new-project item in File menu
+   - new-file and new-project to be implemented
  - Menu.Edit:
-   - shortcuts for undo/redo/cut.. + link them to do something
+   - shortcuts for undo/redo/cut.. + link them to do something (issue: act on the proper code-editor instance)

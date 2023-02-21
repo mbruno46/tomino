@@ -65,8 +65,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
+      "identifier": "com.tomino.dev",
+      "longDescription": "A light and intuitive TeX editor for the everyday physicist",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -75,7 +75,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "A light and intuitive TeX editor for the everyday physicist",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,

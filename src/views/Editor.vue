@@ -39,8 +39,6 @@ export default defineComponent({
   overflow: hidden;
   background: var(--background-light);
   position: relative;
-  /* min-width: 8rem; */
-  /* resize: horizontal; */
 }
 
 .tabbar {

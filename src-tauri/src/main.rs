@@ -2,7 +2,7 @@
   all(not(debug_assertions), target_os = "windows"),
   windows_subsystem = "windows"
 )]
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, AboutMetadata};
 use tauri::Manager;
 
 pub fn create_menu() -> Menu {
@@ -12,10 +12,10 @@ pub fn create_menu() -> Menu {
     menu = menu.add_submenu(Submenu::new(
       "tomino".to_string(),
       Menu::new()
-        // .add_native_item(MenuItem::About(
-        //   app_name.to_string(),
-        //   AboutMetadata::default(),
-        // ))
+        .add_native_item(MenuItem::About(
+          "tomino".to_string(),
+          AboutMetadata::default(),
+        ))
         .add_native_item(MenuItem::Separator)
         .add_native_item(MenuItem::Services)
         .add_native_item(MenuItem::Separator)
@@ -34,6 +34,7 @@ pub fn create_menu() -> Menu {
   file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project...").accelerator("cmdOrControl+O"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   // file_menu = file_menu.add_item(CustomMenuItem::new("save".to_string(), "Save").accelerator("cmdOrControl+S"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("setmain".to_string(), "Set main tex"));
   file_menu = file_menu.add_item(CustomMenuItem::new("recompile1".to_string(), "Recompile (weak)").accelerator("cmdOrControl+R"));
   file_menu = file_menu.add_item(CustomMenuItem::new("recompile2".to_string(), "Recompile (strong)").accelerator("cmdOrControl+F"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
@@ -57,10 +58,10 @@ pub fn create_menu() -> Menu {
   // {
   //   edit_menu = edit_menu.add_native_item(MenuItem::SelectAll);
   // }
-  #[cfg(not(target_os = "linux"))]
-  {
-    menu = menu.add_submenu(Submenu::new("Edit", edit_menu));
-  }
+  // #[cfg(not(target_os = "linux"))]
+  // {
+  //   menu = menu.add_submenu(Submenu::new("Edit", edit_menu));
+  // }
 
   let mut window_menu = Menu::new();
   window_menu = window_menu.add_native_item(MenuItem::Minimize);
@@ -83,6 +84,10 @@ fn main() {
         "openfolder" => {
           let window = event.window();
           window.emit_all("openfolder", {}).unwrap();
+        }
+        "setmain" => {
+          let window = event.window();
+          window.emit_all("setmain", {}).unwrap();
         }
         "recompile1" => {
           let window = event.window();

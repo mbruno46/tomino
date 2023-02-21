@@ -1,12 +1,12 @@
 <template>
-  <div class="error" ref="errmsg">
+  <div class="error" ref="pdferror">
     <span v-for="err in errmsg" v-html="textToHTML(err)" 
       :class="highlight(err) ? 'highlight-error' : ''" :key="err"></span>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onUpdated, ref, onMounted } from 'vue'
 
 export default defineComponent({
   props: {
@@ -14,9 +14,19 @@ export default defineComponent({
   },
   setup(props) {
     const errmsg = computed(()=>props.error?.split('\n'));
+    const pdferror = ref<HTMLElement|null>(null);
+
+    function scrollIntoView() {
+      let el = pdferror.value?.querySelector('.highlight-error');
+      el?.scrollIntoView({behavior: 'auto', block: 'start', inline: 'nearest'});
+    }
+
+    onMounted(()=>scrollIntoView());
+    onUpdated(()=>scrollIntoView());
 
     return {
       errmsg,
+      pdferror,
     }
   },
   methods: {
