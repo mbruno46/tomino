@@ -174,7 +174,10 @@
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
     <rect
-       transform="matrix(0.97769779,0,0,1.0250033,2.3432951,-14.688211)"
+       inkscape:export-ydpi="24.772503"
+       inkscape:export-xdpi="24.772503"
+       inkscape:export-filename="/Users/mbruno/Physics/tomino/src-tauri/icons/1024x1024.png"
+       transform="matrix(0.97850006,0,0,1.0241019,2.2591652,-14.158263)"
        ry="243.25331"
        y="589.16553"
        x="103.58899"
@@ -183,6 +186,9 @@
        id="rect961-6-1"
        style="opacity:1;mix-blend-mode:normal;fill:#8dd35f;stroke:none;stroke-width:1.90888;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke markers fill;filter:url(#filter1002)" />
     <rect
+       inkscape:export-ydpi="24.772503"
+       inkscape:export-xdpi="24.772503"
+       inkscape:export-filename="/Users/mbruno/Physics/tomino/src-tauri/icons/1024x1024.png"
        style="opacity:1;fill:#2d5016;stroke:none;stroke-width:1.77602;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke markers fill"
        id="rect961-6"
        width="910"
@@ -209,6 +215,9 @@
        style="opacity:1;fill:url(#linearGradient911);stroke:none;stroke-width:1.05654;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke markers fill;fill-opacity:1"
        id="rect839-2-7" />
     <g
+       inkscape:export-ydpi="24.772503"
+       inkscape:export-xdpi="24.772503"
+       inkscape:export-filename="/Users/mbruno/Physics/tomino/src-tauri/icons/1024x1024.png"
        transform="translate(-13.10926,33.17281)"
        id="g1069">
       <path
