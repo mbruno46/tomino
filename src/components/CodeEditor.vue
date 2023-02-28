@@ -324,6 +324,13 @@ export default defineComponent({
       else findWord(oldw, true);
     }
 
+    function setSelection(line: number, column: number) {
+      s.anchor.idx = line;
+      s.anchor.pos = column;
+      s.focus.copyFrom(s.anchor);
+      if (code_editor.value) s.updateDOM(code_editor.value);
+    }
+
     return {
       code_editor,
       lines,
@@ -360,6 +367,7 @@ export default defineComponent({
       },
       findWord,
       replaceWord,
+      setSelection,
     }
   },
   methods: {

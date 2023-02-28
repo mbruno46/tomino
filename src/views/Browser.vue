@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUnmounted, ref, watchEffect, computed } from 'vue'
+import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import { readDir, exists } from '@tauri-apps/api/fs';
 import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event';

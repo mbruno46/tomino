@@ -50,19 +50,24 @@ const pdf = ref({
   compile: 0,
   refresh: false,
   loader: false,
+  synctex: {
+    sync: false,
+    path: '',
+    line: 0,
+    column: 0,
+  }
 });
 
-const browser = ref({
-  popup: {
-    x: 0,
-    y: 0,
-    path: '',
-    visible: false,
-  }
-})
+// const browser = ref({
+//   popup: {
+//     x: 0,
+//     y: 0,
+//     path: '',
+//     visible: false,
+//   }
+// })
 
 export default {
   pdf,
-  browser,
   Editor,
 }

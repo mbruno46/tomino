@@ -1,7 +1,7 @@
 <template>
   <div ref="pdfviewer" class="pdfviewer">
     <div class="pdfpage" v-for="index in numpages" :index="index" :style="`width: ${width}px`">
-      <canvas :id="`pdfpage_${index}`"></canvas>
+      <canvas :id="`pdfpage_${index}`" @dblclick="$emit('synctex', index, getViewportXY($event))"></canvas>
     </div>
   </div>
 </template>
@@ -14,6 +14,7 @@ import { readBinaryFile, exists } from '@tauri-apps/api/fs';
 import store from '@/helpers/Store';
 
 export default defineComponent({
+  emits: ['synctex'],
   setup() {
     let pages: pdfjsLib.PDFPageProxy[] = [];
     let scale = 4;
@@ -109,6 +110,12 @@ export default defineComponent({
       width,
       zoom,
       load,
+      getViewportXY(event: MouseEvent) {
+        let el = event.currentTarget as HTMLElement;
+        let x = (event.offsetX / el.offsetWidth) * (viewport.original_width / scale ); 
+        let y = (event.offsetY / el.offsetHeight) * (viewport.original_width / viewport.aspect_ratio / scale ); 
+        return {x: x, y: y};
+      }
     }
   },
 })

@@ -6,17 +6,21 @@
       <icon-button :tag="'+'" @click="pdfviewer?.zoom('zoomIn')"></icon-button>
       <icon-button :tag="'-'" @click="pdfviewer?.zoom('zoomOut')"></icon-button>
     </div>
-    <PDFViewer v-if="error==''" ref="pdfviewer"></PDFViewer>
+    <PDFViewer v-if="error==''" ref="pdfviewer" @synctex="syncTeX"></PDFViewer>
     <PDFError v-else :error="error"></PDFError>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect, onUnmounted } from 'vue'
+
 import PDFViewer from '@/components/PDFViewer.vue';
 import PDFError from '@/components/PDFError.vue';
 import IconButton from '@/components/IconButton.vue';
+
 import store from '@/helpers/Store';
+import { SyncTex } from '@/helpers/SyncTex';
+
 import { Command } from '@tauri-apps/api/shell';
 import { listen } from '@tauri-apps/api/event';
 import { readTextFile, exists } from '@tauri-apps/api/fs';
@@ -34,6 +38,7 @@ wrapper('recompile2', ()=>{
   store.pdf.value.compile = 2;
 });
 
+let sync = SyncTex();
 
 export default defineComponent({
   components: {
@@ -47,7 +52,7 @@ export default defineComponent({
 
     async function compile(cwd: string, name: string, level:number=1) {
       store.pdf.value.loader = true;
-      let args = ['-pdf', '-silent'];
+      let args = ['-pdf', '-silent','-synctex=-1'];
       if (level==2) {
         args.push('-g');
         args.push('-f');
@@ -59,6 +64,11 @@ export default defineComponent({
         console.log('compiled ', output.stdout);
         store.pdf.value.refresh=true;
         error.value = '';
+        
+        readTextFile(`${store.pdf.value.cwd}/${store.pdf.value.main}.synctex`).then(
+          (content)=>sync.parse(content)
+        );
+
       } else {
         console.log(output.stderr);
         // error.value = output.stdout + '\n' + output.stderr;
@@ -89,6 +99,9 @@ export default defineComponent({
     return {
       pdfviewer,
       error,
+      syncTeX(pageid: number, xy: {x:0, y:0}) {
+        store.pdf.value.synctex = sync.pdf2tex(pageid, xy.x, xy.y);
+      }
     }
   },
 })
