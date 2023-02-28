@@ -1,14 +1,13 @@
- - Icon
+ - Logo:
  - Editor:
   - syntax helpers for unclosed {}
  - Browser:
    - context menu (setmain|preview|delete) -> temporary solution 'setmain' under Menu.File
+   - watch file system changes
  - Viewer:
-   - synctex
  - Footer:
    - github
  - Settings panel
  - Menu.File:
    - new-file and new-project to be implemented
- - Menu.Edit:
-   - shortcuts for undo/redo/cut.. + link them to do something (issue: act on the proper code-editor instance)
+   - rename, saveas

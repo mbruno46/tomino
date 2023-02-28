@@ -20,16 +20,10 @@ import IconButton from '@/components/IconButton.vue';
 
 import store from '@/helpers/Store';
 import { SyncTex } from '@/helpers/SyncTex';
+import { wrapper } from '@/helpers/Utils';
 
 import { Command } from '@tauri-apps/api/shell';
-import { listen } from '@tauri-apps/api/event';
 import { readTextFile, exists } from '@tauri-apps/api/fs';
-
-function wrapper(name:string, f: Function) {
-  (async ()=> {
-    const out = await listen(name, ()=>{f()});
-  })();
-}
 
 wrapper('recompile1', ()=>{
   store.pdf.value.compile = 1;
@@ -52,14 +46,15 @@ export default defineComponent({
 
     async function compile(cwd: string, name: string, level:number=1) {
       store.pdf.value.loader = true;
+
       let args = ['-pdf', '-silent','-synctex=-1'];
       if (level==2) {
         args.push('-g');
         args.push('-f');
       }
       args.push(name);
-      console.log(args);
       const output = await new Command('latexmk', args, {cwd: cwd}).execute();
+
       if (output.code==0) {
         console.log('compiled ', output.stdout);
         store.pdf.value.refresh=true;
@@ -68,7 +63,6 @@ export default defineComponent({
         readTextFile(`${store.pdf.value.cwd}/${store.pdf.value.main}.synctex`).then(
           (content)=>sync.parse(content)
         );
-
       } else {
         console.log(output.stderr);
         // error.value = output.stdout + '\n' + output.stderr;

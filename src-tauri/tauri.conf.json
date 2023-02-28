@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "tomino",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "tauri": {
     "allowlist": {
@@ -41,9 +41,7 @@
         "execute": true,
         "open": false,
         "scope": [
-          {"name": "latexmk", "cmd": "latexmk", "args": true},
-          {"name": "pdflatex", "cmd": "pdflatex", "args": true},
-          {"name": "bibtex", "cmd": "bibtex", "args": true}
+          {"name": "latexmk", "cmd": "latexmk", "args": true}
         ],
         "sidecar": false
       },

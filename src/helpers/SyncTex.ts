@@ -168,10 +168,10 @@ export function SyncTex() {
     pdf2tex(pageid: number, x: number, y: number) {
       let b = innerMostBlock(pages[pageid], x, y)!;
       return {
-        sync: true,
-        path: header.input[b.input],
-        line: b.line,
-        column: b.column,
+        sync: (b) ? true: false,
+        path: (b) ? header.input[b.input] : '',
+        line: (b) ? b.line: 0,
+        column: (b) ? b.column: 0,
       }
     }
   }

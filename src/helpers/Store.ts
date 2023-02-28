@@ -58,15 +58,6 @@ const pdf = ref({
   }
 });
 
-// const browser = ref({
-//   popup: {
-//     x: 0,
-//     y: 0,
-//     path: '',
-//     visible: false,
-//   }
-// })
-
 export default {
   pdf,
   Editor,

@@ -17,7 +17,6 @@
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import { readDir, exists } from '@tauri-apps/api/fs';
 import { open } from '@tauri-apps/api/dialog';
-import { listen } from '@tauri-apps/api/event';
 
 import NavFolder from '@/components/NavFolder.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -25,14 +24,9 @@ import IconButton from '@/components/IconButton.vue';
 import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
 import database from '@/helpers/LatexData';
+import { wrapper } from '@/helpers/Utils';
 
 const folder = ref('');
-
-function wrapper(name:string, f: Function) {
-  (async ()=> {
-    const out = await listen(name, ()=>{f()});
-  })();
-}
 
 wrapper('openfolder', ()=>{
   open({directory: true, multiple: false, recursive: true}).then((dir) => {

@@ -33,10 +33,11 @@ pub fn create_menu() -> Menu {
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project...").accelerator("cmdOrControl+O"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
-  // file_menu = file_menu.add_item(CustomMenuItem::new("save".to_string(), "Save").accelerator("cmdOrControl+S"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("save".to_string(), "Save").accelerator("cmdOrControl+S"));
+  file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_item(CustomMenuItem::new("setmain".to_string(), "Set main tex"));
   file_menu = file_menu.add_item(CustomMenuItem::new("recompile1".to_string(), "Recompile (weak)").accelerator("cmdOrControl+R"));
-  file_menu = file_menu.add_item(CustomMenuItem::new("recompile2".to_string(), "Recompile (strong)").accelerator("cmdOrControl+F"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("recompile2".to_string(), "Recompile (strong)").accelerator("shift+cmdOrControl+R"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_native_item(MenuItem::CloseWindow);
   #[cfg(not(target_os = "macos"))]
@@ -47,21 +48,23 @@ pub fn create_menu() -> Menu {
 
   let mut edit_menu = Menu::new();
   {
-    edit_menu = edit_menu.add_item(CustomMenuItem::new("undo".to_string(), "Undo"));
-    edit_menu = edit_menu.add_item(CustomMenuItem::new("redo".to_string(), "Redo"));
+    edit_menu = edit_menu.add_item(CustomMenuItem::new("undo".to_string(), "Undo").accelerator("cmdOrControl+Z"));
+    edit_menu = edit_menu.add_item(CustomMenuItem::new("redo".to_string(), "Redo").accelerator("shift+cmdOrControl+Z"));
     edit_menu = edit_menu.add_native_item(MenuItem::Separator);
-    edit_menu = edit_menu.add_item(CustomMenuItem::new("cut".to_string(), "Cut"));
-    edit_menu = edit_menu.add_item(CustomMenuItem::new("copy".to_string(), "Copy"));
-    edit_menu = edit_menu.add_item(CustomMenuItem::new("paste".to_string(), "Paste"));
+    edit_menu = edit_menu.add_item(CustomMenuItem::new("cut".to_string(), "Cut").accelerator("cmdOrControl+X"));
+    edit_menu = edit_menu.add_item(CustomMenuItem::new("copy".to_string(), "Copy").accelerator("cmdOrControl+C"));
+    edit_menu = edit_menu.add_item(CustomMenuItem::new("paste".to_string(), "Paste").accelerator("cmdOrControl+V"));
+    edit_menu = edit_menu.add_native_item(MenuItem::Separator);
+    edit_menu = edit_menu.add_item(CustomMenuItem::new("find".to_string(), "Find/Replace").accelerator("cmdOrControl+F"));
   }
   // #[cfg(target_os = "macos")]
   // {
   //   edit_menu = edit_menu.add_native_item(MenuItem::SelectAll);
   // }
-  // #[cfg(not(target_os = "linux"))]
-  // {
-  //   menu = menu.add_submenu(Submenu::new("Edit", edit_menu));
-  // }
+  #[cfg(not(target_os = "linux"))]
+  {
+    menu = menu.add_submenu(Submenu::new("Edit", edit_menu));
+  }
 
   let mut window_menu = Menu::new();
   window_menu = window_menu.add_native_item(MenuItem::Minimize);
@@ -85,6 +88,10 @@ fn main() {
           let window = event.window();
           window.emit_all("openfolder", {}).unwrap();
         }
+        "save" => {
+          let window = event.window();
+          window.emit_all("save", {}).unwrap();
+        }
         "setmain" => {
           let window = event.window();
           window.emit_all("setmain", {}).unwrap();
@@ -96,6 +103,30 @@ fn main() {
         "recompile2" => {
           let window = event.window();
           window.emit_all("recompile2", {}).unwrap();
+        }
+        "undo" => {
+          let window = event.window();
+          window.emit_all("undo", {}).unwrap();
+        }
+        "redo" => {
+          let window = event.window();
+          window.emit_all("redo", {}).unwrap();
+        }
+        "cut" => {
+          let window = event.window();
+          window.emit_all("cut", {}).unwrap();
+        }
+        "copy" => {
+          let window = event.window();
+          window.emit_all("copy", {}).unwrap();
+        }
+        "paste" => {
+          let window = event.window();
+          window.emit_all("paste", {}).unwrap();
+        }
+        "find" => {
+          let window = event.window();
+          window.emit_all("find", {}).unwrap();
         }
         _ => {}
       }
