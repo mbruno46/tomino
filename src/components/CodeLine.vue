@@ -62,14 +62,14 @@ export default defineComponent({
 
 <style scoped>
 .line {
-  display: grid;
-  grid-template-columns: 4rem 1fr;
+  display: flex;
+  flex-direction: row;
   width: 100%;
   height: max-content;
 }
 
 .number {
-  width: 4rem;
+  min-width: 4rem;
   text-align: right;
   padding-right: 0.5rem;
   height: 100%;
