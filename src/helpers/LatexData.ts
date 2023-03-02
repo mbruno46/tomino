@@ -83,7 +83,7 @@ function LatexData() {
   }
 
   return {
-    importFromFileTree(input: FileTree) {
+    async importFromFileTree(input: FileTree) {
       function inner(input: FileTree) {
         for (const f of input.files) addFile(f.path);
         for (const f of input.subfolders) inner(f);  

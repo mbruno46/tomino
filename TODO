@@ -7,7 +7,8 @@
  - Viewer:
  - Footer:
    - github
- - Settings panel
+ - Settings:
+   - implement
  - Menu.File:
    - new-file and new-project to be implemented
    - rename, saveas

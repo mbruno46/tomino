@@ -9,15 +9,18 @@
     </div>
     <Footer id="footer"></Footer>
   </div>
+  <splash></splash>
 </template>
 
 <script lang="ts">
+import { defineComponent, onMounted, ref } from 'vue'
+
 import Editor from "@/views/Editor.vue";
 import Viewer from "@/views/Viewer.vue";
 import Browser from "@/views/Browser.vue"
 import SideBar from "@/views/SideBar.vue";
 import Footer from "./views/Footer.vue";
-import { defineComponent, onMounted, ref } from 'vue'
+import Splash from "./views/Splash.vue";
 
 function Resizer() {
   let origin = 0;
@@ -49,8 +52,13 @@ function Resizer() {
 
 export default defineComponent({
   components: {
-    Editor, Viewer, Browser, SideBar, Footer,
-  },
+    Editor,
+    Viewer,
+    Browser,
+    SideBar,
+    Footer,
+    Splash
+},
   setup() {
     const browser_visible = ref(true);
     let r = Resizer();

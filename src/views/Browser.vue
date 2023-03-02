@@ -54,8 +54,8 @@ export default defineComponent({
           const base = folder.substring(folder.lastIndexOf('/')+1);
           readDir(folder, {recursive: true}).then((entries) => {
             filetree.value = new FileTree(folder, base, entries);
-            database.importFromFileTree(filetree.value);
             store.pdf.value.cwd = folder;
+            database.importFromFileTree(filetree.value);
           });
         }
       })
