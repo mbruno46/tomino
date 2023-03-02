@@ -13,6 +13,8 @@ export class FileTree {
     this.subfolders = [];
     if (children) {
       for (const c of children) {
+        if (c.name?.substring(0,1)=='.') continue;
+        
         if (c.children) {
           this.subfolders.push(new FileTree(c.path, c.name, c.children));
         } else {
