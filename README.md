@@ -1,46 +1,20 @@
-# tomino
+# <img src="src-tauri/icons/512x512.png" height='48px'> tomino
 
-This template should help get you started developing with Vue 3 in Vite.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- [![Build ToM](https://github.com/mbruno46/ToM/actions/workflows/release.yml/badge.svg)](https://github.com/mbruno46/ToM/actions/workflows/release.yml) -->
+[![Latest Release](https://img.shields.io/github/v/release/mbruno46/tomino)](https://github.com/mbruno46/tomino/releases/latest)
 
-## Recommended IDE Setup
+A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is built using [Vue3](https://vuejs.org), [Vite](https://vitejs.dev) and [Tauri](https://tauri.app), and supersedes its older predecessor [ToM](https://github.com/mbruno46/ToM).
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+- **Website:** https://mbruno46.github.io/tomino/
+- **Source code:** https://github.com/mbruno46/tomino/
+- **Bug reports:** https://github.com/mbruno46/tomino/issues
 
-## Type Support for `.vue` Imports in TS
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+### Authors
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+Copyright (C) 2023, Mattia Bruno
 
-## Customize configuration
+## Installation
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
