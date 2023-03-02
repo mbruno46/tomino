@@ -42,7 +42,7 @@ pub fn create_menu() -> Menu {
   let mut file_menu = Menu::new();
   file_menu = file_menu.add_item(CustomMenuItem::new("newfile".to_string(), "New File...").accelerator("cmdOrControl+N"));
   file_menu = file_menu.add_item(CustomMenuItem::new("newfolder".to_string(), "New Folder..."));
-  file_menu = file_menu.add_item(CustomMenuItem::new("newproject".to_string(), "New Project..."));
+  // file_menu = file_menu.add_item(CustomMenuItem::new("newproject".to_string(), "New Project..."));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project...").accelerator("cmdOrControl+O"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
@@ -105,10 +105,10 @@ fn main() {
           let window = event.window();
           window.emit_all("newfolder", {}).unwrap();
         }
-        "newproject" => {
-          let window = event.window();
-          window.emit_all("newproject", {}).unwrap();
-        }
+        // "newproject" => {
+        //   let window = event.window();
+        //   window.emit_all("newproject", {}).unwrap();
+        // }
         "openfolder" => {
           let window = event.window();
           window.emit_all("openfolder", {}).unwrap();

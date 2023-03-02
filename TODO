@@ -1,15 +1,12 @@
- - Logo:
  - Editor:
   - syntax helpers for unclosed {}
  - Browser:
    - context menu (setmain|preview|delete) -> temporary solution 'setmain' under Menu.File
-   - watcher file system misses inner folders
-   - newproject fails adding path to the scope
+   - newproject not supported
  - Viewer:
  - Footer:
    - github
  - Settings:
-   - implement
+   - editor fontsize; themes?
  - Menu.File:
-   - new-file and new-project to be implemented
-   - rename, saveas
+   - rename file, delete file, saveas

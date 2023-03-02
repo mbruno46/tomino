@@ -7,6 +7,7 @@ export function wrapper(name:string, f: Function) {
   })();
 }
 
+
 export function FileWatcher(callback: Function) {
   let time = 0;
   let skip = false;
@@ -17,15 +18,34 @@ export function FileWatcher(callback: Function) {
       timer = setInterval(() => {
         invoke<number>('timestamp',{ path: path }).then((t)=>{
           if (t>time) {
-            if (!skip) callback();
+            if (skip) {skip = false}
+            else callback();
             time=t;
           }
         });
-      }, 1000);
+      }, 3000);
     },
     skipNext() {skip = true;},
-    kill() {clearInterval(timer);}
+    kill() {if (timer) clearInterval(timer);}
   }
+}
+
+export function FoldersWatcher(paths: string[], callback: Function) {
+  let time = <number[]>[];
+  let timer: number; 
+
+  paths.forEach((p) => invoke<number>('timestamp',{ path: p }).then((t)=>time.push(t)));
+
+  timer = setInterval(() => {
+    for (let i=0;i<paths.length;i++) {
+      invoke<number>('timestamp',{ path: paths[i] }).then((t)=>{
+        if (t>time[i]) {
+          callback();
+          clearInterval(timer);
+        }
+      });
+    }
+  }, 3000);
 }
 
 export default {

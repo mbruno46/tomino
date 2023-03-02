@@ -28,20 +28,9 @@ import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
 import database from '@/helpers/LatexData';
 import { wrapper } from '@/helpers/Utils';
-import { FileWatcher } from '@/helpers/Utils';
+import { FoldersWatcher } from '@/helpers/Utils';
 
 const folder = ref('');
-
-wrapper('newproject', ()=>{
-  save({title: 'Create new project'}).then((path) => {
-    if (path) {
-      exists(path).then((yes)=>{
-        if (!yes) createDir(path).then(()=>folder.value = path);
-        else folder.value
-      })
-    }
-  });
-});
 
 wrapper('openfolder', ()=>{
   open({directory: true, multiple: false, recursive: true}).then((dir) => {
@@ -63,21 +52,26 @@ export default defineComponent({
   setup() {
     const filetree = ref<FileTree>();
     const inputfield = ref<typeof InputField|null>(null);
+    let wfs = <string[]>[];
 
-    function openProject(folder: string) {
-      function inner() {
-        const base = folder.substring(folder.lastIndexOf('/')+1);
-        readDir(folder, {recursive: true}).then((entries) => {
-          filetree.value = new FileTree(folder, base, entries);
-          store.pdf.value.cwd = folder;
-          database.importFromFileTree(filetree.value);
-        });
+    function openProject() {
+      function watchFolders(ft: FileTree) {
+        wfs.push(ft.path);
+        for (const sf of ft.subfolders) watchFolders(sf);
       }
 
-      exists(folder).then((yes)=>{
+      exists(folder.value).then((yes)=>{
         if (yes) {
-          const fw = FileWatcher(inner);
-          fw.init(folder);
+          const base = folder.value.substring(folder.value.lastIndexOf('/')+1);
+          readDir(folder.value, {recursive: true}).then((entries) => {
+            filetree.value = new FileTree(folder.value, base, entries);
+            store.pdf.value.cwd = folder.value;
+            database.importFromFileTree(filetree.value);
+
+            wfs = [];
+            watchFolders(filetree.value);
+            FoldersWatcher(wfs, openProject)
+          });
         }
       })
     }
@@ -85,7 +79,6 @@ export default defineComponent({
     function newFile() {
       function inner(fname: string) {
         let path = `${folder.value}/${fname}`;
-        console.log('creating file ', path);
         exists(path).then((yes) => {
           if (!yes) writeFile(path,'');
         })
@@ -96,7 +89,6 @@ export default defineComponent({
     function newFolder() {
       function inner(fname: string) {
         let path = `${folder.value}/${fname}`;
-        console.log('creating folder ', path);
         exists(path).then((yes) => {
           if (!yes) createDir(path);
         })
@@ -105,7 +97,7 @@ export default defineComponent({
     }
 
     onMounted(()=>{
-      watchEffect(()=>{if (folder.value!='') openProject(folder.value)});
+      watchEffect(()=>{if (folder.value!='') openProject()});
       wrapper('newfile', newFile);
       wrapper('newfolder', newFolder);
     })
@@ -114,7 +106,7 @@ export default defineComponent({
     return {
       filetree,
       inputfield,
-      reload() {openProject(folder.value);},
+      reload() {openProject();},
       newFile,
       newFolder,
     }

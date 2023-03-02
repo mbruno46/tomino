@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUpdated, ref } from 'vue';
+import { defineComponent, onMounted, onUnmounted, onUpdated, ref } from 'vue';
 import type { Ref } from 'vue'
 
 import { History, Selection, Caret, Finder } from '@/helpers/EditorTools';
@@ -181,6 +181,8 @@ export default defineComponent({
     onUpdated(() => {
       if (code_editor.value) s.updateDOM(code_editor.value);
     });
+
+    onUnmounted(() => fw.kill());
 
     function _deleteSelectedText() {
       let t = '';
