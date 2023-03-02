@@ -5,6 +5,18 @@
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, AboutMetadata};
 use tauri::Manager;
 
+use std::fs;
+use filetime::FileTime;
+
+#[tauri::command]
+fn timestamp(path: String) -> i64 {
+  let metadata = fs::metadata(path).unwrap();
+
+  let mtime = FileTime::from_last_modification_time(&metadata);
+  // println!("{}", mtime);
+  mtime.unix_seconds()
+}
+
 pub fn create_menu() -> Menu {
   let mut menu = Menu::new();
   #[cfg(target_os = "macos")]
@@ -28,7 +40,8 @@ pub fn create_menu() -> Menu {
   }
 
   let mut file_menu = Menu::new();
-  file_menu = file_menu.add_item(CustomMenuItem::new("newfile".to_string(), "New File").accelerator("cmdOrControl+N"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("newfile".to_string(), "New File...").accelerator("cmdOrControl+N"));
+  file_menu = file_menu.add_item(CustomMenuItem::new("newfolder".to_string(), "New Folder..."));
   file_menu = file_menu.add_item(CustomMenuItem::new("newproject".to_string(), "New Project..."));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project...").accelerator("cmdOrControl+O"));
@@ -84,6 +97,18 @@ fn main() {
     .menu(create_menu())
     .on_menu_event(|event| {
       match event.menu_item_id() {
+        "newfile" => {
+          let window = event.window();
+          window.emit_all("newfile", {}).unwrap();
+        }
+        "newfolder" => {
+          let window = event.window();
+          window.emit_all("newfolder", {}).unwrap();
+        }
+        "newproject" => {
+          let window = event.window();
+          window.emit_all("newproject", {}).unwrap();
+        }
         "openfolder" => {
           let window = event.window();
           window.emit_all("openfolder", {}).unwrap();
@@ -131,6 +156,7 @@ fn main() {
         _ => {}
       }
     })
+    .invoke_handler(tauri::generate_handler![timestamp])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

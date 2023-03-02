@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "tomino",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "tauri": {
     "allowlist": {
@@ -19,7 +19,7 @@
         "writeFile": true,
         "readDir": true,
         "copyFile": false,
-        "createDir": false,
+        "createDir": true,
         "removeDir": false,
         "removeFile": false,
         "renameFile": false,
@@ -34,7 +34,7 @@
         "confirm": false,
         "message": true,
         "open": true,
-        "save": false
+        "save": true
       },
       "shell": {
         "all": false,

@@ -3,7 +3,8 @@
   - syntax helpers for unclosed {}
  - Browser:
    - context menu (setmain|preview|delete) -> temporary solution 'setmain' under Menu.File
-   - watch file system changes
+   - watcher file system misses inner folders
+   - newproject fails adding path to the scope
  - Viewer:
  - Footer:
    - github

@@ -11,7 +11,10 @@
 <script lang="ts">
 import { defineComponent, onMounted, onUpdated, ref } from 'vue';
 import type { Ref } from 'vue'
+
 import { History, Selection, Caret, Finder } from '@/helpers/EditorTools';
+import { FileWatcher } from '@/helpers/Utils';
+
 import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
 import { writeText, readText } from '@tauri-apps/api/clipboard';
 
@@ -162,12 +165,17 @@ export default defineComponent({
     const autocomplete = ref<typeof AutoComplete|null>(null);
     const findreplace = ref<typeof FindReplace|null>(null);
 
-    onMounted(() => {
+    function reload() {
       if (props.path) {
         readTextFile(props.path).then((content) => {
           editor?.init(content);
         });
       }
+    }
+    const fw = FileWatcher(reload);
+
+    onMounted(() => {
+      if (props.path) fw.init(props.path);
     });
 
     onUpdated(() => {
@@ -352,7 +360,10 @@ export default defineComponent({
         s.getFromDOM();
       },
       saveToDisk() {
-        if (props.path) writeTextFile(props.path, editor?.lines.value.join('\n'));
+        if (props.path) {
+          fw.skipNext();
+          writeTextFile(props.path, editor?.lines.value.join('\n'));
+        }
       },
       textBeforeCaret() {
         return (editor) ? editor.textBeforeCaret(s.focus) : '';
