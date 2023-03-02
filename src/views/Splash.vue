@@ -1,6 +1,6 @@
 <template>
   <div class="splash" :class="(hide)? 'hide': ''">
-    <img src="@/assets/512x512.png">    
+    <img src="@/assets/1024x1024.png">    
   </div>
 </template>
 

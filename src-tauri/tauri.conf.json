@@ -54,7 +54,7 @@
     "bundle": {
       "active": true,
       "category": "DeveloperTool",
-      "copyright": "",
+      "copyright": "Copyright (C) 2023, Mattia Bruno",
       "deb": {
         "depends": []
       },

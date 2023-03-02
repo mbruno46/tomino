@@ -47,12 +47,14 @@ export default defineComponent({
     async function compile(cwd: string, name: string, level:number=1) {
       store.pdf.value.loader = true;
 
-      let args = ['-pdf', '-silent','-synctex=-1'];
+      let args = ['-pdf', '-silent'];
+      if (store.Preferences.get('latex').synctex) args.push('-synctex=-1');
       if (level==2) {
         args.push('-g');
         args.push('-f');
       }
       args.push(name);
+      console.log(args);
       const output = await new Command('latexmk', args, {cwd: cwd}).execute();
 
       if (output.code==0) {
@@ -60,9 +62,11 @@ export default defineComponent({
         store.pdf.value.refresh=true;
         error.value = '';
         
-        readTextFile(`${store.pdf.value.cwd}/${store.pdf.value.main}.synctex`).then(
-          (content)=>sync.parse(content)
-        );
+        if (store.Preferences.get('latex').synctex) {
+          readTextFile(`${store.pdf.value.cwd}/${store.pdf.value.main}.synctex`).then(
+            (content)=>sync.parse(content)
+          );
+        }
       } else {
         console.log(output.stderr);
         // error.value = output.stdout + '\n' + output.stderr;
@@ -94,7 +98,7 @@ export default defineComponent({
       pdfviewer,
       error,
       syncTeX(pageid: number, xy: {x:0, y:0}) {
-        store.pdf.value.synctex = sync.pdf2tex(pageid, xy.x, xy.y);
+        if (store.Preferences.get('latex').synctex) store.pdf.value.synctex = sync.pdf2tex(pageid, xy.x, xy.y);
       }
     }
   },

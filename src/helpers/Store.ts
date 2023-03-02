@@ -58,7 +58,33 @@ const pdf = ref({
   }
 });
 
+function _preferences() {
+  function reset() {
+    return {
+      visible: false,
+      latex: {
+        synctex: true,
+      }
+    }
+  }
+
+  const settings = ref<LooseObject>(reset());
+
+  return {
+    settings,
+    resetDefaults() {
+      settings.value = reset();
+    },
+    get(key: string) {
+      return settings.value[key];
+    }
+  }
+}
+
+var Preferences = _preferences();
+
 export default {
   pdf,
   Editor,
+  Preferences,
 }

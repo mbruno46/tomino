@@ -63,6 +63,7 @@ export default defineComponent({
     const browser_visible = ref(true);
     let r = Resizer();
     const main = ref<HTMLElement|null>(null);
+    const prefs = ref(false);
 
     onMounted(()=>{
       if (main.value) r.init(main.value);
@@ -71,6 +72,7 @@ export default defineComponent({
     return {
       main,
       browser_visible,
+      prefs,
       mousedown(event: MouseEvent) {r.start(event)},
       mousemove(event: MouseEvent) {r.move(event)},
       mouseup(event: MouseEvent) {r.end(event)},
