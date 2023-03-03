@@ -1,4 +1,4 @@
-# <img src="src-tauri/icons/512x512.png" height='48px'> tomino
+# <img src="src/assets/1024x1024.png" height='48px' style='vertical-align: bottom'> tomino
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Publish](https://github.com/mbruno46/tomino/actions/workflows/publish.yml/badge.svg)](https://github.com/mbruno46/tomino/actions/workflows/publish.yml)
