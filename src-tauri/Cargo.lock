@@ -39,18 +39,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "224afbd727c3d6e4b90103ece64b8d1b67fbb1973b1046c2281eed3f3803f800"
 
 [[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "filetime",
- "open",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
-]
-
-[[package]]
 name = "atk"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2697,6 +2685,18 @@ dependencies = [
  "num_cpus",
  "pin-project-lite",
  "windows-sys 0.42.0",
+]
+
+[[package]]
+name = "tomino"
+version = "0.3.2"
+dependencies = [
+ "filetime",
+ "open",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
 ]
 
 [[package]]

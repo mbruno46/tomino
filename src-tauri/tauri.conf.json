@@ -66,8 +66,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tomino.dev",
-      "longDescription": "A light and intuitive TeX editor for the everyday physicist",
+      "identifier": "com.mbruno46.tomino",
+      "longDescription": "A lightweight and intuitive TeX editor for the everyday physicist",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -76,8 +76,8 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "A light and intuitive TeX editor for the everyday physicist",
-      "targets": "all",
+      "shortDescription": "A lightweight and intuitive TeX editor for the everyday physicist",
+      "targets": ["deb","dmg","app","appimage"],
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",

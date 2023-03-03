@@ -11,10 +11,30 @@ A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is
 - **Bug reports:** https://github.com/mbruno46/tomino/issues
 
 
-
 ### Authors
 
 Copyright (C) 2023, Mattia Bruno
 
-## Installation
+## Installation (macOS, Linux)
+
+### macOS
+
+*Note: the app is free software and not signed for macOS. As a consequence, 
+macOS prevents its installation and execution.
+To use tomino on macOS users should follow the instructions below.*
+
+  * To automatically download and install the latest version in `$HOME/Applications/` 
+    open a terminal and type
+```bash
+# macOS
+curl -Ls https://raw.githubusercontent.com/mbruno46/tomino/main/scripts/macos_installer.sh | bash -s
+```
+  * Alternatively, download the lastest `.tar.gz` release from [here](https://github.com/mbruno46/tomino/releases/), unpack it and run
+```bash
+xattr -dr com.apple.quarantine /path/to/tomino.app
+```
+
+### Linux
+
+Download the lastest release from [here](https://github.com/mbruno46/tomino/releases/)
 
