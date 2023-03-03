@@ -17,6 +17,12 @@ fn timestamp(path: String) -> i64 {
   mtime.unix_seconds()
 }
 
+#[tauri::command]
+fn create_project(app_handle: tauri::AppHandle, path: String) {
+  fs::create_dir(path.clone());
+  app_handle.fs_scope().allow_directory(path, true);
+}
+
 pub fn create_menu() -> Menu {
   let mut menu = Menu::new();
   #[cfg(target_os = "macos")]
@@ -42,7 +48,7 @@ pub fn create_menu() -> Menu {
   let mut file_menu = Menu::new();
   file_menu = file_menu.add_item(CustomMenuItem::new("newfile".to_string(), "New File...").accelerator("cmdOrControl+N"));
   file_menu = file_menu.add_item(CustomMenuItem::new("newfolder".to_string(), "New Folder..."));
-  // file_menu = file_menu.add_item(CustomMenuItem::new("newproject".to_string(), "New Project..."));
+  file_menu = file_menu.add_item(CustomMenuItem::new("newproject".to_string(), "New Project..."));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
   file_menu = file_menu.add_item(CustomMenuItem::new("openfolder".to_string(), "Open project...").accelerator("cmdOrControl+O"));
   file_menu = file_menu.add_native_item(MenuItem::Separator);
@@ -105,10 +111,10 @@ fn main() {
           let window = event.window();
           window.emit_all("newfolder", {}).unwrap();
         }
-        // "newproject" => {
-        //   let window = event.window();
-        //   window.emit_all("newproject", {}).unwrap();
-        // }
+        "newproject" => {
+          let window = event.window();
+          window.emit_all("newproject", {}).unwrap();
+        }
         "openfolder" => {
           let window = event.window();
           window.emit_all("openfolder", {}).unwrap();
@@ -156,7 +162,7 @@ fn main() {
         _ => {}
       }
     })
-    .invoke_handler(tauri::generate_handler![timestamp])
+    .invoke_handler(tauri::generate_handler![timestamp, create_project])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

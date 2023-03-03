@@ -7,14 +7,19 @@ export function wrapper(name:string, f: Function) {
   })();
 }
 
+export function CreateProject(path: string) {
+  invoke('create_project', {path: path});
+}
 
 export function FileWatcher(callback: Function) {
-  let time = 0;
+  let time: number;
   let skip = false;
   let timer: number; 
 
   return {
     init(path: string) {
+      invoke<number>('timestamp',{ path: path }).then((t)=>time=t);
+
       timer = setInterval(() => {
         invoke<number>('timestamp',{ path: path }).then((t)=>{
           if (t>time) {

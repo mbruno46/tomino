@@ -175,6 +175,7 @@ export default defineComponent({
     const fw = FileWatcher(reload);
 
     onMounted(() => {
+      reload();
       if (props.path) fw.init(props.path);
     });
 

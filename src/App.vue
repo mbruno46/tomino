@@ -3,7 +3,7 @@
     <side-bar @toggle-browser="browser_visible = !browser_visible"></side-bar>
     <browser id="browser"></browser>
     <div ref="main" class="main" @mousemove="mousemove" @mouseup="mouseup">
-      <editor ></editor>
+      <editor></editor>
       <div class="draggable" @mousedown="mousedown"></div>
       <viewer></viewer>
     </div>
@@ -31,15 +31,16 @@ function Resizer() {
   return {
     init(p: HTMLElement) {
       parent = p;
-      width = Math.floor(p.clientWidth/2-2);
     },
     start(event: MouseEvent) {
       active = true;
       origin = event.x;
+      width = parent.children[0].clientWidth;
       event.stopPropagation();
     },
     move(event: MouseEvent) {
-      if (active) parent.style.gridTemplateColumns = `minmax(8rem,${width + (event.x-origin)}px) 4px minmax(11rem,1fr)`;
+      let percent = (width + event.x-origin) / parent.clientWidth * 100;
+      if (active) parent.style.gridTemplateColumns = `minmax(8rem,${percent}%) 4px minmax(11rem,1fr)`;
       event.stopPropagation();
     },
     end(event: MouseEvent) {

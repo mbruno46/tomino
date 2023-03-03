@@ -2,7 +2,6 @@
   - syntax helpers for unclosed {}
  - Browser:
    - context menu (setmain|preview|delete) -> temporary solution 'setmain' under Menu.File
-   - newproject not supported
  - Viewer:
  - Footer:
    - github

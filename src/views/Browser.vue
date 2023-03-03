@@ -18,7 +18,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import { readDir, exists, writeFile, createDir } from '@tauri-apps/api/fs';
-import { open, save } from '@tauri-apps/api/dialog';
+import { open, save, message } from '@tauri-apps/api/dialog';
 
 import NavFolder from '@/components/NavFolder.vue';
 import IconButton from '@/components/IconButton.vue';
@@ -28,9 +28,20 @@ import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
 import database from '@/helpers/LatexData';
 import { wrapper } from '@/helpers/Utils';
-import { FoldersWatcher } from '@/helpers/Utils';
+import { CreateProject, FoldersWatcher } from '@/helpers/Utils';
 
 const folder = ref('');
+
+wrapper('newproject', ()=>{
+  save().then((path) => {
+    if (path) exists(path).then((yes) => {
+      if (!yes) {
+        CreateProject(path);
+        folder.value = path;
+      }
+    })
+  });
+});
 
 wrapper('openfolder', ()=>{
   open({directory: true, multiple: false, recursive: true}).then((dir) => {
