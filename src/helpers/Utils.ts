@@ -1,5 +1,6 @@
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/tauri';
+import { Command } from '@tauri-apps/api/shell';
 
 export function wrapper(name:string, f: Function) {
   (async ()=> {
@@ -51,6 +52,16 @@ export function FoldersWatcher(paths: string[], callback: Function) {
       });
     }
   }, 3000);
+}
+
+export async function env(arg: string) {
+  const output = await new Command('bash', ['-ilc','env']).execute();
+  let res = '';
+  if (output.code==0) {
+    let m = output.stdout.match(new RegExp(`${arg}=(.*)\n`));
+    if (m) res = m[1];
+  }
+  return res;
 }
 
 export default {

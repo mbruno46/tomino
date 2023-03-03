@@ -41,7 +41,8 @@
         "execute": true,
         "open": false,
         "scope": [
-          {"name": "latexmk", "cmd": "latexmk", "args": true}
+          {"name": "latexmk", "cmd": "latexmk", "args": true},
+          {"name": "bash", "cmd": "/bin/sh", "args": true}
         ],
         "sidecar": false
       },
