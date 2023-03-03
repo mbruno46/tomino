@@ -9,7 +9,8 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import * as pdfjsLib from "pdfjs-dist";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "@/../node_modules/pdfjs-dist/build/pdf.worker.js";
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker?worker';
+pdfjsLib.GlobalWorkerOptions.workerPort = new pdfjsWorker();
 import { readBinaryFile, exists } from '@tauri-apps/api/fs';
 import store from '@/helpers/Store';
 
