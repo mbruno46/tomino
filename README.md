@@ -15,6 +15,10 @@ A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is
 
 Copyright (C) 2023, Mattia Bruno
 
+## Requirements
+
+ - `latexmk` for the compilation of LaTeX files. Instructions to install it on your system can be found [here](https://mg.readthedocs.io/latexmk.html)
+
 ## Installation (macOS, Linux)
 
 ### macOS
@@ -29,7 +33,7 @@ To use tomino on macOS users should follow the instructions below.*
 # macOS
 curl -Ls https://raw.githubusercontent.com/mbruno46/tomino/main/scripts/macos_installer.sh | bash -s
 ```
-  * Alternatively, download the lastest `.tar.gz` release from [here](https://github.com/mbruno46/tomino/releases/), unpack it and run
+  * Alternatively, download the lastest `.tar.gz` release from [here](https://github.com/mbruno46/tomino/releases/), unpack it and run the following command
 ```bash
 xattr -dr com.apple.quarantine /path/to/tomino.app
 ```

@@ -16,7 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-## [v0.3.2] - 2023-03-03
+## [0.3.3] - 2023-03-04
+
+### Changed
+
+- Fixed latex compilation bug: `$PATH` env variable is now properly set when tomino launches `latexmk`
+- Fixed PDF viewer bug: `pdfjsLib.GlobalWorkerOptions` is now properly initialized with pdfjsWorker
+
+## [0.3.2] - 2023-03-03
 
 - First stable release of tomino
 

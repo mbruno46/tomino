@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watchEffect, onUnmounted } from 'vue'
+import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 
 import PDFViewer from '@/components/PDFViewer.vue';
 import PDFError from '@/components/PDFError.vue';
@@ -20,7 +20,7 @@ import IconButton from '@/components/IconButton.vue';
 
 import store from '@/helpers/Store';
 import { SyncTex } from '@/helpers/SyncTex';
-import { wrapper } from '@/helpers/Utils';
+import { wrapper, env } from '@/helpers/Utils';
 
 import { Command } from '@tauri-apps/api/shell';
 import { readTextFile, exists } from '@tauri-apps/api/fs';
@@ -47,6 +47,8 @@ export default defineComponent({
     async function compile(cwd: string, name: string, level:number=1) {
       store.pdf.value.loader = true;
 
+      const path = await env('PATH');
+
       let args = ['-pdf', '-silent'];
       if (store.Preferences.get('latex').synctex) args.push('-synctex=-1');
       if (level==2) {
@@ -54,8 +56,9 @@ export default defineComponent({
         args.push('-f');
       }
       args.push(name);
-      console.log(args);
-      const output = await new Command('latexmk', args, {cwd: cwd}).execute();
+      
+      const output = await new Command('latexmk', args, {cwd: cwd, env: {'PATH': path}}).execute();
+      console.log(output);
 
       if (output.code==0) {
         console.log('compiled ', output.stdout);
@@ -70,7 +73,7 @@ export default defineComponent({
       } else {
         console.log(output.stderr);
         // error.value = output.stdout + '\n' + output.stderr;
-        if (output.stderr.match(/bibtex main: Bibtex errors: See file 'main.blg'/)) {
+        if (output.stderr.match(/bibtex main: Bibtex errors: See file '.*.blg'/)) {
           let fname = `${store.pdf.value.cwd}/${store.pdf.value.main}.blg`
           exists(fname).then(()=>{
             readTextFile(fname).then((content) => error.value = content)
