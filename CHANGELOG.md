@@ -16,6 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+## [] - 
+
+### Fixed
+
+- Fixed bug not repainting canvas on large zoom
+- Fixed bug huge memory footprint of pdf viewer: only pages in viewport are rendered
+- Changed pdf.js version to 2.14.305 from 2.12.313; `core-js` required
+
 ## [0.3.3] - 2023-03-04
 
 ### Changed
