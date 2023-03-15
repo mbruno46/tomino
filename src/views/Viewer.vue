@@ -1,8 +1,8 @@
 <template>
   <div class="viewer">
     <div class="toolbar">
-      <icon-button :tag="'fitH'" @click="pdfviewer?.stretch(false)"></icon-button>
-      <icon-button :tag="'fitV'" @click="pdfviewer?.stretch(true)"></icon-button>
+      <icon-button :tag="'fitH'" @click="pdfviewer?.stretch(true)"></icon-button>
+      <icon-button :tag="'fitV'" @click="pdfviewer?.stretch(false)"></icon-button>
       <icon-button :tag="'+'" @click="pdfviewer?.zoom(true)"></icon-button>
       <icon-button :tag="'-'" @click="pdfviewer?.zoom(false)"></icon-button>
     </div>
