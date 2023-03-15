@@ -8,8 +8,8 @@ export function wrapper(name:string, f: Function) {
   })();
 }
 
-export function CreateProject(path: string) {
-  invoke('create_project', {path: path});
+export async function CreateProject(path: string) {
+  return await invoke('create_project', {path: path});
 }
 
 export function FileWatcher(callback: Function) {
