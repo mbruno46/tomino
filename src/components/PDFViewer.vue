@@ -64,8 +64,10 @@ export default defineComponent({
         const page = await pdfDoc.getPage(i+1);
         if (i==0) initViewport(page);
         pages.push(page);
-        checkCanvas(i, page, true);
+        // checkCanvas(i, page, true);
       }
+      scale = 1;
+      resetCanvas();
     }
 
     function initViewport(page: any) {
@@ -74,19 +76,23 @@ export default defineComponent({
       viewport.width = _viewport.width;
     }
 
-    function checkCanvas(index: number, page: any, force = false) {
-      let r = Math.round(width.value/viewport.width/0.5+1)*0.5;
-      r = (r<1) ? 1 : ((r>4) ? 4 : r);
-      if ((scale!=r) || force) {
-        scale = r;
-
-        let canvas = document.getElementById(`pdfpage_${index+1}`) as HTMLCanvasElement;
+    function resetCanvas() {
+      for (let i=0; i<pages.length; i++) {
+        let canvas = document.getElementById(`pdfpage_${i+1}`) as HTMLCanvasElement;
         canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
 
-        var _viewport = page.getViewport({scale: scale});
+        var _viewport = pages[i].getViewport({scale: scale});
         canvas.width = _viewport.width;
         canvas.height = _viewport.height;
+      }
+    }
 
+    function checkCanvas(index: number, page: any) {
+      let r = Math.round(width.value/viewport.width/0.5+1)*0.5;
+      r = (r<1) ? 1 : ((r>4) ? 4 : r);
+      if (scale!=r) {
+        scale = r;
+        resetCanvas();
         return true;
       }
       return false;
