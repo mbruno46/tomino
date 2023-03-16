@@ -36,8 +36,10 @@ wrapper('newproject', ()=>{
   save().then((path) => {
     if (path) exists(path).then((yes) => {
       if (!yes) {
-        CreateProject(path);
-        folder.value = path;
+        CreateProject(path).then((out)=>{
+          if (out) folder.value = path;
+          else message(`Error: folder ${path} could not be created`);
+        })
       }
     })
   });

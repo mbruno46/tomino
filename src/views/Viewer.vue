@@ -1,10 +1,10 @@
 <template>
   <div class="viewer">
     <div class="toolbar">
-      <icon-button :tag="'fitH'" @click="pdfviewer?.zoom('fitH')"></icon-button>
-      <icon-button :tag="'fitV'" @click="pdfviewer?.zoom('fitV')"></icon-button>
-      <icon-button :tag="'+'" @click="pdfviewer?.zoom('zoomIn')"></icon-button>
-      <icon-button :tag="'-'" @click="pdfviewer?.zoom('zoomOut')"></icon-button>
+      <icon-button :tag="'fitH'" @click="pdfviewer?.stretch(true)"></icon-button>
+      <icon-button :tag="'fitV'" @click="pdfviewer?.stretch(false)"></icon-button>
+      <icon-button :tag="'+'" @click="pdfviewer?.zoom(true)"></icon-button>
+      <icon-button :tag="'-'" @click="pdfviewer?.zoom(false)"></icon-button>
     </div>
     <PDFViewer v-if="error==''" ref="pdfviewer" @synctex="syncTeX"></PDFViewer>
     <PDFError v-else :error="error"></PDFError>
@@ -112,8 +112,10 @@ export default defineComponent({
 .viewer {
   background-color: var(--background);
   height: 100%;
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
+  /* display: grid; */
+  /* grid-template-rows: auto 1fr; */
   overflow: hidden;
 }
 

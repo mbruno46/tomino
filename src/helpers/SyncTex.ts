@@ -1,5 +1,7 @@
 import { normalize } from '@tauri-apps/api/path';
 
+// https://manpages.ubuntu.com/manpages/trusty/man5/synctex.5.html
+
 // const unit = Math.pow(2,16);
 const unit = 65781.76;
 const tag = '(\\d+)'
@@ -31,19 +33,30 @@ interface Block {
   'blocks': Block[],
 }
 
+// const blocks: blockType = {
+//   '[': ['vbox', new RegExp(`\\[${link}:${point}:${size}\\n${generic}`)],
+//   '(': ['hbox', new RegExp(`\\(${link}:${point}:${size}\\n${generic}`)],
+//   'h': ['void_hbox', new RegExp(`h${link}:${point}:${size}\\n${generic}`)],
+//   'v': ['void_vbox', new RegExp(`v${link}:${point}:${size}\\n${generic}`)],
+//   'x': ['current', new RegExp(`x${link}:${point}\\n${generic}`)],
+//   'k': ['kern', new RegExp(`k${link}:${point}:${width}\\n${generic}`)],
+//   'g': ['glue', new RegExp(`g${link}:${point}\\n${generic}`)],
+//   '$': ['math', new RegExp(`\\$${link}:${point}\\n${generic}`)],
+//   'f': ['ref', new RegExp(`f${tag}:${point}\\n${generic}`)],
+//   'r': ['r', new RegExp(`r${link}:${point}:${size}\\n${generic}`)]
+// }
 const blocks: blockType = {
-  '[': ['vbox', new RegExp(`\\[${link}:${point}:${size}\\n${generic}`)],
-  '(': ['hbox', new RegExp(`\\(${link}:${point}:${size}\\n${generic}`)],
-  'h': ['void_hbox', new RegExp(`h${link}:${point}:${size}\\n${generic}`)],
-  'v': ['void_vbox', new RegExp(`v${link}:${point}:${size}\\n${generic}`)],
-  'x': ['current', new RegExp(`x${link}:${point}\\n${generic}`)],
-  'k': ['kern', new RegExp(`k${link}:${point}:${width}\\n${generic}`)],
-  'g': ['glue', new RegExp(`g${link}:${point}\\n${generic}`)],
-  '$': ['math', new RegExp(`\\$${link}:${point}\\n${generic}`)],
-  'f': ['ref', new RegExp(`f${tag}:${point}\\n${generic}`)]
+  '[': ['vbox', new RegExp(`\\[${link}:${point}:${size}`)],
+  '(': ['hbox', new RegExp(`\\(${link}:${point}:${size}`)],
+  'h': ['void_hbox', new RegExp(`h${link}:${point}:${size}`)],
+  'v': ['void_vbox', new RegExp(`v${link}:${point}:${size}`)],
+  'x': ['current', new RegExp(`x${link}:${point}`)],
+  'k': ['kern', new RegExp(`k${link}:${point}:${width}`)],
+  'g': ['glue', new RegExp(`g${link}:${point}`)],
+  '$': ['math', new RegExp(`\\$${link}:${point}`)],
+  'f': ['ref', new RegExp(`f${tag}:${point}`)],
+  'r': ['r', new RegExp(`r${link}:${point}:${size}`)]
 }
-// rule: new RegExp(`r${link}:${point}`),
-
 
 export function SyncTex() {
   let pages = <{[key: number]: Block}>{};
@@ -65,13 +78,16 @@ export function SyncTex() {
   }
 
   function parseHeader(content: string) {
-    // let inp = '(Input:(?:.|\\n)*)';
-    let r = ['SyncTeX\\sVersion:(\\d+)','(Input:(?:.|\\n)*)',
-      'Output:(.*)','Magnification:(\\d+)','Unit:(\\d+)',
-      'X\\sOffset:(\\d+)','Y\\sOffset:(\\d+)','Content:','((?:.|\n)*)',
-      '(Input:(?:.|\\n)*)','!\\d+\\nPostamble:\\nCount:\\d+\\n!\\d+\\nPost\\sscriptum:'
+    let r = [
+      'SyncTeX\\sVersion:(\\d+)',
+      '(Input:[^]*)',
+      'Output:(.*)', 'Magnification:(\\d+)','Unit:(\\d+)',
+      'X\\sOffset:(\\d+)','Y\\sOffset:(\\d+)',
+      'Content:',
+      '([^]*)',
+      '(Input:[^]*)','!\\d+','Postamble:','Count:\\d+','!\\d+','Post\\sscriptum:'
     ]
-    let m = content.match(RegExp(r.join('\\n')));
+    let m = content.match(new RegExp(r.join('\n')));
     if (m) {
       header['version'] = parseInt(m[1]);
       parseInput(m[2]);
@@ -91,52 +107,6 @@ export function SyncTex() {
       return bulk;
     }
     return '';
-  }
-
-  function parseBlock(content: String): [String, Block|null] {
-    const nextLine = (s: String) => s.substring(s.indexOf('\n')+1)
-
-    let [type, rex] = blocks[content.substring(0,1)];
-
-    if (type) {
-      let m = content.match(rex);
-      content = nextLine(content);
-      if (m==undefined) return ['', null];
-      
-      let blocks = <Block[]>[];
-      let block;
-      if (['vbox','hbox'].includes(type)) {
-        while (content.substring(0,1)!=blockClosures[type]) {
-          [content, block] = parseBlock(content);
-          if (block) blocks.push(block);    
-        }
-        content = nextLine(content);
-      }
-
-      let out = {
-        'type': type,
-        'input': parseInt(m[1]),
-        'line': parseInt(m[2]),
-        'column':  parseInt(m[3] ?? '0'),
-        'left': parseInt(m[4]) / unit,
-        'bottom': parseInt(m[5]) / unit,
-        'width': parseInt(m[6] ?? '0') / unit,
-        'height': parseInt(m[7] ?? '0') / unit,
-        'depth': parseInt(m[8] ?? '0'),
-        'blocks': blocks,
-      }
-      
-      return [content, out];
-    };
-    return ['', null];
-  }
-
-  async function parsePage(page: String) {
-    let m = page.match(/(\d+)\n((?:.|\n)*)}(\d+)\n?/);
-    if (m) {
-      if (m[1]!=m[3]) console.log('broken synctex file');
-      else pages[parseInt(m[1])] = parseBlock(m[2])[1]!;
-    }
   }
 
   function innerMostBlock(block: Block, x: number, y: number): Block|null {
@@ -159,11 +129,58 @@ export function SyncTex() {
     return b;
   }
 
+  function parsePage(content: string) {
+    function createBlock(type: string, m: string[], blocks: Block[]) : Block {
+      return {
+        'type': type,
+        'input': parseInt(m[1]),
+        'line': parseInt(m[2]),
+        'column':  parseInt(m[3] ?? '0'),
+        'left': parseInt(m[4]) / unit,
+        'bottom': parseInt(m[5]) / unit,
+        'width': parseInt(m[6] ?? '0') / unit,
+        'height': parseInt(m[7] ?? '0') / unit,
+        'depth': parseInt(m[8] ?? '0'),
+        'blocks': blocks,
+      }
+    }
+
+    let lines = content.split('\n');
+    let i=0;
+
+    function parseBlock() : Block|null {
+      let [type, rex] = blocks[lines[i].substring(0,1)];
+      let m = lines[i].match(rex);
+      i++;
+      if (m==undefined) return null;
+
+      let bs = <Block[]>[];
+      if (['vbox','hbox'].includes(type)) {
+        while (lines[i].substring(0,1)!=blockClosures[type]) {
+          let b = parseBlock();
+          if (b) bs.push(b);    
+        }
+        i++;
+      }
+      return createBlock(type, m, bs);
+    }
+
+    let out = parseBlock();
+    if (out==null) console.log('synctex error');
+    return out;
+  }
+
+
   return {
     parse(content: string) {
       let bulk = parseHeader(content);
-      bulk = bulk.replace(/!\d+\n/g,'');
-      for (const p of bulk.split('{')) parsePage(p);
+
+      let m = <RegExpMatchArray|null>[''];
+      for (let id=1;;id++) {
+        m = bulk.match(RegExp(`!\\d+\n{${id}\n([^]*)\n!\\d+\n}${id}`));
+        if (m) pages[id] = parsePage(m[1])!;
+        else break;
+      }
     },
     pdf2tex(pageid: number, x: number, y: number) {
       let b = innerMostBlock(pages[pageid], x, y)!;

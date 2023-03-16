@@ -18,9 +18,15 @@ fn timestamp(path: String) -> i64 {
 }
 
 #[tauri::command]
-fn create_project(app_handle: tauri::AppHandle, path: String) {
-  fs::create_dir(path.clone());
-  app_handle.fs_scope().allow_directory(path, true);
+fn create_project(app_handle: tauri::AppHandle, path: String) -> bool {
+  match fs::create_dir(path.clone()) {
+    Ok(_out) => true,
+    Err(_e) => return false,
+  };
+  match app_handle.fs_scope().allow_directory(path, true) {
+    Ok(_out) => true,
+    Err(_e) => return false,
+  }
 }
 
 fn main() {
