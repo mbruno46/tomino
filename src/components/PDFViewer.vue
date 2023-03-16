@@ -48,7 +48,7 @@ export default defineComponent({
     }
 
     let rendered = <number[]>[];
-    let pages = <typeof pdfjsLib.PDFPageProxy[]>[];
+    let pages = <any[]>[];
     async function load(cwd: string, name: string) {
       let fname = `${cwd}/${name}.pdf`;
       if (!exists(fname)) {return;}
@@ -68,13 +68,13 @@ export default defineComponent({
       }
     }
 
-    function initViewport(page: typeof pdfjsLib.PDFPageProxy) {
+    function initViewport(page: any) {
       var _viewport = page.getViewport({scale: 1});
       viewport.height = _viewport.height; 
       viewport.width = _viewport.width;
     }
 
-    function checkCanvas(index: number, page: typeof pdfjsLib.PDFPageProxy, force = false) {
+    function checkCanvas(index: number, page: any, force = false) {
       let r = Math.round(width.value/viewport.width/0.5+1)*0.5;
       r = (r<1) ? 1 : ((r>4) ? 4 : r);
       if ((scale!=r) || force) {
