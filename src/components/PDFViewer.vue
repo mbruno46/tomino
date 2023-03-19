@@ -57,7 +57,7 @@ export default defineComponent({
       const pdfDoc = await pdfjsLib.getDocument(data).promise;
       numpages.value = pdfDoc.numPages;
 
-      rendered = [];
+      // rendered = [];
       pages = [];
 
       for (let i = 0; i < pdfDoc.numPages; i++) {
@@ -105,7 +105,7 @@ export default defineComponent({
       if (!shouldRender) return;
 
       let canvas = document.getElementById(`pdfpage_${index+1}`) as HTMLCanvasElement;
-      // console.log('r', index, canvas)
+      console.log('r', index, canvas)
 
       var context = canvas.getContext('2d');
       if (context) {
@@ -122,7 +122,7 @@ export default defineComponent({
 
     function clearPage(index: number) {
       let canvas = document.getElementById(`pdfpage_${index+1}`) as HTMLCanvasElement;
-      // console.log('c',index, canvas)
+      console.log('c',index, canvas)
       var context = canvas.getContext('2d');
       context?.clearRect(0, 0, canvas.width, canvas.height);
       rendered.splice(rendered.indexOf(index), 1);
@@ -137,7 +137,7 @@ export default defineComponent({
       let id0 = Math.floor(el.scrollTop/height)
       let id1 = Math.round((el.scrollTop + el.offsetHeight)/height);
       for (const r of [...rendered]) if ((r<id0)||(r>id1)) clearPage(r);
-      for (let i=id0; i<=id1; i++) renderPage(i);
+      for (let i=id0; i<=Math.min(id1, numpages.value-1); i++) renderPage(i);
     }
     
     onMounted(() => {
