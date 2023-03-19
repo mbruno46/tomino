@@ -129,19 +129,28 @@ function Editor() {
     comment(start: Caret, end: Caret) {
       var count=0;
       forLoop(start, end, (i: number) => {count += (lines.value[i].match(/^\s*%.*$/)) ? 1 : 0;});
+      let n0 = lines.value[start.idx].length;
+      let n1 = lines.value[end.idx].length;
+
       if (count==end.idx+1-start.idx) {
         forLoop(start, end, (i: number) => {
           lines.value[i] = lines.value[i].replace(RegExp(/^(\s*)(%\s?)(.*)$/), function(d,a,b,c) {
             return ((a!='') ? a : '') + ((c!='') ? c : '');
           })
         })
+        n0 -= lines.value[start.idx].length;
+        n1 -= lines.value[end.idx].length;
+        start.pos -= (start.pos>n0) ? n0 : start.pos;
+        end.pos -= (end.pos>n1) ? n1 : end.pos;
       } else {
         forLoop(start, end, (i: number) => {lines.value[i] = '% ' + lines.value[i]});
+        start.pos += 2;
+        end.pos += 2;
       }
+
     }
   }
 }
-
 
 
 export default defineComponent({
