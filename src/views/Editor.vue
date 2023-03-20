@@ -7,7 +7,8 @@
     </div>
     <code-editor v-for="(val, key) in files" :path="val.path"
       :key="`code_${key}`" :class="val.open ? '': 'hide'" :ref="(el)=>{Refs[key]=el}"
-      @status="(n)=>{getStatus(key.toString(),n);}">
+      @status="(n)=>{getStatus(key.toString(),n);}"
+      @recompile="(level)=>{store.pdf.value.compile = level;}">
     </code-editor>
   </div>
 </template>

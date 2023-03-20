@@ -22,6 +22,7 @@ export default defineComponent({
   setup() {
     let scale = 0;
     var viewport = {height: 1, width: 1};
+    let renderpages = <number[]>[];
 
     const numpages = ref(0);
     const width = ref(0);
@@ -36,6 +37,7 @@ export default defineComponent({
       } else {
         width.value = round(pdfviewer.value.offsetHeight * viewport.width / viewport.height)
       }
+      render(true);
     }
 
     function zoom(zoomin: boolean) {
@@ -47,7 +49,6 @@ export default defineComponent({
       pdfviewer.value.scrollLeft = pdfviewer.value.scrollLeft * f  + pdfviewer.value.offsetWidth * (f-1) * 0.5;
     }
 
-    let rendered = <number[]>[];
     let pages = <any[]>[];
     async function load(cwd: string, name: string) {
       let fname = `${cwd}/${name}.pdf`;
@@ -57,17 +58,13 @@ export default defineComponent({
       const pdfDoc = await pdfjsLib.getDocument(data).promise;
       numpages.value = pdfDoc.numPages;
 
-      rendered = [];
       pages = [];
 
       for (let i = 0; i < pdfDoc.numPages; i++) {
         const page = await pdfDoc.getPage(i+1);
         if (i==0) initViewport(page);
         pages.push(page);
-        // checkCanvas(i, page, true);
       }
-      scale = 1;
-      resetCanvas();
     }
 
     function initViewport(page: any) {
@@ -76,38 +73,51 @@ export default defineComponent({
       viewport.width = _viewport.width;
     }
 
-    function resetCanvas() {
-      for (let i=0; i<pages.length; i++) {
-        let canvas = document.getElementById(`pdfpage_${i+1}`) as HTMLCanvasElement;
-        canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    function render(force = false) {
+      function setCanvas() {
+        for (let i=0; i<pages.length; i++) {
+          let canvas = document.getElementById(`pdfpage_${i+1}`) as HTMLCanvasElement;
+          canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
 
-        var _viewport = pages[i].getViewport({scale: scale});
-        canvas.width = _viewport.width;
-        canvas.height = _viewport.height;
+          var _viewport = pages[i].getViewport({scale: scale});
+          canvas.width = _viewport.width;
+          canvas.height = _viewport.height;
+        }
       }
-    }
 
-    function checkCanvas(index: number, page: any) {
+      // adapt scale and reset canvas if needed (first load + zoom)
+      let shouldRender = false;
       let r = Math.round(width.value/viewport.width/0.5+1)*0.5;
       r = (r<1) ? 1 : ((r>4) ? 4 : r);
-      if (scale!=r) {
+      if (scale!=r || force) {
         scale = r;
-        resetCanvas();
-        return true;
+        setCanvas();
+        shouldRender = true;
       }
-      return false;
+
+      // update pages in viewport
+      let oldr = [...renderpages];
+      updatePagesInViewport();
+
+      // clear pages out of viewport
+      for (const i of oldr) {
+        if (!renderpages.includes(i)) clearPage(i);
+      }
+        
+      for (const i of renderpages) {
+        if (shouldRender || !oldr.includes(i)) renderPage(i);
+      }
     }
 
 
     function renderPage(index: number) {
       let page = pages[index];
-      let shouldRender = (checkCanvas(index, page)) ? true : !rendered.includes(index);
-      if (!shouldRender) return;
-
       let canvas = document.getElementById(`pdfpage_${index+1}`) as HTMLCanvasElement;
-      // console.log('r', index, canvas)
+      console.log('r', index, canvas)
 
       var context = canvas.getContext('2d');
+      context?.clearRect(0, 0, canvas.width, canvas.height);
+
       if (context) {
         var renderContext = {
           canvasContext: context, 
@@ -116,19 +126,18 @@ export default defineComponent({
         page.render(renderContext);
         console.log('page rendered')
       }
-
-      if (!rendered.includes(index)) rendered.push(index);
     }
 
     function clearPage(index: number) {
       let canvas = document.getElementById(`pdfpage_${index+1}`) as HTMLCanvasElement;
-      // console.log('c',index, canvas)
-      var context = canvas.getContext('2d');
-      context?.clearRect(0, 0, canvas.width, canvas.height);
-      rendered.splice(rendered.indexOf(index), 1);
+      if (canvas) {
+        console.log('c',index, canvas)
+        var context = canvas.getContext('2d');
+        context?.clearRect(0, 0, canvas.width, canvas.height);
+      }
     }
 
-    function handleScroll() {
+    function updatePagesInViewport() {
       if (pdfviewer.value==null) return;
       let el = pdfviewer.value;
       if (el.scrollTop<0) return;
@@ -136,8 +145,12 @@ export default defineComponent({
       let height = width.value * (viewport.height / viewport.width);
       let id0 = Math.floor(el.scrollTop/height)
       let id1 = Math.round((el.scrollTop + el.offsetHeight)/height);
-      for (const r of [...rendered]) if ((r<id0)||(r>id1)) clearPage(r);
-      for (let i=id0; i<=id1; i++) renderPage(i);
+
+      let r = renderpages;
+      // removes pages out of viewport
+      for (const i of [...r]) if ((i<id0)||(i>id1)||(i>numpages.value-1)) r.splice(r.indexOf(i), 1);
+      // adds pages in viewport
+      for (let i=id0; i<=Math.min(id1, numpages.value-1); i++) if (!r.includes(i)) r.push(i);
     }
     
     onMounted(() => {
@@ -148,7 +161,7 @@ export default defineComponent({
         let pdf = store.pdf.value;
         if (pdf.refresh) {
           await load(pdf.cwd, pdf.main);
-          handleScroll();
+          render(true);
           pdf.refresh = false;
         }
       });
@@ -161,7 +174,9 @@ export default defineComponent({
       stretch,
       zoom,
       load,
-      handleScroll,
+      handleScroll() {
+        render();
+      },
       getViewportXY(event: MouseEvent) {
         let el = event.currentTarget as HTMLElement;
         let x = (event.offsetX / el.offsetWidth) * viewport.width; 

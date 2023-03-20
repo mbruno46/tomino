@@ -9,6 +9,7 @@
 import { defineComponent, ref, onMounted, type StyleValue, watchEffect } from 'vue'
 import cmds from '@/assets/latex.commands.json';
 import envs from '@/assets/latex.environments.json';
+import math from '@/assets/latex.math.json';
 import database from '@/helpers/LatexData';
 
 const rcmds = RegExp(/^.*(\\\w+)$/);
@@ -21,7 +22,7 @@ function _filter(list: String[], word: string) {
 export function Suggestions(text: string): {word: String, suggestions: String[]} {
   if (text.match(rcmds)) {
     let w = text.match(rcmds)![1];
-    return {word: w, suggestions: _filter(database.getNewCommands().concat(cmds), w)}
+    return {word: w, suggestions: _filter(database.getNewCommands().concat(cmds).concat(math), w)}
   }
   
   let m = text.match(rargs);

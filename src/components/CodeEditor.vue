@@ -129,19 +129,28 @@ function Editor() {
     comment(start: Caret, end: Caret) {
       var count=0;
       forLoop(start, end, (i: number) => {count += (lines.value[i].match(/^\s*%.*$/)) ? 1 : 0;});
+      let n0 = lines.value[start.idx].length;
+      let n1 = lines.value[end.idx].length;
+
       if (count==end.idx+1-start.idx) {
         forLoop(start, end, (i: number) => {
           lines.value[i] = lines.value[i].replace(RegExp(/^(\s*)(%\s?)(.*)$/), function(d,a,b,c) {
             return ((a!='') ? a : '') + ((c!='') ? c : '');
           })
         })
+        n0 -= lines.value[start.idx].length;
+        n1 -= lines.value[end.idx].length;
+        start.pos -= (start.pos>n0) ? n0 : start.pos;
+        end.pos -= (end.pos>n1) ? n1 : end.pos;
       } else {
         forLoop(start, end, (i: number) => {lines.value[i] = '% ' + lines.value[i]});
+        start.pos += 2;
+        end.pos += 2;
       }
+
     }
   }
 }
-
 
 
 export default defineComponent({
@@ -151,7 +160,7 @@ export default defineComponent({
   props: {
     path: String,
   },
-  emits: ['status'],
+  emits: ['status','recompile'],
   setup(props) {
     const editor = Editor();
     const s = Selection();
@@ -389,24 +398,31 @@ export default defineComponent({
       let status = 1;
 
       if ((event.ctrlKey || event.metaKey)) {
+        status = 0;
         switch (event.key) {
           case 'x':
             this.clipboard(false);
             this.deleteSelectedText();
+            status = 1;
             break;
           case 'c':
             this.clipboard(false);
             break;
           case 'v':
             this.clipboard(true).then((t) => {
-              if (t) this.insertText(t);
+              if (t) {
+                this.insertText(t);
+                status = 1;
+              }
             });
             break;
           case 'z':
             (event.shiftKey) ? this.redo() : this.undo();
+            status = 1;
             break;
           case '/':
             this.comment();
+            status = 1;
             break;
           case 's':
             this.saveToDisk();
@@ -414,6 +430,9 @@ export default defineComponent({
             break;
           case 'f':
             this.findreplace?.activate();
+            break;
+          case 'r':
+            this.$emit('recompile', (event.shiftKey) ? 2 : 1);
             break;
         }
       }
