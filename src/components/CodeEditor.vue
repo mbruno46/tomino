@@ -160,7 +160,7 @@ export default defineComponent({
   props: {
     path: String,
   },
-  emits: ['status'],
+  emits: ['status','recompile'],
   setup(props) {
     const editor = Editor();
     const s = Selection();
@@ -398,24 +398,31 @@ export default defineComponent({
       let status = 1;
 
       if ((event.ctrlKey || event.metaKey)) {
+        status = 0;
         switch (event.key) {
           case 'x':
             this.clipboard(false);
             this.deleteSelectedText();
+            status = 1;
             break;
           case 'c':
             this.clipboard(false);
             break;
           case 'v':
             this.clipboard(true).then((t) => {
-              if (t) this.insertText(t);
+              if (t) {
+                this.insertText(t);
+                status = 1;
+              }
             });
             break;
           case 'z':
             (event.shiftKey) ? this.redo() : this.undo();
+            status = 1;
             break;
           case '/':
             this.comment();
+            status = 1;
             break;
           case 's':
             this.saveToDisk();
@@ -423,6 +430,9 @@ export default defineComponent({
             break;
           case 'f':
             this.findreplace?.activate();
+            break;
+          case 'r':
+            this.$emit('recompile', (event.shiftKey) ? 2 : 1);
             break;
         }
       }
