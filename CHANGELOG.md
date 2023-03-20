@@ -16,12 +16,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-## [0.3.4] - 2023-03-16
+## [0.4.0] - 2023-03-20
+
+### Added
+
+- New rendering engine with better memory efficiency (only pages in viewport are rendered) and better zoom handling and several bug fixes
+- Extended latex support also for math commands
 
 ### Fixed
 
+- Fixed bug Cmd/Ctrl+R not working from editor
+- Fixed bug comment not updating selection/caret
 - Fixed bug wrong repainting pdf pages (canvas) on zoom
-- Fixed bug huge memory footprint of pdf viewer: only pages in viewport are rendered
+- Fixed bug rendering last page of document on scroll
 - Changed pdf.js version to 2.14.305 from 2.12.313; `core-js` required
 
 ## [0.3.3] - 2023-03-04
