@@ -6,8 +6,8 @@
       <icon-button :tag="'+'" @click="pdfviewer?.zoom(true)"></icon-button>
       <icon-button :tag="'-'" @click="pdfviewer?.zoom(false)"></icon-button>
     </div>
-    <PDFViewer v-if="error==''" ref="pdfviewer" @synctex="syncTeX"></PDFViewer>
-    <PDFError v-else :error="error"></PDFError>
+    <PDFViewer v-show="error==''" ref="pdfviewer" @synctex="syncTeX"></PDFViewer>
+    <PDFError v-show="error!=''" :error="error"></PDFError>
   </div>
 </template>
 
