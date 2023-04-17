@@ -12,6 +12,10 @@ export async function CreateProject(path: string) {
   return await invoke('create_project', {path: path});
 }
 
+export function TimeStamp(path: string, callback: Function) {
+  invoke<number>('timestamp',{ path: path }).then((t)=>callback(t))
+}
+
 export function FileWatcher(callback: Function) {
   let time: number;
   let skip = false;

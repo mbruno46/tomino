@@ -10,7 +10,7 @@ import { defineComponent, ref, onMounted, type StyleValue, watchEffect } from 'v
 import cmds from '@/assets/latex.commands.json';
 import envs from '@/assets/latex.environments.json';
 import math from '@/assets/latex.math.json';
-import database from '@/helpers/LatexData';
+import { database } from '@/helpers/LatexDB';
 
 const rcmds = RegExp(/^.*(\\\w+)$/);
 const rargs = RegExp(/^.*(\\\w+)(?:\[.*\])?{([^}]*)$/);
@@ -39,7 +39,7 @@ export function Suggestions(text: string): {word: String, suggestions: String[]}
         out = {word: w, suggestions: _filter(database.getCites(), w)};
         break;
       case '\\includegraphics':
-        out = {word: w, suggestions: _filter(database.getFigures(), w)};
+        // out = {word: w, suggestions: _filter(database.getFigures(), w)};
         break;
       default: //includes \ref{}
         out = {word: w, suggestions: _filter(database.getLabels(), w)};
