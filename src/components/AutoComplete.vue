@@ -131,6 +131,9 @@ export default defineComponent({
       else if (key=='ArrowDown') this.choice++;
       if (this.choice<0) {this.choice += this.suggestions.length};
       this.choice = this.choice % this.suggestions.length;
+
+      let el = this.autocomplete?.children[this.choice];
+      el?.scrollIntoView({behavior: 'auto', block: 'nearest', inline: 'nearest'});
     },
   }
 });
