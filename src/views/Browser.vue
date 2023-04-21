@@ -56,8 +56,6 @@ wrapper('openfolder', ()=>{
 wrapper('setmain', ()=>{
   let fname = store.Editor.currentFile();
   initLatexDB(`${folder.value}/${fname}`)
-  // let path = `${folder.value}/${fname}`
-  // exists(path).then(()=>{initLatexDB(`${folder.value}/${fname}`)});
 });
 
 export default defineComponent({

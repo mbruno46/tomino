@@ -69,34 +69,35 @@ class MainTexFile extends TexFile {
   bibfiles = <{[key:string]: BibFile}>{};
 
   async bibliography(content: string, cwd: string) {
-    let include = [];
+    let _include = [];
 
     let mm = content.match(/\\bibliography{.*}/g);
     if (mm) {
       for (const m of mm) {
-        let fname = m.replace(/\\bibliography{(.*)}/,'$1').replace(/(.*)(.bib)?/,'$1.bib');
+        let fname = m.replace(/\\bibliography{(.*)}/,'$1').replace('.bib','')  + '.bib';
         const path = await join(cwd, fname);
         if (!(await exists(path))) continue;
-        include.push(path);
+        _include.push(path);
         if (!(path in this.bibfiles)) this.bibfiles[path] = new BibFile(path);
       }
     }
 
     for (const key in this.bibfiles) {
-      if (!include.includes(key)) delete this.bibfiles[key];
+      if (!_include.includes(key)) delete this.bibfiles[key];
     }
   }
 
   async include(content: string, cwd: string) {
-    let include = [this.path];
+    let _include = [];
 
     let mm = content.match(/\\input{.*}/g);
     if (mm) {
       for (const m of mm) {
-        let fname = m.replace(/\\input{(.*)}/,'$1').replace(/(.*)(.tex)?/,'$1.tex');
+        let fname = m.replace(/\\input{(.*)}/,'$1').replace('.tex','')  + '.tex';
         const path = await join(cwd, fname);
+        console.log(fname, path)
         if (!(await exists(path))) continue;
-        include.push(path);
+        _include.push(path);
         if (!(path in this.texfiles)) this.texfiles[path] = new TexFile(path);
       }
     }
@@ -104,16 +105,16 @@ class MainTexFile extends TexFile {
     mm = content.match(/\\include{.*}/g);
     if (mm) {
       for (const m of mm) {
-        let fname = m.replace(/\\include{(.*)}/,'$1').replace(/(.*)(.tex)?/,'$1.tex');
+        let fname = m.replace(/\\include{(.*)}/,'$1').replace('.tex','')  + '.tex';
         const path = await join(cwd, fname);
         if (!(await exists(path))) continue;
-        include.push(path);
+        _include.push(path);
         if (!(path in this.texfiles)) this.texfiles[path] = new TexFile(path);
       }
     }
 
     for (const key in this.texfiles) {
-      if (!include.includes(key)) delete this.texfiles[key];
+      if (!_include.includes(key)) delete this.texfiles[key];
     }
   }
 
