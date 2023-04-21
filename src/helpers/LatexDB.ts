@@ -1,6 +1,8 @@
-import { readTextFile, exists } from '@tauri-apps/api/fs';
-import { extname, join, dirname } from '@tauri-apps/api/path';
+import { ref } from 'vue';
+import { readDir, readTextFile, exists } from '@tauri-apps/api/fs';
+import { extname, join, dirname , basename} from '@tauri-apps/api/path';
 import { TimeStamp } from './Utils';
+import store from './Store';
 
 const rbib = RegExp(/@\w+{(.*),/);
 const rbibg = RegExp(/@\w+{(.*),/g);
@@ -65,7 +67,6 @@ class BibFile extends File {
 class MainTexFile extends TexFile {
   texfiles = <{[key:string]: TexFile}>{};
   bibfiles = <{[key:string]: BibFile}>{};
-  public figures = <string[]>[];
 
   async bibliography(content: string, cwd: string) {
     let include = [];
@@ -139,9 +140,7 @@ class MainTexFile extends TexFile {
     console.log(this)
     return out;      
   }
-
-  getFigures() {return this.figures}
-
+  
   getNewCommands() {
     let out = this.newcmds;
     for (const key in this.texfiles) out = out.concat(this.texfiles[key].newcmds);
@@ -150,10 +149,7 @@ class MainTexFile extends TexFile {
 }
 
 class Empty {
-  public figures = <string[]>[];
-
   getLabels() {return []}
-  getFigures() {return []}
   getCites() {return []}
   getNewCommands() {return []}
 }
@@ -163,11 +159,101 @@ export async function initLatexDB(file: string) {
   const ext = await extname(file);
   if (ext!='tex') return;
   database = new MainTexFile(file);
+  const name = await basename(file);
+  store.pdf.value.main = name.substring(0, name.length - 4);
 }
 
-export async function addLatexDB(file: string) {
-  const ext = await extname(file);
-  if (['pdf','jpg','png','jpeg','eps'].includes(ext)) {
-    if (!(file in database.figures)) database.figures.push(file);
+function FileSystem() {
+  let path: string;
+  let texfiles = <string[]>[];
+  let bibfiles = <string[]>[];
+  let figures = <string[]>[];
+  let files = <string[]>[];
+
+  function arrayFromType(p: string): string[] {
+    var ext = p.substring(p.lastIndexOf('.')+1);
+    if (ext=='tex') return texfiles;
+    else if (ext=='bib') return bibfiles;
+    else if (['pdf','jpg','png','jpeg','eps'].includes(ext)) return figures;
+    return files;
+  }
+
+  return {
+    texfiles,
+    bibfiles,
+    figures,
+    files,
+    init(p: string) {
+      path = p;
+    },
+    add(p: string) {
+      let arr = arrayFromType(p);
+      var name = p.substring(path.length+1);
+      if (!arr.includes(p)) arr.push(name)
+    },
+    rm(p: string) {
+      let arr = arrayFromType(p);
+      var name = p.substring(path.length+1);
+      if (arr.includes(name)) arr.splice(arr.indexOf(name), 1)
+    }
+  }
+}
+
+export var fs = FileSystem();
+
+export function Folder() {
+  let path: string = '';
+  let timestamp: number = 0;
+  let subfolders = ref<string[]>([]);
+  let files = ref<string[]>([]);
+  
+  async function update() {
+    readDir(path, {recursive: false}).then((entries)=>{
+      let keep = <string[]>[]
+
+      for (const c of entries) {
+        if (!c.name) continue;
+        if (c.name?.substring(0,1)=='.') continue;
+
+        if (c.children) {
+          if (!(subfolders.value.includes(c.path))) subfolders.value.push(c.path);
+        } else {
+          if (!(files.value.includes(c.path))) files.value.push(c.path);
+          fs.add(c.path);
+        }
+
+        keep.push(c.path);
+      }
+
+      // clean
+      const clean = (arr: string[], isfile: boolean) => {
+        for (var i of arr) if (!keep.includes(i)) {
+          arr.splice(arr.indexOf(i),1);
+          if (isfile) fs.rm(i);
+        }
+      }
+      clean(files.value, true);
+      clean(subfolders.value, false);
+
+      files.value.sort();
+      subfolders.value.sort();
+    });
+  }
+
+  return {
+    subfolders,
+    files,
+    init(p: string) {
+      path = p;
+      update();
+      
+      TimeStamp(path, (t:number)=>{timestamp=t});
+      setInterval(()=>TimeStamp(path, (t:number)=>{
+        if (t>timestamp) {
+          update();
+          timestamp = t;
+        }
+      }), 2000);
+    }
   }
 }

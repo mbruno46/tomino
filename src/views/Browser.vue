@@ -10,7 +10,6 @@
     </div>
     <input-field ref="inputfield"></input-field>
     <div class="filebrowser">
-      <!-- <nav-folder v-if="filetree" :folder="filetree"></nav-folder> -->
       <navigation-folder v-if="folder" :path="folder"></navigation-folder>
     </div>
   </div>
@@ -26,7 +25,7 @@ import IconButton from '@/components/IconButton.vue';
 import InputField from '@/components/InputField.vue';
 
 import store from '@/helpers/Store';
-import { initLatexDB } from '@/helpers/LatexDB';
+import { initLatexDB, fs } from '@/helpers/LatexDB';
 import { wrapper } from '@/helpers/Utils';
 import { CreateProject } from '@/helpers/Utils';
 
@@ -48,8 +47,8 @@ wrapper('newproject', ()=>{
 wrapper('openfolder', ()=>{
   open({directory: true, multiple: false, recursive: true}).then((dir) => {
     if ((dir!=null) && !Array.isArray(dir)) {
+      fs.init(dir);
       folder.value = dir;
-      // initLatexDB(dir);
     }
   });
 });
@@ -89,17 +88,15 @@ export default defineComponent({
     }
 
     onMounted(()=>{
-      // watchEffect(()=>{if (folder.value!='') openProject()});
+      watchEffect(()=>{if (folder.value!='') store.pdf.value.cwd = folder.value});
       wrapper('newfile', newFile);
       wrapper('newfolder', newFolder);
     })
     // onUnmounted(()=>{unlisten();});
 
     return {
-      // filetree,
       folder,
       inputfield,
-      // reload() {openProject();},
       newFile,
       newFolder,
     }

@@ -11,18 +11,11 @@
 
 
 <script lang="ts">
-import type { Ref } from 'vue'
 import { defineComponent, ref, computed, onMounted } from 'vue'
-import { readDir } from '@tauri-apps/api/fs';
 
 import NavLabel from './NavLabel.vue';
 import store from '@/helpers/Store';
-import { TimeStamp } from '@/helpers/Utils';
-
-function pop<T>(arr: Ref<T[]>, item:T) {
-  let idx = arr.value.indexOf(item);
-  arr.value.splice(idx, 1);
-}
+import { Folder } from '@/helpers/LatexDB';
 
 export default defineComponent({
   components: {
@@ -34,56 +27,21 @@ export default defineComponent({
   setup(props) {
     const expand = ref(true);
     const name = ref('');
-    const subfolders = ref<string[]>([]);
-    const files = ref<string[]>([]);
     const main = computed(()=>store.pdf.value.main+'.tex');
-    let timestamp = 0;
-
-    function update() {
-      readDir(props.path!, {recursive: false}).then((entries)=>{
-        let keep = <string[]>[]
-
-        for (const c of entries) {
-          if (!c.name) continue;
-          if (c.name?.substring(0,1)=='.') continue;
-
-          if (c.children) {
-            if (!(subfolders.value.includes(c.path))) subfolders.value.push(c.path);
-          } else {
-            if (!(files.value.includes(c.path))) files.value.push(c.path);
-            // if (files.value.includes(c.path)) {
-            //   TimeStamp(c.path, (t:number)=>{if (t>=timestamp) {
-            //     // timestamp = t;
-            //     database.update(c.path)
-            //   }
-            //   });
-            // } else {
-            //   files.value.push(c.path);
-            //   database.update(c.path);
-            // }
-          }
-
-          keep.push(c.path);
-        }
-
-        // clean
-        for (var f of files.value) if (!keep.includes(f)) pop(files, f);
-        for (var sf of subfolders.value) if (!keep.includes(sf)) pop(subfolders, sf);
-
-        TimeStamp(props.path!, (t:number)=>{timestamp=t});
-      })
-    }
 
     const getName = (path: string) => path.substring(path.lastIndexOf('/')+1);
+
+    let folder = Folder();
+    const subfolders = folder?.subfolders;
+    const files = folder?.files;
 
     onMounted(()=>{
       if (props.path) {
         name.value = getName(props.path)
-        update();
-
-        setInterval(()=>TimeStamp(props.path!, (t:number) => {if (t>timestamp) update();}), 3000);        
+        folder.init(props.path);
       }
     })
+
 
     return {
       expand,
