@@ -45,6 +45,7 @@ export function Suggestions(text: string): {word: String, suggestions: String[]}
         out = {word: w, suggestions: _filter(fs.bibfiles, w)};
         break;
       case '\\input':
+      case '\\include':
         out = {word: w, suggestions: _filter(fs.texfiles, w)};
         break;
       default: //includes \ref{}
