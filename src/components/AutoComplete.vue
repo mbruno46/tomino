@@ -44,6 +44,9 @@ export function Suggestions(text: string): {word: String, suggestions: String[]}
       case '\\bibliography':
         out = {word: w, suggestions: _filter(fs.bibfiles, w)};
         break;
+      case '\\input':
+        out = {word: w, suggestions: _filter(fs.texfiles, w)};
+        break;
       default: //includes \ref{}
         out = {word: w, suggestions: _filter(database.getLabels(), w)};
         break;
