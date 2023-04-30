@@ -1,36 +1,55 @@
 <template>
   <nav-label @click="expand = !expand" 
-    :icon="(expand) ? 'down' : 'right'" :name="ftree?.name"></nav-label>
+    :icon="(expand) ? 'down' : 'right'" :name="name"></nav-label>
   <div class="nav-folder" :class="(expand) ? '' : 'nested'">
-    <nav-folder v-for="sf in ftree?.subfolders" :key="sf.path" :ftree="sf">{{ sf.name }}</nav-folder>
-    <nav-label v-for="f in ftree?.files" :key="f.path" :name="f.name" 
-      @click="openFile(f.path, f.name)" :ismain="f.name==main">
+    <navigation-folder v-for="sf in subfolders" :key="sf" :path="sf"></navigation-folder>
+    <nav-label v-for="f in files" :key="f" :name="getName(f)" 
+      @click="openFile(f, getName(f))" :ismain="getName(f)==main">
     </nav-label>
   </div>
 </template>
 
+
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue'
-import type { PropType } from 'vue'
+import { defineComponent, ref, computed, onMounted } from 'vue'
+
 import NavLabel from './NavLabel.vue';
-import type { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
+import { Folder } from '@/helpers/LatexDB';
 
 export default defineComponent({
   components: {
     NavLabel,
   },
   props: {
-    ftree: {
-      type: Object as PropType<FileTree>,
-    },
+    path: String,
   },
-  setup() {
+  setup(props) {
     const expand = ref(true);
+    const name = ref('');
     const main = computed(()=>store.pdf.value.main+'.tex');
+
+    const getName = (path: string) => path.substring(path.lastIndexOf('/')+1);
+
+    let folder = Folder();
+    const subfolders = folder?.subfolders;
+    const files = folder?.files;
+
+    onMounted(()=>{
+      if (props.path) {
+        name.value = getName(props.path)
+        folder.init(props.path);
+      }
+    })
+
+
     return {
       expand,
-      main
+      subfolders,
+      files,
+      name,
+      main,
+      getName,
     }
   },
   methods:{
@@ -40,9 +59,9 @@ export default defineComponent({
         store.Editor.openFile(path as string, name as string);
       }
     },
-  }
-})
+  }})
 </script>
+
 
 <style scoped>
 .nav-folder {
@@ -66,4 +85,3 @@ export default defineComponent({
   border: 1px solid var(--selection-dark);
 }
 </style>
-

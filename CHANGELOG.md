@@ -10,11 +10,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Documentation
 - Context menu (right-click) currently not supported in tauri. When available the following features will be implemented: Set Main, Preview, Delete File, Rename. Temporary solution for `Set Main` under `File` menu.
 - Settings panel. Add support to customize font size in editor, global theme
+- Settings: add suport for config file in every project, e.g. .tomino file storing name of main.tex
 - Editor. Add syntax helpers for unclosed parethensis {}
 - Footer. Add git support to detect unstaged changes
 - File menu. Add support for `Save as..`
 
 ### Fixed
+
+## [0.4.2] - 2023-04-2x
+
+### Added
+
+- New file browser engine, with new internal file system responding to file deletion/creation/modification
+- Addded suggestion for bib and tex files, alongside figures
+
+### Fixed
+
+- Fixed scrolling bug in suggestions/autocomplete
+- Fixed bug rebuilding pdf viewer on latex error; now focus page preserved
+
 
 ## [0.4.0] - 2023-03-20
 

@@ -3,32 +3,31 @@
     <div class="upperbar">
       <div class="title">PROJECT</div>
       <div class="buttons right">
-        <icon-button :tag="'reload'" @click="reload"></icon-button>
+        <!-- <icon-button :tag="'reload'" @click="reload"></icon-button> -->
         <icon-button :tag="'add-file'" @click="newFile"></icon-button>
         <icon-button :tag="'add-folder'" @click="newFolder"></icon-button>
       </div>
     </div>
     <input-field ref="inputfield"></input-field>
     <div class="filebrowser">
-      <nav-folder v-if="filetree" :ftree="filetree"></nav-folder>
+      <navigation-folder v-if="folder" :path="folder"></navigation-folder>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
-import { readDir, exists, writeFile, createDir } from '@tauri-apps/api/fs';
+import { exists, writeFile, createDir } from '@tauri-apps/api/fs';
 import { open, save, message } from '@tauri-apps/api/dialog';
 
-import NavFolder from '@/components/NavFolder.vue';
+import NavigationFolder from '@/components/NavigationFolder.vue';
 import IconButton from '@/components/IconButton.vue';
 import InputField from '@/components/InputField.vue';
 
-import { FileTree } from '@/helpers/FileTree';
 import store from '@/helpers/Store';
-import database from '@/helpers/LatexData';
+import { initLatexDB, fs } from '@/helpers/LatexDB';
 import { wrapper } from '@/helpers/Utils';
-import { CreateProject, FoldersWatcher } from '@/helpers/Utils';
+import { CreateProject } from '@/helpers/Utils';
 
 const folder = ref('');
 
@@ -48,6 +47,7 @@ wrapper('newproject', ()=>{
 wrapper('openfolder', ()=>{
   open({directory: true, multiple: false, recursive: true}).then((dir) => {
     if ((dir!=null) && !Array.isArray(dir)) {
+      fs.init(dir);
       folder.value = dir;
     }
   });
@@ -55,39 +55,15 @@ wrapper('openfolder', ()=>{
 
 wrapper('setmain', ()=>{
   let fname = store.Editor.currentFile();
-  exists(`${folder.value}/${fname}`).then(()=>{database.setMain(fname)});
+  initLatexDB(`${folder.value}/${fname}`)
 });
 
 export default defineComponent({
   components: {
-    NavFolder, IconButton, InputField,
+    NavigationFolder, IconButton, InputField,
   },
   setup() {
-    const filetree = ref<FileTree>();
     const inputfield = ref<typeof InputField|null>(null);
-    let wfs = <string[]>[];
-
-    function openProject() {
-      function watchFolders(ft: FileTree) {
-        wfs.push(ft.path);
-        for (const sf of ft.subfolders) watchFolders(sf);
-      }
-
-      exists(folder.value).then((yes)=>{
-        if (yes) {
-          const base = folder.value.substring(folder.value.lastIndexOf('/')+1);
-          readDir(folder.value, {recursive: true}).then((entries) => {
-            filetree.value = new FileTree(folder.value, base, entries);
-            store.pdf.value.cwd = folder.value;
-            database.importFromFileTree(filetree.value);
-
-            wfs = [];
-            watchFolders(filetree.value);
-            FoldersWatcher(wfs, openProject)
-          });
-        }
-      })
-    }
 
     function newFile() {
       function inner(fname: string) {
@@ -110,16 +86,15 @@ export default defineComponent({
     }
 
     onMounted(()=>{
-      watchEffect(()=>{if (folder.value!='') openProject()});
+      watchEffect(()=>{if (folder.value!='') store.pdf.value.cwd = folder.value});
       wrapper('newfile', newFile);
       wrapper('newfolder', newFolder);
     })
     // onUnmounted(()=>{unlisten();});
 
     return {
-      filetree,
+      folder,
       inputfield,
-      reload() {openProject();},
       newFile,
       newFolder,
     }
