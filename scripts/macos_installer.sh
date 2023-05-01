@@ -1,6 +1,7 @@
 #!/bin/bash
 
-URL=`curl -k -s "https://api.github.com/repos/mbruno46/tomino/releases/latest" | python -c "
+if [ ! -z `which python` ]; then
+  URL=`curl -k -s "https://api.github.com/repos/mbruno46/tomino/releases/latest" | python -c "
 import sys, json; 
 dat = json.load(sys.stdin)['assets']; 
 for d in dat:
@@ -8,6 +9,16 @@ for d in dat:
     print d['browser_download_url']; 
     break;
 "`
+elif [ ! -z `which python3` ]; then
+  URL=`curl -k -s "https://api.github.com/repos/mbruno46/tomino/releases/latest" | python3 -c "
+import sys, json; 
+dat = json.load(sys.stdin)['assets']; 
+for d in dat:
+  if (d['name']=='tomino.app.tar.gz'):
+    print(d['browser_download_url']); 
+    break;
+"`
+fi
 
 echo "Downloading $URL"
 
