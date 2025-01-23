@@ -17,7 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-## [0.4.2] - 2023-04-2x
+- Fixed TeX error messages pile up
+- Fixed PDF viewer not keeping in memory previous page despite being viewport
+- Fixed automatic detection of newcommands with arguments 
+
+
+## [0.4.2] - 2023-05-01
 
 ### Added
 
