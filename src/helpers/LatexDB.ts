@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { readDir, readTextFile, exists } from '@tauri-apps/api/fs';
+import { readDir, readTextFile, exists } from '@tauri-apps/plugin-fs';
 import { extname, join, dirname , basename} from '@tauri-apps/api/path';
 import { TimeStamp } from './Utils';
 import store from './Store';

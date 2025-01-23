@@ -1,6 +1,6 @@
 import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/tauri';
-import { Command } from '@tauri-apps/api/shell';
+import { invoke } from '@tauri-apps/api/core';
+import { Command } from '@tauri-apps/plugin-shell';
 
 export function wrapper(name:string, f: Function) {
   (async ()=> {

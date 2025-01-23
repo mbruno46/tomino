@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
-import { readBinaryFile, exists } from '@tauri-apps/api/fs';
+import { readBinaryFile, exists } from '@tauri-apps/plugin-fs';
 import store from '@/helpers/Store';
 
 import 'core-js';

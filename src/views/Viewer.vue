@@ -22,8 +22,8 @@ import store from '@/helpers/Store';
 import { SyncTex } from '@/helpers/SyncTex';
 import { wrapper, env } from '@/helpers/Utils';
 
-import { Command } from '@tauri-apps/api/shell';
-import { readTextFile, exists } from '@tauri-apps/api/fs';
+import { Command } from '@tauri-apps/plugin-shell';
+import { readTextFile, exists } from '@tauri-apps/plugin-fs';
 
 wrapper('recompile1', ()=>{
   store.pdf.value.compile = 1;

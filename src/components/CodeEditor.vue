@@ -15,8 +15,8 @@ import type { Ref } from 'vue'
 import { History, Selection, Caret, Finder } from '@/helpers/EditorTools';
 import { FileWatcher } from '@/helpers/Utils';
 
-import { readTextFile, writeTextFile } from '@tauri-apps/api/fs';
-import { writeText, readText } from '@tauri-apps/api/clipboard';
+import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
 
 import AutoComplete from './AutoComplete.vue';
 import CodeLine from './CodeLine.vue';

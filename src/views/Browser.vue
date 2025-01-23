@@ -17,8 +17,8 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watchEffect } from 'vue'
-import { exists, writeFile, createDir } from '@tauri-apps/api/fs';
-import { open, save, message } from '@tauri-apps/api/dialog';
+import { exists, writeFile, createDir } from '@tauri-apps/plugin-fs';
+import { open, save, message } from '@tauri-apps/plugin-dialog';
 
 import NavigationFolder from '@/components/NavigationFolder.vue';
 import IconButton from '@/components/IconButton.vue';

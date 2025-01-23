@@ -1,95 +1,19 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "productName": "tomino",
+  "version": "0.4.2",
+  "identifier": "com.mbruno46.tomino",
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:5173",
-    "distDir": "../dist"
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "tomino",
-    "version": "0.4.2"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "fs": {
-        "all": false,
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "copyFile": false,
-        "createDir": true,
-        "removeDir": false,
-        "removeFile": false,
-        "renameFile": false,
-        "exists": true
-      },
-      "path": {
-        "all": true
-      },
-      "dialog": {
-        "all": false,
-        "ask": false,
-        "confirm": false,
-        "message": true,
-        "open": true,
-        "save": true
-      },
-      "shell": {
-        "all": false,
-        "execute": true,
-        "open": false,
-        "scope": [
-          {"name": "latexmk", "cmd": "latexmk", "args": true},
-          {"name": "bash", "cmd": "/bin/sh", "args": true}
-        ],
-        "sidecar": false
-      },
-      "clipboard": {
-        "all": true,
-        "readText": true,
-        "writeText": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "Copyright (C) 2023, Mattia Bruno",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.mbruno46.tomino",
-      "longDescription": "A lightweight and intuitive TeX editor for the everyday physicist",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "A lightweight and intuitive TeX editor for the everyday physicist",
-      "targets": ["deb","dmg","app","appimage"],
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
+  "app": {
     "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
+      "capabilities": [
+        "main-capability"
+      ]
     },
     "windows": [
       {
@@ -101,5 +25,47 @@
         "minWidth": 1000
       }
     ]
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "Copyright (C) 2023-2025, Mattia Bruno",
+    "externalBin": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "longDescription": "A lightweight and intuitive TeX editor for the everyday physicist",
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "resources": [],
+    "shortDescription": "A lightweight and intuitive TeX editor for the everyday physicist",
+    "targets": [
+      "deb",
+      "dmg",
+      "app",
+      "appimage"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
+  },
+  "plugins": {
+    "updater": {}
   }
 }
