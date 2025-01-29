@@ -1,4 +1,5 @@
-use tauri::{AboutMetadata, CustomMenuItem, Menu, MenuItem, Submenu};
+// use tauri::menu::{Menu, MenuItem, Submenu};
+use tauri::menu::Menu;
 
 pub fn create_menu() -> Menu {
     let mut menu = Menu::new();
