@@ -21,6 +21,7 @@ coverage
 .vscode
 .vscode/*
 !.vscode/extensions.json
+!v2-pyqt/.vscode
 .idea
 *.suo
 *.ntvs*
