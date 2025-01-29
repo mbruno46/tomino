@@ -7,11 +7,11 @@ from vpanel import VPanel
 # import settings
 
 class Viewer(VPanel):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, app):
+        super().__init__()
         self.scroll = QScrollArea()
         self.layout.addWidget(self.scroll)
-
+    
     def load(self):
         path = "/Users/mbruno/Physics/ToM/dummy/main3.pdf"
         doc = pymupdf.open(path)
