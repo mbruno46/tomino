@@ -55,9 +55,9 @@ class MainWindow(QMainWindow):
         self.browser = BrowserPanel(self)
 
         layout = QHBoxLayout(main)
-        layout.addWidget(self.browser(), 1)
-        layout.addWidget(self.editor(),2)
-        layout.addWidget(self.viewer(),2)
+        layout.addWidget(self.browser, 1)
+        layout.addWidget(self.editor, 2)
+        layout.addWidget(self.viewer,2)
 
         self.setCentralWidget(main)
 

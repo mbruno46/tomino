@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QVBoxLayout
 import glob, os
 
-from vpanel import VPanel
 import settings
 
 def build_tree(parent, path):
@@ -58,13 +57,15 @@ class Browser(QTreeWidget):
             item.setMainTex(True)
             self.app.main_tex_file = item.path
 
-class BrowserPanel(VPanel):
+class BrowserPanel(QWidget):
     def __init__(self, app):
         self.app = app
 
         super().__init__()
         self.browser = Browser(app)
-        self.layout.addWidget(self.browser)
+
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self.browser)
 
         self.browser.init("/Users/mbruno/Physics/tomino/dummy")
 

@@ -1,16 +1,16 @@
-from PyQt5.QtWidgets import QLabel, QScrollArea
+from PyQt5.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget
 # from PyQt5.QtWeb import QWebEngineView , QWebEngineSettings
 from PyQt5.QtGui import QImage, QPixmap
 import pymupdf
 
-from vpanel import VPanel
 # import settings
 
-class Viewer(VPanel):
+class Viewer(QWidget):
     def __init__(self, app):
         super().__init__()
         self.scroll = QScrollArea()
-        self.layout.addWidget(self.scroll)
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self.scroll)
     
     def load(self):
         path = "/Users/mbruno/Physics/ToM/dummy/main3.pdf"

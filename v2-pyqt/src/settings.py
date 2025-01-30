@@ -39,13 +39,13 @@ def init():
     palette.setColor(QPalette.Text, QColor(theme['dark']['text']))
     palette.setColor(QPalette.HighlightedText, QColor(theme['dark']['text']))
     palette.setColor(QPalette.WindowText, QColor(theme['dark']['text']))
+    palette.setColor(QPalette.Window, QColor(theme['dark']['app-background']))
 
     editor["font"] = QFont(families[0], 14)
     editor["palette"] = QPalette(palette)
     editor["palette"].setColor(QPalette.Base, QColor(theme['dark']['text-background']))
 
     app["palette"] = QPalette(palette)
-    app["palette"].setColor(QPalette.Window, QColor(theme['dark']['app-background']))
 
     browser["palette"] = QPalette(palette)
     browser["palette"].setColor(QPalette.Base, QColor(theme['dark']['browser-background']))

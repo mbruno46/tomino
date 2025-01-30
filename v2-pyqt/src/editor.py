@@ -1,8 +1,9 @@
-from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtWidgets import QTextEdit, QFrame, QLabel, QWidget, QHBoxLayout, QPlainTextEdit, QMenu, QCompleter
-from PyQt5.QtGui import QPainter, QColor, QFont, QTextCursor
+import os
 
-from vpanel import VPanel
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QLabel, QTabWidget, QWidget, QPlainTextEdit, QScrollArea, QHBoxLayout, QStackedWidget, QStyleOptionTab
+from PyQt5.QtGui import QPainter, QColor, QFontMetricsF
+
 from highligher import Highlighter
 import settings
 import autocompleter
@@ -76,16 +77,16 @@ class Editor(QPlainTextEdit):
                 # self.updateWidth()
 
 
-    def __init__(self, app):
-        self.app = app
-        super().__init__()
-        self.setPalette(settings.editor["palette"])
+    def __init__(self, parent = None):
+        # self.app = app
+        super().__init__(parent)
         # self.setLineWrapMode(QPlainTextEdit.NoWrap)
-        self.setFont(settings.editor["font"])
-        
+        self.setTabStopDistance(QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
         self.number_bar = self.NumberBar(self)
         # self.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
         # self.setLineWidth(2)
+                
+        self.highlighter = Highlighter(self.document())
 
         # self.setContextMenuPolicy(Qt.CustomContextMenu)
         # self.customContextMenuRequested.connect(self.launch_autocomplention)
@@ -123,37 +124,98 @@ class Editor(QPlainTextEdit):
     #     tc.insertText(choice[len(word):])
     #     self.setTextCursor(tc)
 
+class FileEditor3(QWidget):
+    class Bar(QWidget):
+        class Tab(QWidget):
+            def __init__(self, name):
+                super().__init__()
+                self.setLayout(QHBoxLayout())
+                self.layout().addWidget(QLabel(name))
+                btn = QPushButton()
+                self.closeRequest = btn.clicked
+                self.layout().addWidget(btn)
 
-class EditorPanel(VPanel):
-    def __init__(self, app):
-        super().__init__()
+        def __init__(self, parent = None):
+            super().__init__(parent)
+            self.setLayout(QHBoxLayout())
 
-        self.editor = Editor(app)
-        # self.load_settings()
-        self.highlighter = Highlighter(self.editor.document())
+        def addTab(self, name):
+            t = self.Tab(name)
+            self.layout().addWidget()
 
-        self.cursor_label = QLabel()
-        # self.line_numbers = LineNumbers(self.editor)
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setLayout(QVBoxLayout())
+        self.tbar = self.Bar(self)
+        scroll = QScrollArea(widgetResizable=True)
+        scroll.setWidget(self.tbar)
 
-        # layoutH = QHBoxLayout()
-        # layoutH.setSpacing(2)
-        # layoutH.addWidget(self.line_numbers)
-        # layoutH.addWidget(self.editor)
-        
-        # w = QWidget()
-        # w.setLayout(layoutH)
-        self.layout.addWidget(self.editor)
-        self.layout.addWidget(self.cursor_label)
+        self.layout().addWidget(scroll)
+        self.tabs = QStackedWidget()
+        self.layout().addWidget(self.tabs)
 
-    # def load_settings(self):
-        # self.editor.setFont(settings.editor['font'])
-
-    def update_cursor_label(self, x, y):
-        self.cursor_label.text = f"{x}, {y}"
-
-    def clear(self):
-        self.editor.setPlainText("")
+        self.files = []
 
     def load_file(self, filename):
-        with open(filename,'r') as f:
-            self.editor.setPlainText(f.read())
+        if not filename in self.files:
+            e = Editor()
+            with open(filename,'r') as f:
+                e.setPlainText(f.read())
+            # self.tabs.addTab(e, os.path.basename(filename))
+            self.tbar.addTab(os.path.basename(filename))
+            self.tabs.addWidget(e)
+            self.files.append(filename)
+        
+
+class FileEditor(QTabWidget):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        # qs = QStyleOptionTab()
+        # qs.TabFeatures()
+
+class EditorPanel(QWidget):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        # self.setWindowFlags(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.setPalette(settings.editor["palette"])
+        self.setFont(settings.editor["font"])
+
+        self.file_editor = FileEditor(self)
+        # self.tabs.setTabsClosable(True)
+        # self.tabs.setAutoFillBackground(True)
+
+        # tbar = self.tabs.tabBar()
+        # tbar.setStyle
+        # tbar.setAutoFillBackground(True)
+        # tbar.setPalette(settings.editor["palette"])
+
+        # self.tabs.tabCloseRequested.connect(self.close_file)
+        self.files = []
+
+        self.cursor_label = QLabel("BLA")
+
+        self.setLayout(QVBoxLayout())
+        self.layout().addWidget(self.file_editor)
+        self.layout().addWidget(self.cursor_label)
+
+    def clear(self):
+        pass
+        # self.tabs.clear()
+
+    def load_file(self, filename):
+        # self.file_editor.load_file(filename)
+        
+        if not filename in self.files:
+            e = Editor()
+            with open(filename,'r') as f:
+                e.setPlainText(f.read())
+            self.file_editor.addTab(e, os.path.basename(filename))
+            self.files.append(filename)
+        idx = self.files.index(filename)
+        # self.tabs.setCurrentIndex(idx)
+
+    def close_file(self, idx):
+        self.tabs.removeTab(idx)
+        self.files.remove(self.files[idx])
