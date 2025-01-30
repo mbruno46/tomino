@@ -1,4 +1,7 @@
 from PyQt5.QtGui import QFont, QFontDatabase, QColor, QPalette
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox
+from PyQt5.QtCore import Qt
+
 # from PyQt5.QtGui import QIcon, QPixmap
 # import glob, os
 # icons = {}
@@ -22,7 +25,6 @@ theme = {
         "square": "#f1727f",
         "curly": "#ff84e8",
         "comment": "#5d90c4",
-
     }
 }
 
@@ -47,3 +49,31 @@ def init():
 
     browser["palette"] = QPalette(palette)
     browser["palette"].setColor(QPalette.Base, QColor(theme['dark']['browser-background']))
+    browser["palette"].setColor(QPalette.BrightText, QColor(theme['dark']['green']))
+
+class SpinBox(QWidget):
+    def __init__(self, name, field, min):
+        super().__init__()
+        layout = QHBoxLayout()
+        
+        self.label = QLabel(name)
+        self.label.setAlignment(Qt.AlignRight)
+        layout.addWidget(self.label)
+
+        self.input = QSpinBox()
+        self.input.setValue(field)
+        self.input.setMinimum(min)
+        layout.addWidget(self.input)
+        self.setLayout(layout)
+
+class SettingsWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        
+        i1 = SpinBox("Font size", editor["font"].pointSize(), 8)
+        
+        layout.addWidget(i1)
+        self.setLayout(layout)
+
+
