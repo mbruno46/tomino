@@ -2,12 +2,32 @@ from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QVBoxLayout
 import glob, os
 
 import settings
+import autocompleter
 
 def build_tree(parent, path):
     item = Item(parent, path)
     for f in glob.glob(f"{path}/*"):
         build_tree(item, f)
 
+class FileDatabase:
+    def __init__(self):
+        self.tex = []
+        self.bib = []
+        pass
+
+    def init(self, root):
+        self.root = root
+        self.tex = []
+        self.bib = []
+
+    def add(self, filename):
+        rel_path = os.path.relpath(filename, self.root)
+        # base = os.path.basename(filename)
+        ext = os.path.splitext(filename)[1]
+        if ext=='.tex':
+            self.tex.append(rel_path)
+
+file_database = FileDatabase()
 
 class Item(QTreeWidgetItem):
     def __init__(self, parent, path):
@@ -15,6 +35,8 @@ class Item(QTreeWidgetItem):
         self.setText(0, os.path.basename(path))
         self.path = path
         self.is_file = os.path.isfile(path)
+        if self.is_file:
+            file_database.add(path)
 
     def setMainTex(self, condition):
         if condition:
@@ -34,18 +56,23 @@ class Browser(QTreeWidget):
         self.setAnimated(True)
 
         self.main_index = None
-
-    def init(self, path):
+        
+    def load(self, path):
         self.path = path
         self.clear()
-        self.app.editor.clear()
+        self.app.file_editor.clear()
+        file_database.init(path)
+
         build_tree(self, path)
         if self.topLevelItemCount()==1:
             self.topLevelItem(0).setExpanded(True)
-
+        
+        autocompleter.input = file_database.tex
+        print(file_database.__dict__)
+        
     def onItemClicked(self, item, col):
         if item.is_file:
-            self.app.editor.load_file(item.path)
+            self.app.file_editor.load_file(item.path)
 
     def setMainTex(self, index):
         item = self.itemFromIndex(index)
@@ -57,17 +84,20 @@ class Browser(QTreeWidget):
             item.setMainTex(True)
             self.app.main_tex_file = item.path
 
-class BrowserPanel(QWidget):
-    def __init__(self, app):
-        self.app = app
+            autocompleter.parser.main = item.path
+            autocompleter.parser()
+            
+# class BrowserPanel(QWidget):
+#     def __init__(self, app):
+#         self.app = app
 
-        super().__init__()
-        self.browser = Browser(app)
+#         super().__init__()
+#         self.browser = Browser(app)
 
-        self.setLayout(QVBoxLayout())
-        self.layout().addWidget(self.browser)
+#         self.setLayout(QVBoxLayout())
+#         self.layout().addWidget(self.browser)
 
-        self.browser.init("/Users/mbruno/Physics/tomino/dummy")
+#         self.browser.init("/Users/mbruno/Physics/tomino/dummy")
 
-    def open_folder(self, path):
-        self.browser.init(path)
+#     def open_folder(self, path):
+#         self.browser.init(path)

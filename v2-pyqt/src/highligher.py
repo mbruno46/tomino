@@ -20,13 +20,6 @@ class Highlighter(QSyntaxHighlighter):
 
     # multi line support needed?
     def highlightBlock(self, text):
-        re = QRegExp("(%.*)")
-        index = re.indexIn(text)
-        while index >= 0:
-            length = len(re.cap(1))
-            self.setFormat(index, length, self.formats["comment"])
-            index = re.indexIn(text, index + length)
-
         re = QRegExp("(\\\\[a-zA-Z]+)(\\[.*\\])?(\\{.*\\})?")
         index = re.indexIn(text)
         while index >= 0:
@@ -35,3 +28,11 @@ class Highlighter(QSyntaxHighlighter):
                 self.setFormat(index+e, length-2*e, self.formats[c])
                 index += length
             index = re.indexIn(text, index)
+
+        re = QRegExp("(%.*)")
+        index = re.indexIn(text)
+        while index >= 0:
+            length = len(re.cap(1))
+            self.setFormat(index, length, self.formats["comment"])
+            index = re.indexIn(text, index + length)
+

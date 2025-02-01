@@ -8,6 +8,10 @@ from highligher import Highlighter
 import settings
 import autocompleter
 
+# TODO
+# parser -> input for linked tex files
+#  -> refs for refs
+# parser_bib
 
 class Editor(QPlainTextEdit):
 
@@ -81,16 +85,15 @@ class Editor(QPlainTextEdit):
         # self.app = app
         super().__init__(parent)
         # self.setLineWrapMode(QPlainTextEdit.NoWrap)
-        self.setTabStopDistance(QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
-        self.number_bar = self.NumberBar(self)
-        # self.setFrameStyle(QFrame.StyledPanel | QFrame.Plain)
-        # self.setLineWidth(2)
-                
-        self.highlighter = Highlighter(self.document())
 
-        # self.setContextMenuPolicy(Qt.CustomContextMenu)
-        # self.customContextMenuRequested.connect(self.launch_autocomplention)
-        self.completer = autocompleter.AutoCompleter(self)
+        self.setTabStopDistance(QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
+        self.setPalette(settings.editor["palette"])
+        self.setFont(settings.editor["font"])        
+
+        self.number_bar = self.NumberBar(self)                
+        self.highlighter = Highlighter(self.document())
+        self.completer = autocompleter. AutoCompleter(self)
+        
         # self.textChanged.connect(self.completer.check_and_launch)
 
     def keyPressEvent(self, event):
@@ -125,31 +128,23 @@ class Editor(QPlainTextEdit):
     #     self.setTextCursor(tc)
 
 class FileEditor3(QWidget):
-    class Bar(QWidget):
-        class Tab(QWidget):
-            def __init__(self, name):
-                super().__init__()
-                self.setLayout(QHBoxLayout())
-                self.layout().addWidget(QLabel(name))
-                btn = QPushButton()
-                self.closeRequest = btn.clicked
-                self.layout().addWidget(btn)
-
-        def __init__(self, parent = None):
-            super().__init__(parent)
+    class Tab(QWidget):
+        def __init__(self, name):
+            super().__init__()
             self.setLayout(QHBoxLayout())
-
-        def addTab(self, name):
-            t = self.Tab(name)
-            self.layout().addWidget()
+            self.layout().addWidget(QLabel(name))
+            btn = QPushButton("X")
+            # self.closeRequest = btn.clicked
+            self.layout().addWidget(btn)
 
     def __init__(self, parent = None):
         super().__init__(parent)
+        # self.bar = QHBoxLayout()
         self.setLayout(QVBoxLayout())
-        self.tbar = self.Bar(self)
+        # self.tbar = self.Bar(self)
         scroll = QScrollArea(widgetResizable=True)
         scroll.setWidget(self.tbar)
-
+        
         self.layout().addWidget(scroll)
         self.tabs = QStackedWidget()
         self.layout().addWidget(self.tabs)
@@ -172,6 +167,34 @@ class FileEditor(QTabWidget):
         super().__init__(parent)
         # qs = QStyleOptionTab()
         # qs.TabFeatures()
+        # self.setStyleSheet("""
+        # QTabWidget::pane {
+        # border: 1px solid;
+        # }
+        # """)
+        self.setPalette(settings.editor["palette"])
+        self.setFont(settings.editor["font"])
+        # self.
+        # self.setStyleSheet("""
+        #     QTabBar::tab {
+        #     border: 2px solid #C4C4C3;
+        #     border-bottom-color: #C2C7CB; /* same as the pane color */
+        #     border-top-left-radius: 4px;
+        #     border-top-right-radius: 4px;
+        #     min-width: 8ex;
+        #     padding: 2px;
+        #     }""")
+        self.files = []
+
+    def load_file(self, filename):
+        if not filename in self.files:
+            e = Editor()
+            with open(filename,'r') as f:
+                e.setPlainText(f.read())
+            self.addTab(e, os.path.basename(filename))
+            # self.tbar.addTab(os.path.basename(filename))
+            # self.tabs.addWidget(e)
+            self.files.append(filename)
 
 class EditorPanel(QWidget):
     def __init__(self, parent = None):
@@ -179,8 +202,6 @@ class EditorPanel(QWidget):
         # self.setWindowFlags(Qt.FramelessWindowHint)
         # self.setAttribute(Qt.WA_TranslucentBackground)
 
-        self.setPalette(settings.editor["palette"])
-        self.setFont(settings.editor["font"])
 
         self.file_editor = FileEditor(self)
         # self.tabs.setTabsClosable(True)
