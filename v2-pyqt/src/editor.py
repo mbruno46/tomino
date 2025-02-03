@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPainter, QColor, QFontMetricsF
 
 from highligher import Highlighter
 import settings
+import style
 import autocompleter
 
 # TODO
@@ -127,63 +128,21 @@ class Editor(QPlainTextEdit):
     #     tc.insertText(choice[len(word):])
     #     self.setTextCursor(tc)
 
-class FileEditor3(QWidget):
-    class Tab(QWidget):
-        def __init__(self, name):
-            super().__init__()
-            self.setLayout(QHBoxLayout())
-            self.layout().addWidget(QLabel(name))
-            btn = QPushButton("X")
-            # self.closeRequest = btn.clicked
-            self.layout().addWidget(btn)
 
-    def __init__(self, parent = None):
-        super().__init__(parent)
-        # self.bar = QHBoxLayout()
-        self.setLayout(QVBoxLayout())
-        # self.tbar = self.Bar(self)
-        scroll = QScrollArea(widgetResizable=True)
-        scroll.setWidget(self.tbar)
-        
-        self.layout().addWidget(scroll)
-        self.tabs = QStackedWidget()
-        self.layout().addWidget(self.tabs)
-
-        self.files = []
-
-    def load_file(self, filename):
-        if not filename in self.files:
-            e = Editor()
-            with open(filename,'r') as f:
-                e.setPlainText(f.read())
-            # self.tabs.addTab(e, os.path.basename(filename))
-            self.tbar.addTab(os.path.basename(filename))
-            self.tabs.addWidget(e)
-            self.files.append(filename)
         
 
 class FileEditor(QTabWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
-        # qs = QStyleOptionTab()
-        # qs.TabFeatures()
-        # self.setStyleSheet("""
-        # QTabWidget::pane {
-        # border: 1px solid;
-        # }
-        # """)
+        # settings.apply_stylesheet("editor", self)
+        self.setStyleSheet(style.editor_style)
         self.setPalette(settings.editor["palette"])
         self.setFont(settings.editor["font"])
-        # self.
-        # self.setStyleSheet("""
-        #     QTabBar::tab {
-        #     border: 2px solid #C4C4C3;
-        #     border-bottom-color: #C2C7CB; /* same as the pane color */
-        #     border-top-left-radius: 4px;
-        #     border-top-right-radius: 4px;
-        #     min-width: 8ex;
-        #     padding: 2px;
-        #     }""")
+        self.setAutoFillBackground(True)
+
+        self.setTabsClosable(True)
+        self.tabCloseRequested.connect(self.close_file)
+
         self.files = []
 
     def load_file(self, filename):
@@ -192,51 +151,9 @@ class FileEditor(QTabWidget):
             with open(filename,'r') as f:
                 e.setPlainText(f.read())
             self.addTab(e, os.path.basename(filename))
-            # self.tbar.addTab(os.path.basename(filename))
-            # self.tabs.addWidget(e)
             self.files.append(filename)
-
-class EditorPanel(QWidget):
-    def __init__(self, parent = None):
-        super().__init__(parent)
-        # self.setWindowFlags(Qt.FramelessWindowHint)
-        # self.setAttribute(Qt.WA_TranslucentBackground)
-
-
-        self.file_editor = FileEditor(self)
-        # self.tabs.setTabsClosable(True)
-        # self.tabs.setAutoFillBackground(True)
-
-        # tbar = self.tabs.tabBar()
-        # tbar.setStyle
-        # tbar.setAutoFillBackground(True)
-        # tbar.setPalette(settings.editor["palette"])
-
-        # self.tabs.tabCloseRequested.connect(self.close_file)
-        self.files = []
-
-        self.cursor_label = QLabel("BLA")
-
-        self.setLayout(QVBoxLayout())
-        self.layout().addWidget(self.file_editor)
-        self.layout().addWidget(self.cursor_label)
-
-    def clear(self):
-        pass
-        # self.tabs.clear()
-
-    def load_file(self, filename):
-        # self.file_editor.load_file(filename)
-        
-        if not filename in self.files:
-            e = Editor()
-            with open(filename,'r') as f:
-                e.setPlainText(f.read())
-            self.file_editor.addTab(e, os.path.basename(filename))
-            self.files.append(filename)
-        idx = self.files.index(filename)
-        # self.tabs.setCurrentIndex(idx)
 
     def close_file(self, idx):
-        self.tabs.removeTab(idx)
+        self.removeTab(idx)
         self.files.remove(self.files[idx])
+

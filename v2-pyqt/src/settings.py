@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QFont, QFontDatabase, QColor, QPalette
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QFile, QIODevice
 
 # from PyQt5.QtGui import QIcon, QPixmap
 # import glob, os
@@ -18,6 +18,7 @@ theme = {
         "text-background": "#232830",
         "browser-background": "#2b303b",
         "text": "#dfe1e8",
+        "gray": "#717171",
         "highlight": "#1f4b70",
         "border": "#333d46",
         "green": '#a6e86d',
@@ -50,6 +51,15 @@ def init():
     browser["palette"] = QPalette(palette)
     browser["palette"].setColor(QPalette.Base, QColor(theme['dark']['browser-background']))
     browser["palette"].setColor(QPalette.BrightText, QColor(theme['dark']['green']))
+
+def apply_stylesheet(style, object):
+    f = QFile(f':/assets/{style}.qss')
+    f.open(QIODevice.ReadOnly)
+    object.setStyleSheet(str(f.readAll(), 'utf-8'))
+    f.close()
+
+def get_theme():
+    return theme['dark']
 
 class SpinBox(QWidget):
     def __init__(self, name, field, min):

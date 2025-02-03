@@ -1,7 +1,7 @@
 import sys
 import os
 
-# from PyQt5.QtCore import QSize, Qt
+# from PyQt5.QtCore import QFile, QIODevice
 from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QAction, QFileDialog, QProxyStyle
 # import PyQt5.QtWidgets as qtw
 
@@ -77,20 +77,25 @@ class MainWindow(QMainWindow):
         self.viewer = Viewer(self)
 
         browser_layout = QHBoxLayout()
+        # self.toolbar = ToolBar([('refresh', lambda x: print('ciao'))])
         self.browser = Browser(self)
-        browser_layout.addWidget(QLabel("a"), 1)
+        # browser_layout.addWidget(self.toolbar, 1)
         browser_layout.addWidget(self.browser, 4)
         # self.browser_panel.layout().addChildLayout(hl)
         # self.browser_panel.add(self.browser)
 
         self.browser.load("/Users/mbruno/Physics/tomino/dummy")
 
+        viewer_layout = QVBoxLayout()
+        self.viewer = Viewer(self)
+        viewer_layout.addWidget(self.viewer)
+
         layout = QHBoxLayout(main)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
         layout.addLayout(browser_layout, 20)
         layout.addLayout(editor_layout, 40)
-        # layout.addLayout(viewer_layout, 40)
+        layout.addLayout(viewer_layout, 40)
 
         self.setCentralWidget(main)
 
@@ -110,18 +115,28 @@ class MainWindow(QMainWindow):
             self.viewer.load()
 
 app = QApplication(sys.argv)
+# f = QFile(':/assets/style.qss')
+# f.open(QIODevice.ReadOnly)
+# app.setStyleSheet(str(f.readAll(), 'utf-8'))
+# f.close()
+
+# f = QFile(':/assets/style.qss')
+#         f.open(QIODevice.ReadOnly)
+#         self.setStyleSheet(str(f.readAll(), 'utf-8'))
+#         f.close()
+
 # app.setStyle("Fusion")
 # print(app.style().)
 
-from PyQt5.QtCore import Qt
+# from PyQt5.QtCore import Qt
 
-class Style(QProxyStyle):
-    def drawControl(self, element, option, painter, widget):
-        # if element == self.CE_TabBarTab:
-        #     painter.drawText(option.rect, Qt.AlignLeft, option.text)
-        #     return
-        super(Style, self).drawControl(element, option, painter, widget)  
-app.setStyle(Style(app.style()))
+# class Style(QProxyStyle):
+#     def drawControl(self, element, option, painter, widget):
+#         # if element == self.CE_TabBarTab:
+#         #     painter.drawText(option.rect, Qt.AlignLeft, option.text)
+#         #     return
+#         super(Style, self).drawControl(element, option, painter, widget)  
+# app.setStyle(Style(app.style()))
 
 window = MainWindow()
 window.show()

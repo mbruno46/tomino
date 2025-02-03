@@ -89,7 +89,7 @@ class AutoCompleterEnvironments(Base):
 
         super().onActivated(choice, inner)
 
-class AutoCompleterInput(Base):
+class AutoCompleterGeneric(Base):
     def onActivated(self, choice):
         def inner(choice):
             self.delete_right_matching_char('}')
@@ -105,7 +105,8 @@ class AutoCompleter:
         self.completers = [
             AutoCompleterBasic(math + cmds, editor),
             AutoCompleterEnvironments(envs, editor),
-            AutoCompleterInput(input, editor),
+            AutoCompleterGeneric(input, editor),
+            AutoCompleterGeneric(refs, editor),
         ]
         self.editor = editor
         self.min_left = self.editor.number_bar.width()
@@ -146,6 +147,9 @@ class AutoCompleter:
             elif word[0:7]=='\\input{':
                 _completer = self.completers[2]
                 word = word[7:]
+            elif word[0:5]=='\\ref{':
+                _completer = self.completers[3]
+                word = word[5:]
             else:
                 _completer = self.completers[0]
         else:
@@ -183,13 +187,11 @@ class Parser:
         db = self.db[keyword]
         re = QRegExp(f'\\{keyword}\\{{(.*)\\}}')
         index = re.indexIn(text)
-        # print(re.cap(1))
-        re = QRegExp("\\input(\\{.*\\})")
+        re = QRegExp("\\%s\{(.*)\}" % keyword)
+        re.setMinimal(True)
         index = re.indexIn(text)
-        print(index, re.cap(1)[0:100])
-        return 
         while index >= 0:
-            word = re.cap(0)
+            word = re.cap(1)
             for w in word.split(','):
                 if not w in db:
                     db.append(w)

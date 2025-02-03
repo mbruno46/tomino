@@ -1,7 +1,10 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QTreeWidget, QStyle, QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QPainter, QIcon, QPixmap
+from PyQt5.QtCore import QSize, QRect, QPoint
 import glob, os
 
 import settings
+import style
 import autocompleter
 
 def build_tree(parent, path):
@@ -44,7 +47,7 @@ class Item(QTreeWidgetItem):
         else:
             self.setBackground(0, settings.browser["palette"].base())
 
-class Browser(QTreeWidget):
+class FileBrowser(QTreeWidget):
     def __init__(self, app):
         self.app = app
         super().__init__()
@@ -87,17 +90,92 @@ class Browser(QTreeWidget):
             autocompleter.parser.main = item.path
             autocompleter.parser()
             
-# class BrowserPanel(QWidget):
+# class Browser(QWidget):
 #     def __init__(self, app):
-#         self.app = app
+#         super().__init__(app)
+#         self.setLayout(QHBoxLayout())
+#         self.setStyleSheet(style.browser_style)
 
-#         super().__init__()
-#         self.browser = Browser(app)
+#         toolbar = QWidget()
+#         toolbar.setLayout(QVBoxLayout())
+#         for icon, paneidx in [
+#             ('files', 0),
+#             ('two', 1)
+#         ]:
+#             btn = QPushButton()
+#             btn.setText(icon)
+#             btn.clicked.connect(self.switch_layout(paneidx))
+#             toolbar.layout().addWidget(btn)
+#         self.layout().addWidget(toolbar)
 
-#         self.setLayout(QVBoxLayout())
+#         self.browser = QStackedWidget()
+#         self.file_browser = FileBrowser(app)
+#         self.browser.addWidget(self.file_browser)
+#         lab = QLabel("sad")
+#         self.browser.addWidget(lab)
 #         self.layout().addWidget(self.browser)
 
-#         self.browser.init("/Users/mbruno/Physics/tomino/dummy")
+#     def switch_layout(self, idx):
+#         def inner(arg):
+#             self.browser.setCurrentIndex(idx)
+#         return inner
+    
+#     def load(self, path):
+#         self.file_browser.load(path)
 
-#     def open_folder(self, path):
-#         self.browser.init(path)
+class Browser(QTabWidget):
+    class TabBar(QTabBar):
+        def __init__(self, panel):
+            super().__init__()
+            self.panel = panel
+
+        def tabSizeHint(self, index):
+            s = QTabBar.tabSizeHint(self, index)
+            s.transpose()
+            self.panel.setContentsMargins(s.width(), 0, 0, 0)
+            return s
+        
+        def paintEvent(self, event):
+            painter = QStylePainter(self)
+            opt = QStyleOptionTabV4()
+
+            for i in range(self.count()):
+                self.initStyleOption(opt, i)
+                painter.drawItemPixmap(opt.rect, 0, QPixmap("images.png"))
+
+            # for i in range(self.count()):
+            #     self.initStyleOption(opt, i)
+            #     painter.drawControl(QStyle.CE_TabBarTabShape, opt)
+            #     painter.save()
+
+            #     s = opt.rect.size()
+            #     s.transpose()
+
+            #     r = QRect(QPoint(), s)
+            #     r.moveCenter(opt.rect.center())
+            #     opt.rect = r
+
+            #     c = self.tabRect(i).center()
+            #     painter.translate(c)
+            #     painter.rotate(90)
+            #     painter.translate(-c)
+            #     # painter.drawControl(QStyle.CE_TabBarTabLabel,opt)
+            #     painter.drawItemPixmap(opt.rect, 0, QPixmap("images.png"))
+            #     painter.restore()
+                
+        # def paintEvent(self, a0):
+        #     painer = QStylePainter(self)
+        #     return super().paintEvent(a0)
+    def __init__(self, app):
+        super().__init__()
+        self.setStyleSheet(style.browser_style)
+        self.setTabBar(self.TabBar(self))
+
+        self.setTabPosition(QTabWidget.West)
+        self.file_browser = FileBrowser(app)
+        self.addTab(self.file_browser, QIcon("images.png"), "")
+        lab = QLabel("sad")
+        self.addTab(lab, QIcon("images.png"), "")
+
+    def load(self, path):
+        self.file_browser.load(path)
