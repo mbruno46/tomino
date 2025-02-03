@@ -15,5 +15,7 @@ editor_style = '\n'.join([
 ])
 
 browser_style = '\n'.join([
+    set_item('QTabWidget::tab-bar', 'alignment: left;'),
     set_item('QTabBar::tab', f'padding: 0.8em; border: 0px; color: {theme["gray"]}'),
+    set_item('QTabBar::tab:selected', f'border-top: 4px solid {theme["highlight"]}'),
 ])
