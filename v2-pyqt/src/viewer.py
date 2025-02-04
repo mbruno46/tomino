@@ -7,33 +7,17 @@ from PyQt5.QtXml import QDomDocument
 import pymupdf
 
 import settings
+import style
 
 class PDFViewer(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent = None):
+        super().__init__(parent)
         self.setLayout(QVBoxLayout())
         self.darkTheme = False
-        
-    def removeLastPages(self, n):
-        N = len(self.layout().children())
-        for i in range(n):
-            w = self.layout().takeAt(N-1-i)
-            w.widget().setParent(None)
-            # self.layout().removeItem(w)
+        self.scale = 1.0
+        self.page_size = None
 
     def load_page(self, p):
-        # pix = p.get_pixmap(dpi=240)
-        # print(pix.xres, pix.yres)
-        # # pix.set_dpi(pix.xres* 10, pix.yres*10)
-        # # print(pix.xres, pix.yres)
-        # fmt = QImage.Format_RGBA8888 if pix.alpha else QImage.Format_RGB888
-        # qimage = QImage(pix.samples_ptr, pix.width, pix.height, fmt)
-        # if self.invertPixels:
-        #     qimage.invertPixels()
-        # page = QLabel()
-        # page.setFixedHeight(pix.height)
-        # page.setPixmap(QPixmap.fromImage(qimage))
-        # return page
 
         def setAttrRecur(elem, tag, attr, val):
             if elem.tagName()==tag:
@@ -56,37 +40,23 @@ class PDFViewer(QWidget):
 
         svg.load(bytearray(doc.toByteArray()))
         size = svg.sizeHint()
-        svg.setFixedHeight(size.height())
-        svg.setFixedWidth(size.width())
+        svg.setFixedHeight(int(size.height() * self.scale))
+        svg.setFixedWidth(int(size.width() * self.scale))
+        self.page_size = size
         return svg
 
     
     def load(self, path = None):
-        self.path = "/Users/mbruno/Physics/talks/valencia_19/valencia_19.pdf"
-        # self.path = "/Users/mbruno/Physics/notes/sf-dwf/sf-dwf.pdf"
+        # self.path = "/Users/mbruno/Physics/talks/valencia_19/valencia_19.pdf"
+        self.path = "/Users/mbruno/Physics/notes/sf-dwf/sf-dwf.pdf"
         # self.path = "/Users/mbruno/Physics/ToM/dummy/main3.pdf"
         doc = pymupdf.open(self.path)
-        # doc.load_page(0).get_svg_image
+
         for i in reversed(range(self.layout().count())): 
             self.layout().itemAt(i).widget().setParent(None)
     
         for i, p in enumerate(doc):
-            # page = QLabel()
-            # qimage = self.load_page(p)
-            # page.setPixmap(QPixmap.fromImage(qimage))
-            # self.layout().addWidget(page)
-
-            # pix = p.get_pixmap(dpi=100)
-            # fmt = QImage.Format_RGBA8888 if pix.alpha else QImage.Format_RGB888
-            # print(fmt, QImage.Format_RGB888)
-            # qimage = QImage(pix.samples_ptr, pix.width, pix.height, QImage.Format_RGB888)
-            # page = QLabel('page')
-            # # page.setFixedHeight(pix.height)
-            # page.setPixmap(QPixmap.fromImage(qimage.rgbSwapped()))
-            # print(page.width())
-
             page = self.load_page(p)
-            # print(page.width())/
             self.layout().addWidget(page)
         
         doc.close()
@@ -95,28 +65,53 @@ class PDFViewer(QWidget):
         self.darkTheme = not self.darkTheme
         self.load()
 
+    def zoomin(self):
+        if self.scale<2.0:
+            self.scale += 0.1
+            self.load()
+
+    def zoomout(self):
+        if self.scale>0.2:
+            self.scale -= 0.1
+            self.load()
+
+    def fitW(self):
+        if self.page_size:
+            self.scale = self.parent().width() / self.page_size.width()
+            self.load()
+
+    def fitH(self):
+        if self.page_size:
+            self.scale = self.parent().height() / self.page_size.height()
+            self.load()
+
 
 class Viewer(QWidget):
     def __init__(self, app):
         super().__init__()
         self.setLayout(QVBoxLayout())
+        self.setStyleSheet(style.viewer_style)
 
         toolbar = QWidget()
         toolbar.setLayout(QHBoxLayout())
         self.layout().addWidget(toolbar)
 
         self.scroll = QScrollArea(widgetResizable=True)
-        self.pdfviewer = PDFViewer()
+        self.pdfviewer = PDFViewer(self)
+        self.pdfviewer.setPalette(settings.viewer["palette"])
         self.scroll.setWidget(self.pdfviewer)
         self.layout().addWidget(self.scroll)
         self.invertPixels = False
 
         # fill toolbar after creation of pdfviewer
         for icon, func in [
-            ('+', lambda x: print('zoom')),
+            ('+', self.pdfviewer.zoomin),
+            ('-', self.pdfviewer.zoomout),
+            ('W', self.pdfviewer.fitW),
+            ('H', self.pdfviewer.fitH),
             ('I', self.pdfviewer.swapTheme)
         ]:
-            btn = QPushButton()
+            btn = QPushButton(self)
             btn.setText(icon)
             btn.clicked.connect(func)
             toolbar.layout().addWidget(btn)

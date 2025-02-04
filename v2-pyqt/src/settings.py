@@ -11,6 +11,7 @@ from PyQt5.QtCore import Qt, QFile, QIODevice
 app = {}
 editor = {}
 browser = {}
+viewer = {}
 
 theme = {
     "dark": {
@@ -19,6 +20,7 @@ theme = {
         "browser-background": "#2b303b",
         "text": "#dfe1e8",
         "gray": "#717171",
+        "hover": "#124670",
         "highlight": "#1f4b70",
         "border": "#333d46",
         "green": '#a6e86d',
@@ -51,6 +53,9 @@ def init():
     browser["palette"] = QPalette(palette)
     browser["palette"].setColor(QPalette.Base, QColor(theme['dark']['browser-background']))
     browser["palette"].setColor(QPalette.BrightText, QColor(theme['dark']['green']))
+
+    viewer["palette"] = QPalette(palette)
+    viewer["palette"].setColor(QPalette.Window, QColor(theme['dark']['text-background']))
 
 def apply_stylesheet(style, object):
     f = QFile(f':/assets/{style}.qss')
