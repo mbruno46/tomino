@@ -1,11 +1,19 @@
-from PyQt5.QtWidgets import QTreeWidget, QStyle, QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QPainter, QIcon, QPixmap
-from PyQt5.QtCore import QSize, QRect, QPoint
+from PyQt5.QtWidgets import QTreeWidget, QStackedWidget,QToolBar, QAction, QToolButton,  QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QPainter, QIcon, QPixmap, QIconEngine, QImage
+from PyQt5.QtCore import QSize, QRect, QPoint, Qt
+from PyQt5.QtSvg import QSvgWidget
+
 import glob, os
 
 import settings
 import style
 import autocompleter
+import svg
+
+svg_icons = {
+    'Explorer': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V6.5L15.5 2z"></path> <path d="M3 7.6v12.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h9.8"></path> <path d="M15 2v5h5"></path> </g></svg>',
+    'Document': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M8 8H20M11 12H20M14 16H20M4 8H4.01M7 12H7.01M10 16H10.01" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>'
+}
 
 def build_tree(parent, path):
     item = Item(parent, path)
@@ -90,92 +98,70 @@ class FileBrowser(QTreeWidget):
             autocompleter.parser.main = item.path
             autocompleter.parser()
             
-# class Browser(QWidget):
-#     def __init__(self, app):
-#         super().__init__(app)
-#         self.setLayout(QHBoxLayout())
-#         self.setStyleSheet(style.browser_style)
+class TeXBrowser(QTreeWidget):
+    def  __init__(self, parent = ...):
+        super().__init__(parent)
 
-#         toolbar = QWidget()
-#         toolbar.setLayout(QVBoxLayout())
-#         for icon, paneidx in [
-#             ('files', 0),
-#             ('two', 1)
-#         ]:
-#             btn = QPushButton()
-#             btn.setText(icon)
-#             btn.clicked.connect(self.switch_layout(paneidx))
-#             toolbar.layout().addWidget(btn)
-#         self.layout().addWidget(toolbar)
 
-#         self.browser = QStackedWidget()
-#         self.file_browser = FileBrowser(app)
-#         self.browser.addWidget(self.file_browser)
-#         lab = QLabel("sad")
-#         self.browser.addWidget(lab)
-#         self.layout().addWidget(self.browser)
+class Browser(QWidget):
+    class ToolBar(QToolBar):
+        def __init__(self, parent):
+            super().__init__(parent)
+            self.parent = parent
+            self.setOrientation(Qt.Vertical)
+            self.setIconSize(QSize(48, 48))
+            self.setPalette(settings.app["palette"])
+            
+            theme = settings.get_theme()
 
-#     def switch_layout(self, idx):
-#         def inner(arg):
-#             self.browser.setCurrentIndex(idx)
-#         return inner
-    
-#     def load(self, path):
-#         self.file_browser.load(path)
+            self.icons = []
+            self.actions = []
+            for key in svg_icons:
+                self.icons += [svg.create_icons(svg_icons[key], theme['gray'], theme['text'])]
+                btn = QAction(key, self)
+                btn.setCheckable(True)
+                btn.setIcon(self.icons[-1][0])
 
-class Browser(QTabWidget):
-    class TabBar(QTabBar):
-        def __init__(self, panel):
-            super().__init__()
-            self.panel = panel
+                self.actions.append(btn)
+                self.addAction(btn)
 
-        def tabSizeHint(self, index):
-            s = QTabBar.tabSizeHint(self, index)
-            s.transpose()
-            self.panel.setContentsMargins(s.width(), 0, 0, 0)
-            return s
-        
-        def paintEvent(self, event):
-            painter = QStylePainter(self)
-            opt = QStyleOptionTabV4()
+            self.actionTriggered.connect(self.trigger)
+            self.active = 0
 
-            for i in range(self.count()):
-                self.initStyleOption(opt, i)
-                painter.drawItemPixmap(opt.rect, 0, QPixmap("images.png"))
 
-            # for i in range(self.count()):
-            #     self.initStyleOption(opt, i)
-            #     painter.drawControl(QStyle.CE_TabBarTabShape, opt)
-            #     painter.save()
+        def trigger(self, action):
+            self.actions[self.active].setChecked(False)
+            self.actions[self.active].setIcon(self.icons[self.active][0])
 
-            #     s = opt.rect.size()
-            #     s.transpose()
+            idx = self.actions.index(action)
+            self.parent.browser.setCurrentIndex(idx)
+            self.active = idx
 
-            #     r = QRect(QPoint(), s)
-            #     r.moveCenter(opt.rect.center())
-            #     opt.rect = r
+            action.setChecked(True)
+            action.setIcon(self.icons[idx][1])            
 
-            #     c = self.tabRect(i).center()
-            #     painter.translate(c)
-            #     painter.rotate(90)
-            #     painter.translate(-c)
-            #     # painter.drawControl(QStyle.CE_TabBarTabLabel,opt)
-            #     painter.drawItemPixmap(opt.rect, 0, QPixmap("images.png"))
-            #     painter.restore()
-                
-        # def paintEvent(self, a0):
-        #     painer = QStylePainter(self)
-        #     return super().paintEvent(a0)
+        def switch_tab(self, idx):
+            self.trigger(self.actions[idx])
+
     def __init__(self, app):
-        super().__init__()
+        super().__init__(app)
+        self.setLayout(QHBoxLayout())
+        self.layout().setSpacing(0)
+        self.layout().setContentsMargins(0,0,0,0)
         self.setStyleSheet(style.browser_style)
-        self.setTabBar(self.TabBar(self))
 
-        self.setTabPosition(QTabWidget.West)
+        toolbar = self.ToolBar(self)
+        self.layout().addWidget(toolbar)
+
+        self.browser = QStackedWidget()
         self.file_browser = FileBrowser(app)
-        self.addTab(self.file_browser, QIcon("images.png"), "")
+        self.browser.addWidget(self.file_browser)
         lab = QLabel("sad")
-        self.addTab(lab, QIcon("images.png"), "")
+        self.browser.addWidget(lab)
+        self.layout().addWidget(self.browser)
 
+        toolbar.switch_tab(0)
+    
     def load(self, path):
         self.file_browser.load(path)
+

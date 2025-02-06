@@ -134,7 +134,6 @@ class Editor(QPlainTextEdit):
 class FileEditor(QTabWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
-        # settings.apply_stylesheet("editor", self)
         self.setStyleSheet(style.editor_style)
         self.setPalette(settings.editor["palette"])
         self.setFont(settings.editor["font"])
