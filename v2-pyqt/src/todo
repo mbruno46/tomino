@@ -1,0 +1,9 @@
+ - improve svg icons, they are renderered very poorly
+
+ 
+ - implement latex error in pdfviewer
+ - replace
+ - improve styling of tabs
+ - add scrollbar when many tabs open
+ - tree view of sections/chapters etc..
+ - automatic refresh of file browser (watcher)

@@ -17,19 +17,24 @@ svg_icons = {
 
 def build_tree(parent, path):
     item = Item(parent, path)
-    for f in glob.glob(f"{path}/*"):
+    if item.is_file:
+        ext = file_database.add(path)
+        if ext is None:
+            item.parent().removeChild(item)
+        item.set_ext(ext)
+        return
+    for f in sorted(glob.glob(f"{path}/*")):
         build_tree(item, f)
 
 class FileDatabase:
     def __init__(self):
-        self.tex = []
-        self.bib = []
         pass
 
     def init(self, root):
         self.root = root
         self.tex = []
         self.bib = []
+        self.figures = []
 
     def add(self, filename):
         rel_path = os.path.relpath(filename, self.root)
@@ -37,6 +42,13 @@ class FileDatabase:
         ext = os.path.splitext(filename)[1]
         if ext=='.tex':
             self.tex.append(rel_path)
+        elif ext=='.bib':
+            self.bib.append(rel_path) 
+        elif ext in ('.pdf','.eps','.png','.jpg'):
+            self.figures.append(rel_path)
+        else:
+            ext = None
+        return ext
 
 file_database = FileDatabase()
 
@@ -46,21 +58,29 @@ class Item(QTreeWidgetItem):
         self.setText(0, os.path.basename(path))
         self.path = path
         self.is_file = os.path.isfile(path)
-        if self.is_file:
-            file_database.add(path)
 
+    def set_ext(self, ext):
+        self.extension = ext
+
+    @property
+    def is_tex(self):
+        return self.extension == '.tex'
+    
     def setMainTex(self, condition):
         if condition:
             self.setForeground(0, settings.browser["palette"].brightText())
         else:
-            self.setBackground(0, settings.browser["palette"].base())
+            self.setForeground(0, settings.browser["palette"].text())
 
 class FileBrowser(QTreeWidget):
     def __init__(self, app):
         self.app = app
         super().__init__()
         self.setPalette(settings.browser["palette"])
-
+        font = self.font()
+        font.setPointSize(settings.editor["font"].pointSize())
+        self.setFont(font)
+        
         self.itemClicked.connect(self.onItemClicked)
         self.doubleClicked.connect(self.setMainTex)
         self.setHeaderHidden(True)
@@ -81,13 +101,14 @@ class FileBrowser(QTreeWidget):
         autocompleter.input = file_database.tex
         print(file_database.__dict__)
         
-    def onItemClicked(self, item, col):
+    def onItemClicked(self, item: Item, col):
         if item.is_file:
-            self.app.file_editor.load_file(item.path)
+            if item.is_tex:
+                self.app.file_editor.load_file(item.path)
 
     def setMainTex(self, index):
         item = self.itemFromIndex(index)
-        if item.is_file:
+        if item.is_file and item.is_tex:
             if not self.main_index is None:
                 old_item = self.itemFromIndex(self.main_index)
                 old_item.setMainTex(False)
@@ -109,15 +130,18 @@ class Browser(QWidget):
             super().__init__(parent)
             self.parent = parent
             self.setOrientation(Qt.Vertical)
-            self.setIconSize(QSize(48, 48))
             self.setPalette(settings.app["palette"])
+            self.setIconSize(QSize(42,42))
             
             theme = settings.get_theme()
 
             self.icons = []
             self.actions = []
             for key in svg_icons:
-                self.icons += [svg.create_icons(svg_icons[key], theme['gray'], theme['text'])]
+                self.icons += [[
+                    svg.create_icon(svg_icons[key], ("stroke", theme['gray'])),
+                    svg.create_icon(svg_icons[key], ("stroke", theme['text']))
+                ]]
                 btn = QAction(key, self)
                 btn.setCheckable(True)
                 btn.setIcon(self.icons[-1][0])
@@ -127,6 +151,7 @@ class Browser(QWidget):
 
             self.actionTriggered.connect(self.trigger)
             self.active = 0
+            
 
 
         def trigger(self, action):
@@ -156,7 +181,7 @@ class Browser(QWidget):
         self.browser = QStackedWidget()
         self.file_browser = FileBrowser(app)
         self.browser.addWidget(self.file_browser)
-        lab = QLabel("sad")
+        lab = QLabel("Not implemented")
         self.browser.addWidget(lab)
         self.layout().addWidget(self.browser)
 

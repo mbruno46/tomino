@@ -2,7 +2,7 @@ import os
 
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QLabel, QTabWidget, QWidget, QPlainTextEdit, QScrollArea, QHBoxLayout, QStackedWidget, QStyleOptionTab
-from PyQt5.QtGui import QPainter, QColor, QFontMetricsF
+from PyQt5.QtGui import QPainter, QColor, QFontMetricsF, QKeyEvent, QTextCursor, QTextDocument
 
 from highligher import Highlighter
 import settings
@@ -82,11 +82,14 @@ class Editor(QPlainTextEdit):
                 # self.updateWidth()
 
 
-    def __init__(self, parent = None):
+    def __init__(self, parent = None, filename = None):
         # self.app = app
         super().__init__(parent)
-        # self.setLineWrapMode(QPlainTextEdit.NoWrap)
+        with open(filename,'r') as f:
+            self.setPlainText(f.read())
+        self.filename = filename
 
+        # self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.setTabStopDistance(QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
         self.setPalette(settings.editor["palette"])
         self.setFont(settings.editor["font"])        
@@ -95,9 +98,9 @@ class Editor(QPlainTextEdit):
         self.highlighter = Highlighter(self.document())
         self.completer = autocompleter. AutoCompleter(self)
         
-        # self.textChanged.connect(self.completer.check_and_launch)
-
-    def keyPressEvent(self, event):
+        # self.textChanged.connect(parent.text_changed)
+        
+    def keyPressEvent(self, event: QKeyEvent):
         if self.completer.isVisible() and event.key() in [
             Qt.Key.Key_Enter,
             Qt.Key.Key_Return,
@@ -108,6 +111,10 @@ class Editor(QPlainTextEdit):
         ]:
             event.ignore()
             return
+        # if event.modifiers() & Qt.KeyboardModifier.MetaModifier:
+        #     if event.key() == Qt.Key.Key_Slash:
+        #         self.comment_selection()
+        #         return
         super().keyPressEvent(event)
         self.completer.check_and_launch()
 
@@ -128,9 +135,52 @@ class Editor(QPlainTextEdit):
     #     tc.insertText(choice[len(word):])
     #     self.setTextCursor(tc)
 
+    def comment(self):
+        tc = self.textCursor()
+
+        if tc.hasSelection():
+            start, end = tc.selectionStart(), tc.selectionEnd()
+            tc.setPosition(start)
+            l0 = tc.blockNumber()
+            tc.setPosition(end)
+            l1 = tc.blockNumber()
+        else:
+            l0 = l1 = tc.blockNumber()
+
+        should_comment = l1 + 1 - l0
+        for i in range(l0, l1+1):
+            b = self.document().findBlockByLineNumber(i)
+            s = b.text().lstrip()
+            if s[0] == '%':
+                should_comment -= 1
+
+        for i in range(l0, l1+1):
+            b = self.document().findBlockByLineNumber(i)
+            tstrip = b.text().lstrip()
+            tc.setPosition(b.position())
+            tc.movePosition(QTextCursor.Right, n=len(b.text()) - len(tstrip))
+            if should_comment:
+                tc.insertText('% ')
+            else:
+                n=0
+                n += 1 if tstrip[0]=='%' else 0
+                n += 1 if tstrip[1]==' ' else 0
+                for _ in range(n):
+                    tc.deleteChar()
+
+    def find(self, word, back):
+        # word = 'prova'
+        tc = self.textCursor()
+        if back:
+            tc = self.document().find(word, tc.anchor(), QTextDocument.FindBackward)
+        else:
+            tc = self.document().find(word, tc.position())
+        print(tc.position())
+        if tc.position() == -1:
+            return
+        self.setTextCursor(tc)
 
         
-
 class FileEditor(QTabWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -144,15 +194,44 @@ class FileEditor(QTabWidget):
 
         self.files = []
 
+        def wrapper(f):
+            def inner():
+                w = self.currentWidget()
+                if not w is None:
+                    getattr(w, f)()
+            return inner
+        
+        for f in ['undo','redo','cut','copy','paste','comment']:
+            setattr(self, f, wrapper(f))
+
+    def text_changed(self, changed):
+        e = self.sender()
+        idx = self.files.index(e.filename)
+        if changed:
+            self.setTabText(idx, f'* {self.tabText(idx)[2:]}')
+
+    def save_file(self):
+        idx = self.currentIndex()
+        e: Editor = self.currentWidget()
+        with open(e.filename, 'w') as f:
+            f.write(e.document().toPlainText())
+        self.setTabText(idx, f'  {self.tabText(idx)[2:]}')
+
     def load_file(self, filename):
         if not filename in self.files:
-            e = Editor()
-            with open(filename,'r') as f:
-                e.setPlainText(f.read())
-            self.addTab(e, os.path.basename(filename))
+            e = Editor(self, filename)  
+            e.modificationChanged.connect(self.text_changed)
+            self.addTab(e, f'  {os.path.basename(filename)}')
             self.files.append(filename)
+        idx = self.files.index(filename)
+        self.setCurrentIndex(idx)
 
     def close_file(self, idx):
         self.removeTab(idx)
         self.files.remove(self.files[idx])
 
+    def find(self, word, back):
+        print(word)
+        w = self.currentWidget()
+        if not w is None:
+            w.find(word, back)

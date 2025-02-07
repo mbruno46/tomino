@@ -1,7 +1,7 @@
 from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
 from PyQt5.QtGui import QIconEngine, QIcon, QImage, QPixmap, QPainter, qRgba
 from PyQt5.QtXml import QDomDocument
-from PyQt5.QtCore import QRectF, Qt, QRect, QPoint
+from PyQt5.QtCore import QRectF, Qt, QRect, QPoint, QSize
 
 def setAttrRecur(elem, tag, attr, val):
     if elem.tagName()==tag:
@@ -20,10 +20,11 @@ class SVGIconEngine(QIconEngine):
 
     def paint(self, painter, rect, mode, state):
         r = QSvgRenderer(self.svg)
+        # re = QRectF(0, 0, rect.width()*2, rect.height() * 2)
         r.render(painter, QRectF(rect))
         # return super().paint(painter, rect, mode, state)
 
-    def pixmap(self, size, mode, state):
+    def pixmap(self, size, mode, state):        
         img = QImage(size, QImage.Format_ARGB32)
         img.fill(qRgba(0, 0, 0, 0))
         pix = QPixmap.fromImage(img, Qt.NoFormatConversion)
@@ -33,7 +34,8 @@ class SVGIconEngine(QIconEngine):
         self.paint(painter, r, mode, state)
 
         return pix
-        # return super().pixmap(size, mode, state)
+
+
 
 class SVG:
     def __init__(self, svg):
@@ -44,22 +46,24 @@ class SVG:
     def setAttr(self, tag, attr, val):
         setAttrRecur(self.doc.documentElement(), tag, attr, val)
 
-    def getQSvgWidget(self):
+    def getQSvgWidget(self, scale = 1):
         svg = QSvgWidget()
         svg.load(bytearray(self.doc.toByteArray()))
+        size = svg.sizeHint()
+        svg.setFixedHeight(int(size.height() * scale))
+        svg.setFixedWidth(int(size.width() * scale))
         return svg
     
     def getQIcon(self):
         return QIcon(SVGIconEngine(self.doc.toByteArray()))
 
-def create_icons(s, *args):
-    out = []
-    for a in args:
-        svg = SVG(s)
-        svg.setAttr("svg", "stroke", a)
-        svg.setAttr("path", "stroke", a)
-        svg.setAttr("polyline", "stroke", a)
+def create_icon(s, *args):
+    svg = SVG(s)
+    for (a, v) in args:
+        svg.setAttr("svg", a, v)
+        svg.setAttr("path", a, v)
+        svg.setAttr("polyline", a, v)
         # svg.setAttr("path", "fill", a)
-        out += [svg.getQIcon()]
-    return out
+        # out += [svg.getQIcon()]
+    return svg.getQIcon()
   

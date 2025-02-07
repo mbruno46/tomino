@@ -44,7 +44,7 @@ def init():
     palette.setColor(QPalette.WindowText, QColor(theme['dark']['text']))
     palette.setColor(QPalette.Window, QColor(theme['dark']['app-background']))
 
-    editor["font"] = QFont(families[0], 14)
+    editor["font"] = QFont(families[0], 16)
     editor["palette"] = QPalette(palette)
     editor["palette"].setColor(QPalette.Base, QColor(theme['dark']['text-background']))
 
@@ -56,6 +56,11 @@ def init():
 
     viewer["palette"] = QPalette(palette)
     viewer["palette"].setColor(QPalette.Window, QColor(theme['dark']['text-background']))
+
+    app["compiler"] = {
+        'weak': 'latexmk -pdf',
+        'hard': 'latexmk -g -f -pdf'
+    }
 
 def apply_stylesheet(style, object):
     f = QFile(f':/assets/{style}.qss')
