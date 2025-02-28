@@ -1,11 +1,12 @@
-from PyQt5.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget, QHBoxLayout, QPushButton, QToolBar, QAction
+from PyQt5.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget, QHBoxLayout, QToolButton, QToolBar, QAction, QStyle, QStylePainter, QStyleOptionToolButton, QPushButton, QStackedWidget, QPlainTextEdit
 # from PyQt5.QtWeb import QWebEngineView , QWebEngineSettings
 from PyQt5.QtGui import QImage, QPixmap, QColor, QPainter, QIcon
 from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
-from PyQt5.QtCore import QByteArray, QSize, Qt
+from PyQt5.QtCore import QByteArray, QSize, Qt, QEvent
 from PyQt5.QtXml import QDomDocument
 import pymupdf
 
+from highligher import ErrorHighligther
 import settings
 import style
 import svg
@@ -23,6 +24,8 @@ class PDFViewer(QWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(0,0,0,0)
+        self.layout().setSpacing(32)
         self.darkTheme = False
         self.scale = 1.0
         self.page_size = None
@@ -82,9 +85,37 @@ class PDFViewer(QWidget):
             self.scale = self.parent().height() / self.page_size.height()
             self.load()
 
+class PDFError(QPlainTextEdit):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setPalette(settings.viewer["error"]["palette"])
+        self.setFont(settings.viewer["error"]["font"])
+        self.setReadOnly(True)
+
+        self.highlighter = ErrorHighligther(self.document())
+
 
 class Viewer(QWidget):
+        
     class ToolBar(QToolBar):
+        class ToolButton(QToolButton):
+            def __init__(self, parent, icons, func):
+                super().__init__(parent)
+                self.icons = icons
+                self.func = func
+                self.setIcon(self.icons[0])
+                self.pressed.connect(self(pressing=True))
+                self.released.connect(self(pressing=False))
+                
+            def __call__(self, pressing):
+                def inner():
+                    self.setIcon(self.icons[1 if pressing else 0])
+                    if not pressing:
+                        self.func()
+                return inner
+            
+            
+
         def __init__(self, parent):
             super().__init__(parent)
             self.parent = parent
@@ -101,49 +132,34 @@ class Viewer(QWidget):
             for key, func  in zip(
                 ["Zoom In", "Zoom out", "Fit Width", "Fit Height"], 
                 ['zoomin', 'zoomout', 'fitW',  'fitH']):
-                btn = QAction(key, self)
-                btn.setCheckable(False)
-                btn.triggered.connect(getattr(self.parent.pdfviewer, func))
 
-                self.actions[func] = {
-                    'action': btn, 
-                    'icons': [
-                        svg.create_icon(svg_icons[key],("stroke", theme['gray'])) 
-                        for c in [theme['gray'], theme['text']]
-                    ]
-                }
-                btn.setIcon(self.actions[func]['icons'][0])
+                icons = []
+                for c, s in zip(['gray', 'text'], [QIcon.Off, QIcon.On]):
+                    icons += [svg.create_icon(svg_icons[key],("stroke", theme[c]))]
 
-            
+                b = self.ToolButton(self, icons, getattr(self.parent.pdfviewer, func))
+                self.addWidget(b)
+                self.actions[func] = b
+
             key = "Invert colors"
-            btn = QAction(key, self)
-            btn.setCheckable(True)
-            btn.triggered.connect(self.invert)
-            btn.trigger()
 
-            self.actions['invert'] = {
-                'action': btn, 
-                'icons': [
-                        svg.create_icon(svg_icons[key], 
-                                        ("stroke", theme['gray']), 
-                                        ("fill", theme['gray'])) 
-                                        for c in [theme['gray'], theme['text']]
-                    ]
-            }
-            btn.setIcon(self.actions['invert']['icons'][0])
-            
-            for key in self.actions:
-                self.addAction(self.actions[key]['action'])
+            icon = QIcon()
+            for c, s in zip(['gray', 'text'], [QIcon.Off, QIcon.On]):
+                ico = svg.create_icon(svg_icons[key],("stroke", theme[c]),("fill", theme[c]))
+                icon.addPixmap(ico.pixmap(QSize(32,32)), QIcon.Active, s)
 
-            # self.actionTriggered.connect(self.test)
+            b = QToolButton(self)
+            b.setCheckable(True)
+            b.clicked.connect(self.invert)
+            b.setIcon(icon)
+            self.addWidget(b)
+            self.actions['invert'] = b
+            b.click()
 
-        
         def invert(self):
-            if 'invert' in self.actions:
-                act = self.actions['invert']
-                act['action'].setIcon(act['icons'][0 if act['action'].isChecked() else 1])
-                self.parent.pdfviewer.invert(not act['action'].isChecked())
-
+            w = self.sender()
+            if w:
+                self.parent.pdfviewer.invert(not w.isChecked())
                   
 
     def __init__(self, app):
@@ -151,6 +167,7 @@ class Viewer(QWidget):
         self.setLayout(QVBoxLayout())
         self.setStyleSheet(style.viewer_style)
         self.layout().setContentsMargins(4,0,0,0)
+        self.layout().setSpacing(0)
         
         toolbar = self.ToolBar(self)
         self.layout().addWidget(toolbar)
@@ -159,23 +176,32 @@ class Viewer(QWidget):
         self.pdfviewer = PDFViewer(self)
         self.pdfviewer.setPalette(settings.app["palette"])
         self.scroll.setWidget(self.pdfviewer)
-        self.layout().addWidget(self.scroll)
+
+        self.errmsg = PDFError(self)
+
+        self.panel = QStackedWidget()
+        self.panel.addWidget(self.scroll)
+        self.panel.addWidget(self.errmsg)
+        self.layout().addWidget(self.panel)
+        
         self.invertPixels = False
 
         toolbar.init()
 
         def wrapper(f):
             def inner():
-                toolbar.actions[f]['action'].trigger()
+                toolbar.actions[f].click()
             return inner
         
         for f in ['zoomin','zoomout','fitW','fitH','invert']:
             setattr(self, f, wrapper(f))
 
-
     def load(self, path):
         self.pdfviewer.path = path
         self.pdfviewer.load()
+        self.panel.setCurrentIndex(0)
 
-
-
+    def show_err(self, logfile):
+        self.panel.setCurrentIndex(1)
+        with open(logfile, 'r') as f:
+            self.errmsg.setPlainText(f.read())

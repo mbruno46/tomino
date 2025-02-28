@@ -5,7 +5,7 @@ from PyQt5.QtCore import QRegExp, QRegularExpression
 import settings
 
 def format(color):
-    _color = QColor(settings.theme['dark'][color])
+    _color = QColor(color)
     fmt = QTextCharFormat()
     fmt.setForeground(_color)
     return fmt
@@ -15,8 +15,9 @@ class Highlighter(QSyntaxHighlighter):
     def __init__(self, parent: QTextDocument) -> None:
         super().__init__(parent)
         self.formats = {}
+        theme = settings.get_theme()
         for tag in ['command', 'square', 'curly', 'comment']:
-            self.formats[tag] = format(tag)
+            self.formats[tag] = format(theme[tag])
 
     def highlightBlock(self, text):
         re = QRegularExpression("(\\\\[a-zA-Z]+)(\\[.*?\\])?(\\{.*?\\})?")
@@ -36,3 +37,20 @@ class Highlighter(QSyntaxHighlighter):
             self.setFormat(index, length, self.formats["comment"])
             index = re.indexIn(text, index + length)
 
+class ErrorHighligther(QSyntaxHighlighter):
+    def __init__(self, parent: QTextDocument) -> None:
+        super().__init__(parent)
+        theme = settings.get_theme()
+        self.format = format(theme['error'])
+        self.force = False
+
+    def highlightBlock(self, text):
+        if QRegExp("Runaway\\sargument.*|! pdfTeX error|! LaTeX error|I found no.*").indexIn(text)>=0:
+            self.force = True
+        else:
+            if QRegExp("l\\.\\d+").indexIn(text)>=0:
+                self.setFormat(0, len(text), self.format)
+                self.force = False
+
+        if self.force:
+            self.setFormat(0, len(text), self.format)

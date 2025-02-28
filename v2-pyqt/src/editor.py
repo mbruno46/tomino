@@ -1,18 +1,20 @@
 import os
 
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QFileSystemWatcher
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QLabel, QTabWidget, QWidget, QPlainTextEdit, QScrollArea, QHBoxLayout, QStackedWidget, QStyleOptionTab
 from PyQt5.QtGui import QPainter, QColor, QFontMetricsF, QKeyEvent, QTextCursor, QTextDocument
 
 from highligher import Highlighter
 import settings
 import style
-import autocompleter
+from autocompleter import AutoCompleter
 
 # TODO
 # parser -> input for linked tex files
 #  -> refs for refs
 # parser_bib
+
+completer = AutoCompleter()
 
 class Editor(QPlainTextEdit):
 
@@ -56,17 +58,6 @@ class Editor(QPlainTextEdit):
             painter.end()
 
             QWidget.paintEvent(self, event)
-
-        # def getWidth(self):
-        #     count = self.editor.blockCount()
-        #     width = self.fontMetrics().width(str(count)) + 10
-        #     return width
-        
-        # def updateWidth(self):
-        #     width = self.getWidth()
-        #     if self.width() != width:
-        #         self.setFixedWidth(width)
-        #         self.editor.setViewportMargins(width, 0, 0, 0)
         
         def updateContents(self, rect, scroll):
             self.setFixedHeight(self.editor.height())
@@ -75,12 +66,6 @@ class Editor(QPlainTextEdit):
             else:
                 self.update(0, rect.y(), self.width(), rect.height())
             
-            # if rect.contains(self.editor.viewport().rect()):   
-                # fontSize = self.editor.currentCharFormat().font().pointSize()
-                # self.font.setPointSize(fontSize)
-                # self.font.setStyle(QFont.StyleNormal)
-                # self.updateWidth()
-
 
     def __init__(self, parent = None, filename = None):
         # self.app = app
@@ -88,7 +73,7 @@ class Editor(QPlainTextEdit):
         with open(filename,'r') as f:
             self.setPlainText(f.read())
         self.filename = filename
-
+ 
         # self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.setTabStopDistance(QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
         self.setPalette(settings.editor["palette"])
@@ -96,12 +81,12 @@ class Editor(QPlainTextEdit):
 
         self.number_bar = self.NumberBar(self)                
         self.highlighter = Highlighter(self.document())
-        self.completer = autocompleter. AutoCompleter(self)
         
         # self.textChanged.connect(parent.text_changed)
         
+
     def keyPressEvent(self, event: QKeyEvent):
-        if self.completer.isVisible() and event.key() in [
+        if completer.isVisible() and event.key() in [
             Qt.Key.Key_Enter,
             Qt.Key.Key_Return,
             Qt.Key.Key_Up,
@@ -116,7 +101,7 @@ class Editor(QPlainTextEdit):
         #         self.comment_selection()
         #         return
         super().keyPressEvent(event)
-        self.completer.check_and_launch()
+        completer.check_and_launch()
 
         # super().keyPressEvent(e)
         # # on macos CMD is ControlModifier
@@ -191,7 +176,7 @@ class FileEditor(QTabWidget):
 
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.close_file)
-
+        self.currentChanged.connect(self.onTabChanged)
         self.files = []
 
         def wrapper(f):
@@ -203,6 +188,7 @@ class FileEditor(QTabWidget):
         
         for f in ['undo','redo','cut','copy','paste','comment']:
             setattr(self, f, wrapper(f))
+
 
     def text_changed(self, changed):
         e = self.sender()
@@ -216,6 +202,7 @@ class FileEditor(QTabWidget):
         with open(e.filename, 'w') as f:
             f.write(e.document().toPlainText())
         self.setTabText(idx, f'  {self.tabText(idx)[2:]}')
+        e.document().setModified(False)
 
     def load_file(self, filename):
         if not filename in self.files:
@@ -226,12 +213,35 @@ class FileEditor(QTabWidget):
         idx = self.files.index(filename)
         self.setCurrentIndex(idx)
 
+    def onTabChanged(self, idx):
+        completer.closeAll()
+        if idx > -1:
+            completer.setEditor(self.widget(idx))
+
     def close_file(self, idx):
         self.removeTab(idx)
         self.files.remove(self.files[idx])
+
+    def file_obsolete(self, filename):
+        if filename in self.files:
+            idx = self.files.index(filename)
+            self.close_file(idx)
 
     def find(self, word, back):
         print(word)
         w = self.currentWidget()
         if not w is None:
             w.find(word, back)
+
+    # def onFileChanged(self, path):
+    #     idx = self.files.index(path)
+    #     if not os.path.exists(path):
+    #         self.close_file(idx)
+    #     else: # changed content, not file name
+    #         if not self.has_saved:
+    #             # destroy editor and create new one
+    #             self.close_file(idx)
+    #             self.load_file(path)
+    #             end = self.tabBar().count()
+    #             self.tabBar().move(end - 1, idx)
+    #     self.has_saved = False

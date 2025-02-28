@@ -13,7 +13,7 @@ editor = {}
 browser = {}
 viewer = {}
 
-theme = {
+themes = {
     "dark": {
         "app-background": "#1c1f26",
         "text-background": "#232830",
@@ -28,38 +28,54 @@ theme = {
         "square": "#f1727f",
         "curly": "#ff84e8",
         "comment": "#5d90c4",
+        "error": "#b9552e",
     }
 }
 
 def init():
-    global editor
+    theme = get_theme()
 
     id = QFontDatabase.addApplicationFont('/Users/mbruno/Physics/tomino/v2-pyqt/src/assets/source-code-pro/SourceCodePro-Regular.ttf')
     families = QFontDatabase.applicationFontFamilies(id)
 
     palette = QPalette()
-    palette.setColor(QPalette.Highlight, QColor(theme['dark']['highlight']))
-    palette.setColor(QPalette.Text, QColor(theme['dark']['text']))
-    palette.setColor(QPalette.HighlightedText, QColor(theme['dark']['text']))
-    palette.setColor(QPalette.WindowText, QColor(theme['dark']['text']))
-    palette.setColor(QPalette.Window, QColor(theme['dark']['app-background']))
+    palette.setColor(QPalette.Highlight, QColor(theme['highlight']))
+    palette.setColor(QPalette.Text, QColor(theme['text']))
+    palette.setColor(QPalette.HighlightedText, QColor(theme['text']))
+    palette.setColor(QPalette.WindowText, QColor(theme['text']))
+    palette.setColor(QPalette.Window, QColor(theme['app-background']))
 
     editor["font"] = QFont(families[0], 16)
     editor["palette"] = QPalette(palette)
-    editor["palette"].setColor(QPalette.Base, QColor(theme['dark']['text-background']))
+    editor["palette"].setColor(QPalette.Base, QColor(theme['text-background']))
+
+    font = QFont()
+    font.setFamily(font.defaultFamily())
+    font.setPointSize(16)
 
     app["palette"] = QPalette(palette)
 
     browser["palette"] = QPalette(palette)
-    browser["palette"].setColor(QPalette.Base, QColor(theme['dark']['browser-background']))
-    browser["palette"].setColor(QPalette.BrightText, QColor(theme['dark']['green']))
+    browser["palette"].setColor(QPalette.Base, QColor(theme['browser-background']))
+    browser["palette"].setColor(QPalette.BrightText, QColor(theme['green']))
+    browser["font"] = font
 
     viewer["palette"] = QPalette(palette)
-    viewer["palette"].setColor(QPalette.Window, QColor(theme['dark']['text-background']))
+    viewer["palette"].setColor(QPalette.Window, QColor(theme['text-background']))
+
+    palette = QPalette()
+    palette.setColor(QPalette.Highlight, QColor(theme['highlight']))
+    palette.setColor(QPalette.Text, QColor(theme['gray']))
+    palette.setColor(QPalette.Base, QColor(theme['text-background']))
+
+    viewer["error"] = {
+        "palette": palette,
+        "font": font,
+        }
 
     app["compiler"] = {
-        'weak': 'latexmk -pdf',
-        'hard': 'latexmk -g -f -pdf'
+        'weak': 'latexmk -pdf -silent',
+        'hard': 'latexmk -g -f -pdf -silent'
     }
 
 def apply_stylesheet(style, object):
@@ -69,7 +85,7 @@ def apply_stylesheet(style, object):
     f.close()
 
 def get_theme():
-    return theme['dark']
+    return themes['dark']
 
 class SpinBox(QWidget):
     def __init__(self, name, field, min):

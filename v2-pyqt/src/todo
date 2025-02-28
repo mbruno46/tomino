@@ -1,9 +1,10 @@
- - improve svg icons, they are renderered very poorly
-
- 
- - implement latex error in pdfviewer
+Add
+ - button to fold browser
  - replace
- - improve styling of tabs
- - add scrollbar when many tabs open
+ - add h scrollbar when many tabs open
  - tree view of sections/chapters etc..
- - automatic refresh of file browser (watcher)
+ - title in citations
+ 
+Fixes
+ - improve styling of tabs
+ - fix glitch when find is open

@@ -57,6 +57,7 @@ class SVG:
     def getQIcon(self):
         return QIcon(SVGIconEngine(self.doc.toByteArray()))
 
+
 def create_icon(s, *args):
     svg = SVG(s)
     for (a, v) in args:
