@@ -1,13 +1,8 @@
 from PyQt5.QtGui import QFont, QFontDatabase, QColor, QPalette
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpinBox
 from PyQt5.QtCore import Qt, QFile, QIODevice
 
 import os
-# from PyQt5.QtGui import QIcon, QPixmap
-# import glob, os
-# icons = {}
-# for f in glob.glob("icons/*"):
-#     icons[os.path.basename(f)] = QIcon(QPixmap(f))
 
 app = {}
 editor = {}
@@ -80,11 +75,11 @@ def init():
         'hard': 'latexmk -g -f -pdf -silent'
     }
 
-def apply_stylesheet(style, object):
-    f = QFile(f':/assets/{style}.qss')
-    f.open(QIODevice.ReadOnly)
-    object.setStyleSheet(str(f.readAll(), 'utf-8'))
-    f.close()
+# def apply_stylesheet(style, object):
+#     f = QFile(f':/assets/{style}.qss')
+#     f.open(QIODevice.ReadOnly)
+#     object.setStyleSheet(str(f.readAll(), 'utf-8'))
+#     f.close()
 
 def get_theme():
     return themes['dark']
