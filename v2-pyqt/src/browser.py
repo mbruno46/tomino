@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTreeWidget, QStackedWidget,QToolBar, QAction, QToolButton,  QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
+from PyQt5.QtWidgets import QSizePolicy, QTreeWidget, QStackedWidget,QToolBar, QAction, QToolButton,  QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
 from PyQt5.QtGui import QPainter, QIcon, QPixmap, QIconEngine, QImage
 from PyQt5.QtCore import QSize, QRect, QPoint, Qt, QModelIndex, QAbstractItemModel, QFileSystemWatcher, QRegExp
 from PyQt5.QtSvg import QSvgWidget
@@ -120,7 +120,8 @@ svg_icons = {
 
 
 
-class FileBrowser(QTreeView):
+
+class FileBrowserTree(QTreeView):
     def __init__(self, app = None):
         self.app = app
         super().__init__(app)
@@ -137,7 +138,7 @@ class FileBrowser(QTreeView):
         
         for i in [1,2,3]:
             self.hideColumn(i)
-        self.setHeaderHidden(False)
+        self.setHeaderHidden(True)
 
         self.clicked.connect(self.onClick)
         self.doubleClicked.connect(self.onDoubleClick)
@@ -245,6 +246,26 @@ class FileBrowser(QTreeView):
         for f in self.files.values():
             f()
 
+
+class FileBrowser(QWidget):
+    def __init__(self, app):
+        super().__init__(app)
+        self.setPalette(settings.browser["palette"])
+        self.setAutoFillBackground(True)
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(0,10,0,10)
+
+        self.label = QLabel("")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(settings.browser["font"])
+        self.layout().addWidget(self.label)
+
+        self.file_browser = FileBrowserTree(app)
+        self.layout().addWidget(self.file_browser)
+
+    def load(self, path):
+        self.file_browser.load(path)
+        self.label.setText(os.path.basename(path))
 
 class Browser(QWidget):
     class ToolBar(QToolBar):

@@ -2,6 +2,7 @@ from PyQt5.QtGui import QFont, QFontDatabase, QColor, QPalette
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QSpinBox
 from PyQt5.QtCore import Qt, QFile, QIODevice
 
+import os
 # from PyQt5.QtGui import QIcon, QPixmap
 # import glob, os
 # icons = {}
@@ -35,7 +36,7 @@ themes = {
 def init():
     theme = get_theme()
 
-    id = QFontDatabase.addApplicationFont('/Users/mbruno/Physics/tomino/v2-pyqt/src/assets/source-code-pro/SourceCodePro-Regular.ttf')
+    id = QFontDatabase.addApplicationFont(f'{os.path.dirname(__file__)}/assets/source-code-pro/SourceCodePro-Regular.ttf')
     families = QFontDatabase.applicationFontFamilies(id)
 
     palette = QPalette()
@@ -57,6 +58,7 @@ def init():
 
     browser["palette"] = QPalette(palette)
     browser["palette"].setColor(QPalette.Base, QColor(theme['browser-background']))
+    browser["palette"].setColor(QPalette.Window, QColor(theme['browser-background']))
     browser["palette"].setColor(QPalette.BrightText, QColor(theme['green']))
     browser["font"] = font
 

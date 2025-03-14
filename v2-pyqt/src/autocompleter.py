@@ -1,18 +1,12 @@
 from PyQt5.QtWidgets import QCompleter
-from PyQt5.QtCore import Qt, QRegExp, QRegularExpression, QStringListModel
+from PyQt5.QtCore import Qt, QRegExp, QRegularExpression
 from PyQt5.QtGui import QTextCursor, QFontMetrics
 
 import json, os
 for _f in ['math', 'cmds', 'envs']:
-    with open(f'./latex.{_f}.json','r') as f:
+    with open(f'{os.path.dirname(__file__)}/latex.{_f}.json','r') as f:
         globals()[_f] = json.load(f)
 
-# from latex import LatexParser
-
-# input = []
-# biblio = []
-# figures = []
-# refs = []
 
 class Base(QCompleter):
     def __init__(self, keywords):
@@ -81,12 +75,6 @@ class AutoCompleterBasic(Base):
 
 class AutoCompleterEnvironments(Base):
     def onActivated(self, choice):
-        # editor = self.widget()
-        # tc = editor.textCursor()
-        # if (not tc.atEnd()) or (not tc.atBlockEnd()):
-        #     tc.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
-        #     if tc.selectedText()[0]=='}':
-        #         tc.deletePreviousChar()
         def inner(choice):
             self.delete_right_matching_char('}')
             word = self.completionPrefix()
@@ -122,9 +110,6 @@ class AutoCompleter:
             'ref': ref,
             'cite': cite,
         }
-        # self.editor = editor
-        # self.min_left = self.editor.number_bar.width()
-
         # in case basic_completer has inserted text, e.g. \begin{}
         # then a new completer should be fired
         self.basic_completer.activated.connect(self.check_and_launch)
@@ -195,141 +180,9 @@ class AutoCompleter:
         _completer.complete(cr)
 
 
-    # def update(self):
-    #     print('ehre')
-    #     m = self.completers['input'].model()
-    #     for el in input:
-    #         print(el, el in m.stringList())
-    #         if not el in m.stringList():
-    #             m.stringList().append(el)
-    #     for el in m.stringList():
-    #         if not el in input:
-    #             m.stringList().remove(el)
-
-
-    # def update(self, key, value, remove=False):
-    #     print('ehre')
-    #     m = self.completers[key].model()
-    #     if remove:
-    #         if value in m.stringList():
-    #             m.stringList().remove(value)
-    #     else:
-    #         if not value in m.stringList():
-    #             m.stringList().append(value)
-
     def setEditor(self, editor):
         self.basic_completer.setEditor(editor)
         for key in self.completers:
             self.completers[key].setEditor(editor)
         self.editor = editor
         self.min_left = self.editor.number_bar.width()
-
-    # def file_changed(self, filename):
-    #     ext = os.path.splitext(filename)[1]
-    #     if ext=='.tex':
-
-
-class LatexParser:
-    def __init__(self, main):
-        self.main = main
-        self.db = {
-            'input': [],
-            'bibliography': [],
-            'label': [],
-            'cite': [],
-        }
-        self()
-
-    def parse(self, keyword, text):
-        db = self.db[keyword]
-        # re = QRegExp(f'\\{keyword}\\{{(.*)\\}}')
-        # index = re.indexIn(text)
-        re = QRegExp("\\%s\{(.*)\}" % keyword)
-        re.setMinimal(True)
-        index = re.indexIn(text)
-        while index >= 0:
-            word = re.cap(1)
-            for w in word.split(','):
-                if not w in db:
-                    db.append(w)
-            index = re.indexIn(text, index + 9 + len(word))
-
-    def parse_bib_file(self, text):
-        re = QRegExp("@article\{(.*)\}")
-        re.setMinimal(True)
-        index = re.indexIn(text)
-        while index >= 0:
-            word = re.cap(1)
-            print(word)
-
-    def __call__(self, filename = None):
-        if filename is None:
-            with open(self.main,'r') as f:
-                text = f.read()
-                self.parse('input', text)
-                self.parse('bibliography', text)
-                self.parse('label', text)
-
-            # for f in self.db['bibliography']:
-                # self.parse_bib(open(f,'r').read())
-
-            return
-                        
-
-        # for f in self.db['input']:
-            # self.parse('label', open(f,'r').read())
-
-        print(self.db)
-
-
-# DB = LatexDB()
-###
-#
-"""
-set main creates LatexDB 
-
-on file save, e.g. new input or new biblio --> update LatexDB refs or cites
-"""
-
-
-class Parser:
-    def __init__(self):
-        self.main = None
-        self.db = {}
-        
-    def init(self, main):
-        self.main = main
-        self.db = {
-            'input': [],
-            'bib': [],
-            'label': [],
-        }
-
-    def parse(self, keyword, text):
-        db = self.db[keyword]
-        re = QRegExp(f'\\{keyword}\\{{(.*)\\}}')
-        index = re.indexIn(text)
-        re = QRegExp("\\%s\{(.*)\}" % keyword)
-        re.setMinimal(True)
-        index = re.indexIn(text)
-        while index >= 0:
-            word = re.cap(1)
-            for w in word.split(','):
-                if not w in db:
-                    db.append(w)
-            index = re.indexIn(text, index + 9 + len(word))
-
-    def __call__(self):
-        with open(self.main,'r') as f:
-            text = f.read()
-            self.parse('input', text)
-            self.parse('bib', text)
-            self.parse('label', text)
-
-        for f in self.db['input']:
-            self.parse('label', open(f,'r').read())
-
-        print(self.db)
-        
-# parser = Parser()
-# refs = parser.db['label']

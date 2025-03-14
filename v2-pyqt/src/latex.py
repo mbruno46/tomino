@@ -50,7 +50,7 @@ class FileBase:
             self.data.remove(r)
             self.completer.update_keyword(r, remove=True)
 
-        print(self.__dict__)
+        # print(self.__dict__)
 
     def __del__(self):
         for el in self.data:
