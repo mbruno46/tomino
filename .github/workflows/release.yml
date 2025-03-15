@@ -1,0 +1,57 @@
+name: 'publish'
+on:
+  push:
+    branches:
+      - v2-pyqt
+
+jobs:
+  publish-tomino:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, macos-13]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: setup
+        if: matrix.platform == 'macos-latest'
+        run: |
+          VER=$(cat VERSION)
+          echo "VERSION=$VER" >> $GITHUB_ENV
+          echo "SRC=tomino.app" >> $GITHUB_ENV
+          echo "OUTPUT=tomino.$VER.darwin-amd64" >> $GITHUB_ENV
+
+      - name: install dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+        run: |
+          sh bootstrap.sh python3 && . pyenv/bin/activate
+          pyinstaller -y tomino.spec
+          tar czf ${{ env.OUTPUT }}.tar.gz dist/${{ env.SRC }}
+
+      - name: create release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: true
+          prerelease: false
+          release_name: ${{ env.VERSION }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: upload artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.OUTPUT }}.tar.gz
+          asset_name: ${{ env.OUTPUT }}.tar.gz
+          asset_content_type: application/gzip

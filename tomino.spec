@@ -43,7 +43,8 @@ coll = COLLECT(
     name='tomino',
 )
 
-v = '2.0.0'
+v = open('VERSION','r').read()
+
 if os.uname().sysname == 'Darwin':
     app = BUNDLE(
         coll,
