@@ -7,6 +7,8 @@ on:
 jobs:
   draft_release:
     name: Draft release
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
