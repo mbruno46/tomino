@@ -195,21 +195,21 @@ class FileEditor(QTabWidget):
         e = self.sender()
         idx = self.files.index(e.filename)
         if changed:
-            self.setTabText(idx, f'* {self.tabText(idx)[2:]}')
+            self.setTabText(idx, f'* {self.tabText(idx)[2:-1]} ')
 
     def save_file(self):
         idx = self.currentIndex()
         e: Editor = self.currentWidget()
         with open(e.filename, 'w') as f:
             f.write(e.document().toPlainText())
-        self.setTabText(idx, f'  {self.tabText(idx)[2:]}')
+        self.setTabText(idx, f'  {self.tabText(idx)[2:-1]} ')
         e.document().setModified(False)
 
     def load_file(self, filename):
         if not filename in self.files:
             e = Editor(self, filename)  
             e.modificationChanged.connect(self.text_changed)
-            self.addTab(e, f'  {os.path.basename(filename)}')
+            self.addTab(e, f'  {os.path.basename(filename)} ')
             self.files.append(filename)
         idx = self.files.index(filename)
         self.setCurrentIndex(idx)

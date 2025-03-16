@@ -9,8 +9,8 @@ editor_style = '\n'.join([
     set_item('QTabWidget::tab-bar', 'alignment: left;'),
     set_item('QTabWidget::pane', 'border: 0px'),
     set_item('QTabWidget Editor', 'border: 0px'),
-    set_item('QTabBar::tab', f'min-height: 3.2em; border: 0px; border-top: 4px solid {theme["app-background"]}; color: {theme["gray"]}'),
-    set_item('QTabBar::tab:selected', f'background: {theme["text-background"]}; color: {theme["text"]}; border-top: 4px solid {theme["highlight"]};'),
+    set_item('QTabBar::tab', f'min-height: 3.2em; border: 0px; padding: -4px 0 0 4px; border-top: 4px solid {theme["app-background"]}; color: {theme["gray"]}'),
+    set_item('QTabBar::tab:selected', f'background: {theme["text-background"]}; color: {theme["text"]}; padding: -4px 0 0 4px; border-top: 4px solid {theme["highlight"]};'),
     set_item('QTabBar::close-button', 'subcontrol-position: right;'),
 ])
 
