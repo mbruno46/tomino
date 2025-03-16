@@ -134,13 +134,14 @@ class Editor(QPlainTextEdit):
 
         should_comment = l1 + 1 - l0
         for i in range(l0, l1+1):
-            b = self.document().findBlockByLineNumber(i)
+            b = self.document().findBlockByNumber(i)
             s = b.text().lstrip()
-            if s[0] == '%':
-                should_comment -= 1
+            if len(s)>0:
+                if s[0] == '%':
+                    should_comment -= 1
 
         for i in range(l0, l1+1):
-            b = self.document().findBlockByLineNumber(i)
+            b = self.document().findBlockByNumber(i)
             tstrip = b.text().lstrip()
             tc.setPosition(b.position())
             tc.movePosition(QTextCursor.Right, n=len(b.text()) - len(tstrip))
