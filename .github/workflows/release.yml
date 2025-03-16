@@ -49,21 +49,21 @@ jobs:
         run: |
           VER=$(cat VERSION)
           echo "SRC=tomino.app" >> $GITHUB_ENV
-          echo "OUTPUT=tomino.$VER.darwin-aarch64" >> $GITHUB_ENV
+          echo "OUTPUT=tomino-$VER.darwin-aarch64" >> $GITHUB_ENV
       
       - name: setup
         if: matrix.platform == 'macos-13'
         run: |
           VER=$(cat VERSION)
           echo "SRC=tomino.app" >> $GITHUB_ENV
-          echo "OUTPUT=tomino.$VER.darwin-amd64" >> $GITHUB_ENV
+          echo "OUTPUT=tomino-$VER.darwin-amd64" >> $GITHUB_ENV
 
       - name: install python3
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
       
-      - name: install dependencies
+      - name: build
         run: |
           sh bootstrap.sh python3 && . pyenv/bin/activate
           pyinstaller -y tomino.spec

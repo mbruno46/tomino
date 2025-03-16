@@ -13,7 +13,7 @@ A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is
 
 ### Authors
 
-Copyright (C) 2023, Mattia Bruno
+Copyright (C) 2023-2025, Mattia Bruno
 
 ## Requirements
 
