@@ -41,6 +41,7 @@ def init():
     palette.setColor(QPalette.WindowText, QColor(theme['text']))
     palette.setColor(QPalette.Window, QColor(theme['app-background']))
 
+    editor["tab"] = 4
     editor["font"] = QFont(families[0], 16)
     editor["palette"] = QPalette(palette)
     editor["palette"].setColor(QPalette.Base, QColor(theme['text-background']))

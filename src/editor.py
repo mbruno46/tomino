@@ -96,6 +96,13 @@ class Editor(QPlainTextEdit):
         ]:
             event.ignore()
             return
+        if event.key() == Qt.Key_Tab:
+            self.indent(False)
+            return
+        if event.key() == Qt.Key_Backtab:
+            self.indent(True)
+            return
+        
         # if event.modifiers() & Qt.KeyboardModifier.MetaModifier:
         #     if event.key() == Qt.Key.Key_Slash:
         #         self.comment_selection()
@@ -103,6 +110,8 @@ class Editor(QPlainTextEdit):
         super().keyPressEvent(event)
         completer.check_and_launch()
 
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            self.indent_newline()
         # super().keyPressEvent(e)
         # # on macos CMD is ControlModifier
         # if (e.modifiers() == Qt.ControlModifier):
@@ -120,7 +129,7 @@ class Editor(QPlainTextEdit):
     #     tc.insertText(choice[len(word):])
     #     self.setTextCursor(tc)
 
-    def comment(self):
+    def selected_lines(self):
         tc = self.textCursor()
 
         if tc.hasSelection():
@@ -131,6 +140,30 @@ class Editor(QPlainTextEdit):
             l1 = tc.blockNumber()
         else:
             l0 = l1 = tc.blockNumber()
+        return tc, l0, l1
+    
+    def indent_newline(self): 
+        tc, l0, l1 = self.selected_lines()
+        b = self.document().findBlockByNumber(l0-1)
+        n = len(b.text()) - len(b.text().lstrip())
+        tc.insertText(' ' * n)
+
+    def indent(self, shift):
+        print(shift)
+        tc, l0, l1 = self.selected_lines()
+        for i in range(l0, l1+1):
+            b = self.document().findBlockByNumber(i)
+            tc.setPosition(b.position())
+            if shift:
+                tstrip = b.text().lstrip()
+                n = min(len(b.text()) - len(tstrip), settings.editor["tab"])
+                tc.movePosition(QTextCursor.Right, tc.KeepAnchor, n)
+                tc.deleteChar()
+            else:
+                tc.insertText(' ' * settings.editor["tab"])
+            
+    def comment(self):
+        tc, l0, l1 = self.selected_lines()
 
         should_comment = l1 + 1 - l0
         for i in range(l0, l1+1):
