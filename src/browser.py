@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QSizePolicy, QTreeWidget, QStackedWidget,QToolBar, QAction, QToolButton,  QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
-from PyQt5.QtGui import QPainter, QIcon, QPixmap, QIconEngine, QImage
-from PyQt5.QtCore import QSize, QRect, QPoint, Qt, QModelIndex, QAbstractItemModel, QFileSystemWatcher, QRegExp
+from PyQt5.QtGui import QPainter, QIcon, QPixmap, QIconEngine, QImage, QFont, QColor
+from PyQt5.QtCore import QSize, QRect, QPoint, Qt, QModelIndex, QAbstractItemModel, QFileSystemWatcher, QRegExp, pyqtSlot
 from PyQt5.QtSvg import QSvgWidget
 
-import glob, os
+import glob, os, sys
 
 import settings
 import style
@@ -122,6 +122,22 @@ svg_icons = {
 
 
 class FileBrowserTree(QTreeView):
+    class FileSystemModel(QFileSystemModel):
+        def __init__(self, parent = None):
+            self.main = ''
+            super().__init__(parent)
+
+        def setMain(self, index):
+            self.main = self.filePath(index)
+            self.dataChanged.emit(QModelIndex(), QModelIndex())
+
+        def data(self, index, role = Qt.DisplayRole):
+            if (self.main == self.filePath(index)) and (role == Qt.FontRole):
+                font = QFont()
+                font.setUnderline(True)
+                return font
+            return super().data(index, role)
+
     def __init__(self, app = None):
         self.app = app
         super().__init__(app)
@@ -129,7 +145,7 @@ class FileBrowserTree(QTreeView):
         self.setFont(settings.browser["font"])
 
         self.allowed_figures = ['.pdf','.eps','.png','.jpg']
-        self.fsm = QFileSystemModel()
+        self.fsm = self.FileSystemModel()
         self.fsm.setNameFilters(["*.tex","*.bib"] + [f"*{e}" for e in self.allowed_figures])
         self.fsm.setNameFilterDisables(False)
         self.fsm.rowsInserted.connect(self.onRowsInserted)
@@ -145,7 +161,6 @@ class FileBrowserTree(QTreeView):
 
         self.watcher = QFileSystemWatcher()
         self.watcher.fileChanged.connect(self.onFileChanged)
-
 
     def load(self, path):
         self.root = path
@@ -216,10 +231,14 @@ class FileBrowserTree(QTreeView):
 
     def onDoubleClick(self, index: QModelIndex):        
         if self.editable(index, texonly=True):
-            path = self.model().filePath(index)
+            path = self.fsm.filePath(index)
             self.app.main_tex_file = path
             self.parse_main(path)
-
+            self.fsm.setMain(index)
+            # print(self.fsm.itemData(index), index.row(), index.column())
+        else:
+            if sys.platform == 'darwin':
+                os.popen(f'open {self.fsm.filePath(index)}')
 
     def parse_main(self, filename):
         text = open(filename, 'r').read()
