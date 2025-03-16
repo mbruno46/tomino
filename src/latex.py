@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QRegExp
+from PyQt5.QtCore import QRegExp, QProcess
 from subprocess import PIPE, Popen
 import os
 import settings
@@ -15,6 +15,19 @@ def build_pdf(main, weak=True):
         return False
     return True
 
+class Compiler:
+    def __init__(self, callback):
+        self.p = None
+        self.callback = callback
+
+    def __call__(self, main, weak):
+        cmd = settings.app['compiler']['weak'] if weak else settings.app['compiler']['hard']
+        root = os.path.dirname(main)
+        file = os.path.basename(main).replace('.tex','')
+
+        if self.p is None:
+            self.p = QProcess()
+            self.p.finished.connect(self.callback)
 
 class FileBase:
     def __init__(self, filename):

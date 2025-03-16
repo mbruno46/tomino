@@ -7,5 +7,7 @@ Add
 
  - separate thread for latex compiler to avoid freezing GUI
 
+ - dynamic settings update
+
 Fixes
  - fix glitch when find is open
