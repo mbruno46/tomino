@@ -159,9 +159,9 @@ class FileBrowserTree(QTreeView):
         self.clicked.connect(self.onClick)
         self.doubleClicked.connect(self.onDoubleClick)
 
-        self.watcher = QFileSystemWatcher()
-        self.watcher.fileChanged.connect(self.onFileChanged)
-
+        # self.watcher = QFileSystemWatcher()
+        # self.watcher.fileChanged.connect(self.onFileChanged)
+        
     def load(self, path):
         self.root = path
         self.files = {}
@@ -181,25 +181,25 @@ class FileBrowserTree(QTreeView):
         else:
             ext = None
 
-        if ext in ('.tex', '.bib'):
-            if remove:
-                del self.files[filename]
-                self.watcher.removePath(filename)
-            else:
-                cls = latex.TexFile if ext=='.tex' else latex.BibFile
-                self.files[filename] = cls(filename)
-                self.watcher.addPath(filename)
+        # if ext in ('.tex', '.bib'):
+        #     if remove:
+        #         del self.files[filename]
+        #         # self.watcher.removePath(filename)
+        #     else:
+        #         cls = latex.TexFile if ext=='.tex' else latex.BibFile
+        #         self.files[filename] = cls(filename)
+        #         # self.watcher.addPath(filename)
 
         return ext
     
 
-    def onFileChanged(self, path):
-        if not os.path.exists(path):
-            # file removal or renamed handled by rowsremoved
-            return
+    # def onFileChanged(self, path):
+    #     if not os.path.exists(path):
+    #         # file removal or renamed handled by rowsremoved
+    #         return
 
-        if path in self.files:
-            self.files[path]()
+    #     if path in self.files:
+    #         self.files[path]()
 
 
     def onRowsInserted(self, idx, i0, i1):
@@ -233,37 +233,42 @@ class FileBrowserTree(QTreeView):
         if self.editable(index, texonly=True):
             path = self.fsm.filePath(index)
             self.app.main_tex_file = path
-            self.parse_main(path)
+            self.main = latex.TexFile(path)
             self.fsm.setMain(index)
-            # print(self.fsm.itemData(index), index.row(), index.column())
         else:
             if sys.platform == 'darwin':
                 os.popen(f'open {self.fsm.filePath(index)}')
 
-    def parse_main(self, filename):
-        text = open(filename, 'r').read()
+    # def parse_main(self, filename):
+    #     # root = os.path.dirname(filename)
+    #     self.files = [latex.TexFile(filename)]
+    #     for fn in self.files[0].data['input']:
+    #         self.files += [latex.TexFile(fn)]
+        
+    # def parse_main_0(self, filename):
+    #     text = open(filename, 'r').read()
 
-        for f in self.files.values():
-            f.setLinked(False)
-        self.files[filename].setLinked(True)
-        root = os.path.dirname(filename)
+    #     for f in self.files.values():
+    #         f.setLinked(False)
+    #     self.files[filename].setLinked(True)
+    #     root = os.path.dirname(filename)
 
-        for keyword in ['input', 'bibliography']:
-            re = QRegExp("\\\\%s\\{(.*)\\}" % keyword)
-            re.setMinimal(True)
-            index = re.indexIn(text)
+    #     for keyword in ['input', 'bibliography']:
+    #         re = QRegExp("\\\\%s\\{(.*)\\}" % keyword)
+    #         re.setMinimal(True)
+    #         index = re.indexIn(text)
 
-            print(re)
-            while index >= 0:
-                word = re.cap(1)
-                for w in word.split(','):
-                    fn = os.path.join(root, w)
-                    if fn in self.files:
-                        self.files[fn].setLinked(True)
-                index = re.indexIn(text, index + 9 + len(word))
+    #         print(re)
+    #         while index >= 0:
+    #             word = re.cap(1)
+    #             for w in word.split(','):
+    #                 fn = os.path.join(root, w)
+    #                 if fn in self.files:
+    #                     self.files[fn].setLinked(True)
+    #             index = re.indexIn(text, index + 9 + len(word))
 
-        for f in self.files.values():
-            f()
+    #     for f in self.files.values():
+    #         f()
 
 
 class FileBrowser(QWidget):

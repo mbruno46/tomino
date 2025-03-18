@@ -57,7 +57,9 @@ class Base(QCompleter):
                 idx = m.index(m.rowCount() - 1, 0)
                 m.setData(idx, value)
 
-        
+    def __call__(self):
+        pass
+
 class AutoCompleterBasic(Base):
     def onActivated(self, choice):
         def inner(choice):
@@ -93,11 +95,43 @@ class AutoCompleterGeneric(Base):
 
         super().onActivated(choice, inner)
 
+class AutoCompleterMultiple(AutoCompleterGeneric):
+    def __init__(self):
+        self.kwrds = {}
+        super().__init__([])
+
+    def __call__(self):
+        all_keywords = []
+        for key in self.kwrds:
+            all_keywords += self.kwrds[key]
+        print(self.kwrds, all_keywords)
+        self.model().setStringList(all_keywords)
+
+    def append(self, tag, words):
+        if not tag in self.kwrds:
+            self.kwrds[tag] = []
+        self.kwrds[tag].append(words)
+
+    def extend(self, tag, words):
+        if not tag in self.kwrds:
+            self.kwrds[tag] = []
+        self.kwrds[tag].extend(words)
+
+    def remove(self, tag, word):
+        if not tag in self.kwrds:
+            return
+        self.kwrds[tag].remove(word)
+
+    def delete(self, tag):
+        if tag in self.kwrds:
+            del self.kwrds[tag]
+    
+        
 input = AutoCompleterGeneric([])
 bibliography = AutoCompleterGeneric([])
 includegraphics = AutoCompleterGeneric([])
-ref = AutoCompleterGeneric([])
-cite = AutoCompleterGeneric([])
+ref = AutoCompleterMultiple()
+cite = AutoCompleterMultiple()
 
 class AutoCompleter:
     def __init__(self):
@@ -161,6 +195,7 @@ class AutoCompleter:
         else:
             return
 
+        _completer() # performs internal updates if needed
         _completer.setCompletionPrefix(word)
         if _completer.currentCompletion()==word:
             return
