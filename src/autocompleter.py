@@ -98,33 +98,39 @@ class AutoCompleterGeneric(Base):
 class AutoCompleterMultiple(AutoCompleterGeneric):
     def __init__(self):
         self.kwrds = {}
+        self.changed = True
         super().__init__([])
 
     def __call__(self):
-        all_keywords = []
-        for key in self.kwrds:
-            all_keywords += self.kwrds[key]
-        print(self.kwrds, all_keywords)
-        self.model().setStringList(all_keywords)
+        if self.changed:
+            all_keywords = []
+            for key in self.kwrds:
+                all_keywords += self.kwrds[key]
+            self.model().setStringList(all_keywords)
+            self.changed = False
 
     def append(self, tag, words):
         if not tag in self.kwrds:
             self.kwrds[tag] = []
         self.kwrds[tag].append(words)
+        self.changed = True
 
     def extend(self, tag, words):
         if not tag in self.kwrds:
             self.kwrds[tag] = []
         self.kwrds[tag].extend(words)
+        self.changed = True
 
     def remove(self, tag, word):
         if not tag in self.kwrds:
             return
         self.kwrds[tag].remove(word)
+        self.changed = True
 
     def delete(self, tag):
         if tag in self.kwrds:
             del self.kwrds[tag]
+        self.changed = True
     
         
 input = AutoCompleterGeneric([])

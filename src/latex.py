@@ -1,34 +1,38 @@
-from PyQt5.QtCore import QRegExp, QProcess, QFileSystemWatcher
+from PyQt5.QtCore import QRegExp, QThread, pyqtSignal, QFileSystemWatcher
 from subprocess import PIPE, Popen
 import os, re
 
 import settings
 from autocompleter import ref, cite
 
-def build_pdf(main, weak=True):
-    cmd = settings.app['compiler']['weak'] if weak else settings.app['compiler']['hard']
-    root = os.path.dirname(main)
-    file = os.path.basename(main).replace('.tex','')
-    p = Popen(f'cd {root}; {cmd} {file}', shell=True, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p.communicate()
-    print(stdout, stderr)
-    if p.wait() != 0:
-        return False
-    return True
+# def build_pdf(main, weak=True):
+#     cmd = settings.app['compiler']['weak'] if weak else settings.app['compiler']['hard']
+#     root = os.path.dirname(main)
+#     file = os.path.basename(main).replace('.tex','')
+#     p = Popen(f'cd {root}; {cmd} {file}', shell=True, stdout=PIPE, stderr=PIPE)
+#     stdout, stderr = p.communicate()
+#     print(stdout, stderr)
+#     if p.wait() != 0:
+#         return False
+#     return True
 
-class Compiler:
-    def __init__(self, callback):
-        self.p = None
-        self.callback = callback
+class Compiler(QThread):
+    success = pyqtSignal(bool)
 
-    def __call__(self, main, weak):
-        cmd = settings.app['compiler']['weak'] if weak else settings.app['compiler']['hard']
-        root = os.path.dirname(main)
-        file = os.path.basename(main).replace('.tex','')
+    def __init__(self, main, weak):
+        self.main = main
+        self.weak = weak
+        super().__init__()
 
-        if self.p is None:
-            self.p = QProcess()
-            self.p.finished.connect(self.callback)
+    def run(self):
+        cmd = settings.app['compiler']['weak'] if self.weak else settings.app['compiler']['hard']
+        root = os.path.dirname(self.main)
+        file = os.path.basename(self.main).replace('.tex','')
+        p = Popen(f'cd {root}; {cmd} {file}', shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+        print(stdout, stderr)
+        self.success.emit(False if p.wait() != 0 else True)
+
 
 # class FileBase:
 #     def __init__(self, filename):

@@ -14,7 +14,7 @@ from editor import FileEditor
 from finder import Finder
 from viewer import Viewer
 from browser import Browser
-from latex import build_pdf, TexFile
+from latex import Compiler
 
 menus = {
     "&File": [
@@ -141,8 +141,7 @@ class MainWindow(QMainWindow):
 
 
     def recompile(self, weak):
-        if not self.main_tex_file is None:
-            success = build_pdf(self.main_tex_file, weak)
+        def inner(success):
             if not success:
                 logfile = self.main_tex_file.replace('.tex', '.log')
                 if os.path.isfile(logfile):
@@ -151,17 +150,18 @@ class MainWindow(QMainWindow):
                 pdffile = self.main_tex_file.replace('.tex', '.pdf')
                 if os.path.isfile(pdffile):
                     self.viewer.load(path = pdffile)
-    
+
+        if not self.main_tex_file is None:
+            self.thread = Compiler(self.main_tex_file, weak)
+            self.thread.success.connect(inner)
+            self.thread.start()
+
     def weak(self):
         self.recompile(True)
 
     def hard(self):
         self.recompile(False)
 
-    def set_main(self, filename):
-        self.main_tex_file = filename
-        self.latex = TexFile(filename)
-        self.latex()
 
 app = QApplication(sys.argv)
 # app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
