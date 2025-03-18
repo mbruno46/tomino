@@ -36,6 +36,11 @@ class Base(QCompleter):
             if tc.selectedText()[0]==char:
                 tc.deletePreviousChar()
 
+    def delete_left_nchars(self, n):
+        tc = self.widget().textCursor()
+        tc.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, n=n)
+        tc.deletePreviousChar()
+
     def onActivated(self, choice, func):
         new_text, shift_backward = func(choice)
 
@@ -95,7 +100,7 @@ class AutoCompleterGeneric(Base):
 
         super().onActivated(choice, inner)
 
-class AutoCompleterMultiple(AutoCompleterGeneric):
+class AutoCompleterMultiple(Base):
     def __init__(self):
         self.kwrds = {}
         self.changed = True
@@ -131,13 +136,38 @@ class AutoCompleterMultiple(AutoCompleterGeneric):
         if tag in self.kwrds:
             del self.kwrds[tag]
         self.changed = True
-    
-        
+
+class AutoCompleterRef(AutoCompleterMultiple):
+    def onActivated(self, choice):
+        def inner(choice):
+            self.delete_right_matching_char('}')
+            word = self.completionPrefix()
+            t = choice[len(word):] + "}"
+            return t, 0
+
+        super().onActivated(choice, inner)
+
+class AutoCompleterCite(AutoCompleterMultiple):
+    def __init__(self):
+        super().__init__()
+        self.setFilterMode(Qt.MatchContains)
+
+    def onActivated(self, choice):
+        def inner(choice):
+            self.delete_right_matching_char('}')
+            word = self.completionPrefix()
+            self.delete_left_nchars(len(word))
+            choice = choice.split(' [')[0]
+            t = choice + "}"
+            return t, 0
+
+        super().onActivated(choice, inner)
+
 input = AutoCompleterGeneric([])
 bibliography = AutoCompleterGeneric([])
 includegraphics = AutoCompleterGeneric([])
-ref = AutoCompleterMultiple()
-cite = AutoCompleterMultiple()
+ref = AutoCompleterRef()
+cite = AutoCompleterCite()
 
 class AutoCompleter:
     def __init__(self):

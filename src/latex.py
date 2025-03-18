@@ -96,8 +96,6 @@ class BibFile:
         self.watcher.addPath(self.filename)
         self.watcher.fileChanged.connect(self.__call__)
         
-        # self.completer = cite
-
         self()
 
     def __call__(self):
@@ -116,10 +114,10 @@ class BibFile:
             for _m in _patt.finditer(content.strip()):
                 _tag, _content = _m.groups()
                 if _tag == 'title':
-                    self.data[tag] = _content
+                    self.data[tag] = _content.strip(',"{}')
 
         cite.delete(self.filename)
-        cite.extend(self.filename, list(self.data.keys()))
+        cite.extend(self.filename, [f'{key} [{self.data[key]}]' for key in self.data])
 
 class TexFile:
     class TexCmd:
@@ -136,8 +134,6 @@ class TexFile:
         self.watcher.addPath(self.filename)
         self.watcher.fileChanged.connect(self.__call__)
         
-        # self.completer = ref
-
         self.children = {}
 
         self()
