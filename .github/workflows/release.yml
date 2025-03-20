@@ -67,7 +67,7 @@ jobs:
         run: |
           sh bootstrap.sh python3 && . pyenv/bin/activate
           pyinstaller -y tomino.spec
-          tar czf ${{ env.OUTPUT }}.tar.gz dist/${{ env.SRC }}
+          cd dist && tar -czf ${{ env.OUTPUT }}.tar.gz ${{ env.SRC }}
 
       - name: upload artifact
         uses: actions/upload-release-asset@v1
@@ -75,6 +75,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ needs.draft_release.outputs.upload_url }}
-          asset_path: ${{ env.OUTPUT }}.tar.gz
+          asset_path: dist/${{ env.OUTPUT }}.tar.gz
           asset_name: ${{ env.OUTPUT }}.tar.gz
           asset_content_type: application/gzip
