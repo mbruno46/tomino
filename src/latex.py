@@ -1,5 +1,4 @@
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QFileSystemWatcher, QAbstractItemModel, QModelIndex
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
 
 from subprocess import PIPE, Popen
 import os, re
@@ -121,13 +120,13 @@ class TexFile:
                     )
                     if tag in latex_sections:
                         model.populate(tag, self.data[tag][-1])
+
+        for tag in ('input', 'bibliography', 'label'):
+            if not tag in self.data:
+                self.data[tag] = []
             
         ref.delete(self.filename)
         ref.extend(self.filename, [d.curly for d in self.data['label']])
-
-        for tag in ('input', 'bibliography'):
-            if not tag in self.data:
-                self.data[tag] = []
 
         for r in toremove:
             del self.children[r]

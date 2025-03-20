@@ -1,9 +1,8 @@
-from PyQt5.QtWidgets import QSizePolicy, QTreeWidget, QStackedWidget,QToolBar, QAction, QToolButton,  QStyleOptionTabV4, QStylePainter, QTreeWidgetItem, QTabWidget, QTabBar, QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
-from PyQt5.QtGui import QPainter, QIcon, QPixmap, QIconEngine, QImage, QFont, QColor
-from PyQt5.QtCore import QSize, QRect, QPoint, Qt, QModelIndex, QAbstractItemModel, QFileSystemWatcher, QRegExp, pyqtSlot
-from PyQt5.QtSvg import QSvgWidget
+from PyQt5.QtWidgets import QStackedWidget,QToolBar, QAction,  QLabel, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QSize, Qt, QModelIndex
 
-import glob, os, sys
+import os, sys
 
 import settings
 import style

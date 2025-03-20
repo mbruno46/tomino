@@ -1,7 +1,7 @@
 import os
 
-from PyQt5.QtCore import Qt, QRect, QFileSystemWatcher
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QLabel, QTabWidget, QWidget, QPlainTextEdit, QScrollArea, QHBoxLayout, QStackedWidget, QStyleOptionTab
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtWidgets import QTabWidget, QWidget, QPlainTextEdit
 from PyQt5.QtGui import QPainter, QColor, QFontMetricsF, QKeyEvent, QTextCursor, QTextDocument
 
 from highligher import Highlighter
@@ -24,6 +24,7 @@ class Editor(QPlainTextEdit):
             self.editor.setViewportMargins(width, 0, 0, 0)
 
             self.editor.updateRequest.connect(self.updateContents) 
+            self.editor.blockCountChanged.connect(lambda x: print('bcc ', x))
 
         def paintEvent(self, event):            
             painter = QPainter(self)
@@ -35,7 +36,7 @@ class Editor(QPlainTextEdit):
             while block.isValid():
                 blockNumber = block.blockNumber()
                 block_top = self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top()
- 
+                
                 if not block.isVisible() or block_top >= event.rect().bottom():
                     break
  
@@ -50,11 +51,12 @@ class Editor(QPlainTextEdit):
                 painter.drawText(paint_rect, Qt.AlignRight, str(blockNumber+1))
  
                 block = block.next()
- 
+
             painter.end()
 
             QWidget.paintEvent(self, event)
         
+
         def updateContents(self, rect, scroll):
             self.setFixedHeight(self.editor.height())
             if scroll:
@@ -170,10 +172,10 @@ class Editor(QPlainTextEdit):
             tc = self.document().find(word, tc.anchor(), QTextDocument.FindBackward)
         else:
             tc = self.document().find(word, tc.position())
-        print(tc.position())
         if tc.position() == -1:
             return
         self.setTextCursor(tc)
+        self.setFocus()
 
     def focus_on_line(self, number):
         tc = self.textCursor()
@@ -237,13 +239,16 @@ class FileEditor(QTabWidget):
         self.removeTab(idx)
         self.files.remove(self.files[idx])
 
+    def close_all(self):
+        for i in reversed(range(len(self.files))):
+            self.close_file(i)
+
     def file_obsolete(self, filename):
         if filename in self.files:
             idx = self.files.index(filename)
             self.close_file(idx)
 
     def find(self, word, back):
-        print(word)
         w = self.currentWidget()
         if not w is None:
             w.find(word, back)

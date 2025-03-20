@@ -62,6 +62,10 @@ class Base(QCompleter):
                 idx = m.index(m.rowCount() - 1, 0)
                 m.setData(idx, value)
 
+    def clean(self):
+        m = self.model()
+        m.removeRows(0, m.rowCount())
+
     def __call__(self):
         pass
 
@@ -136,6 +140,11 @@ class AutoCompleterMultiple(Base):
         if tag in self.kwrds:
             del self.kwrds[tag]
         self.changed = True
+
+    def clean(self):
+        self.kwrds = {}
+        self.changed = True
+        self()
 
 class AutoCompleterRef(AutoCompleterMultiple):
     def onActivated(self, choice):
@@ -257,3 +266,12 @@ class AutoCompleter:
             self.completers[key].setEditor(editor)
         self.editor = editor
         self.min_left = self.editor.number_bar.width()
+
+    def reset(self):
+        self.completers['input'].clean()
+        self.completers['bibliography'].clean()
+        self.completers['includegraphics'].clean()
+        self.completers['ref'].clean()
+        self.completers['cite'].clean()
+
+       

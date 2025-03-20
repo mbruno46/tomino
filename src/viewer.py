@@ -1,9 +1,6 @@
-from PyQt5.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget, QHBoxLayout, QToolButton, QToolBar, QAction, QStyle, QStylePainter, QStyleOptionToolButton, QPushButton, QStackedWidget, QPlainTextEdit
-# from PyQt5.QtWeb import QWebEngineView , QWebEngineSettings
-from PyQt5.QtGui import QImage, QPixmap, QColor, QPainter, QIcon
-from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
-from PyQt5.QtCore import QByteArray, QSize, Qt, QEvent
-from PyQt5.QtXml import QDomDocument
+from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget, QPlainTextEdit
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QSize, Qt
 import pymupdf
 
 from highligher import ErrorHighligther
@@ -60,6 +57,10 @@ class PDFViewer(QWidget):
             self.layout().addWidget(page)
         
         doc.close()
+
+    def close(self):
+        for i in reversed(range(self.layout().count())): 
+            self.layout().itemAt(i).widget().setParent(None)
 
     def invert(self, bool):
         self.darkTheme = bool#not self.darkTheme
@@ -205,3 +206,7 @@ class Viewer(QWidget):
         self.panel.setCurrentIndex(1)
         with open(logfile, 'r') as f:
             self.errmsg.setPlainText(f.read())
+
+    def close(self):
+        self.pdfviewer.close()
+        self.panel.setCurrentIndex(0)

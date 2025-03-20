@@ -2,15 +2,11 @@ import sys
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QLabel, QAction, QFileDialog, QProxyStyle, QSplitter
-# import PyQt5.QtWidgets as qtw
-
-import PyQt5.QtWidgets as pyqt
-# print(pyqt.QStyleOptionTab.shape)
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QAction, QFileDialog, QSplitter
 
 import settings
 import style
-from editor import FileEditor
+from editor import FileEditor, completer
 from finder import Finder
 from viewer import Viewer
 from browser import Browser
@@ -73,7 +69,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         settings.init()
 
-        self.setWindowTitle("tomino v2")
+        self.setWindowTitle("tomino")
         self.resize(1200, 600)
         self.setPalette(settings.app["palette"])
         f = self.font()
@@ -116,6 +112,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(main)
 
         menubar = self.menuBar()
+        menubar.setNativeMenuBar(True)
         for m in menus:
             menu = menubar.addMenu(m)
 
@@ -132,7 +129,10 @@ class MainWindow(QMainWindow):
     def open(self):
         f = QFileDialog.getExistingDirectory(self, "Open folder ...", None, QFileDialog.ShowDirsOnly)
         if os.path.exists(f):
+            completer.reset()
             self.browser.load(f)
+            self.file_editor.close_all()
+            self.viewer.close()
 
     def settings(self):
         if self.settings_window is None:
