@@ -1,0 +1,173 @@
+import sys
+import os
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QAction, QFileDialog, QSplitter
+
+import settings
+import style
+from editor import FileEditor, completer
+from finder import Finder
+from viewer import Viewer
+from browser import Browser
+from latex import Compiler
+
+menus = {
+    "&File": [
+        ("&Open folder...", 'Ctrl+O', 'open'),
+        ('separator', '', ''),
+        ("&Prefs...", 'Ctrl+P', 'settings'),
+        ('separator', '', ''),
+        ('&Save', 'Ctrl+S', 'file_editor.save_file'),
+        ('&Recompile TeX (weak)', 'Ctrl+R', 'weak'),
+        ('&Recompile TeX (hard)', 'Ctrl+Shift+R', 'hard'),
+        ('separator', '', ''),
+        ("&Close", 'Ctrl+Q', 'close'),
+    ],
+    "&Edit": [
+        ("&Undo", 'Ctrl+Z', 'file_editor.undo'),
+        ("&Redo", 'Ctrl+Shift+Z', 'file_editor.redo'),
+        ('separator', '', ''),
+        ("&Cut", 'Ctrl+X', 'file_editor.cut'),
+        ("&Copy", 'Ctrl+C', 'file_editor.copy'),
+        ("&Paste", 'Ctrl+V', 'file_editor.paste'),
+        ('separator', '', ''),
+        ("&Toggle line comment", 'Ctrl+/', 'file_editor.comment'),
+    ],
+    "&View": [
+        ("&Zoom In", 'Ctrl++', 'viewer.zoomin'),
+        ("&Zoom Out", 'Ctrl+-', 'viewer.zoomout'),
+        ("&Fit Width", 'Ctrl+W', 'viewer.fitW'),
+        ("&Fit Height", 'Ctrl+Shift+W', 'viewer.fitH'),
+        ('separator', '', ''),
+        ("&Find", 'Ctrl+F', 'finder.toggle'),
+        ('separator', '', ''),
+        ("&Invert colors", 'Ctrl+I', 'viewer.invert'),
+    ]
+}
+
+def get_nested_attr(obj, path):
+    if '.' in path:
+        s = path.split('.')
+        return get_nested_attr(getattr(obj, s[0]), '.'.join(s[1:]))
+    return getattr(obj, path)
+
+
+class VPanel(QWidget):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(0,0,4,0)
+        self.layout().setSpacing(0)
+
+    def add(self, w):
+        self.layout().addWidget(w)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        settings.init()
+
+        self.setWindowTitle("tomino")
+        self.resize(1200, 600)
+        self.setPalette(settings.app["palette"])
+        f = self.font()
+        f.setPointSize(16)
+        self.setFont(f)
+
+        self.main_tex_file = None
+        self.latex = None
+        self.settings_window = None
+
+        editor_panel = VPanel()
+        self.file_editor = FileEditor()
+        self.finder = Finder(self)
+        editor_panel.add(self.file_editor)
+        editor_panel.add(self.finder)
+        
+        self.viewer = Viewer(self)
+
+        splitter = QSplitter()
+        splitter.addWidget(editor_panel)
+        splitter.addWidget(self.viewer)
+        splitter.setStretchFactor(2, 2)
+        splitter.setStyleSheet(style.splitter_style)
+        
+        # browser_layout = QHBoxLayout()
+        self.browser = Browser(self)
+        # browser_layout.addWidget(self.browser, 4)
+        self.browser.load("/Users/mbruno/Physics/tomino/dummy")
+
+        main = QWidget()
+
+        layout = QHBoxLayout(main)
+        layout.setContentsMargins(0,0,0,0)
+        layout.setSpacing(0)
+        layout.addWidget(self.browser, 20)
+        layout.addWidget(splitter, 80)
+
+        splitter.setSizes([(self.size().width() - self.browser.size().width())//2]*2)
+
+        self.setCentralWidget(main)
+
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(True)
+        for m in menus:
+            menu = menubar.addMenu(m)
+
+            for tag, shortcut, func in menus[m]:
+                if tag=='separator':
+                    menu.addSeparator()
+                    continue
+
+                action = QAction(tag, self)
+                action.setShortcut(shortcut)
+                action.triggered.connect(get_nested_attr(self, func))
+                menu.addAction(action)
+
+    def open(self):
+        f = QFileDialog.getExistingDirectory(self, "Open folder ...", None, QFileDialog.ShowDirsOnly)
+        if os.path.exists(f):
+            completer.reset()
+            self.browser.load(f)
+            self.file_editor.close_all()
+            self.viewer.close()
+
+    def settings(self):
+        if self.settings_window is None:
+            self.settings_window = settings.SettingsWindow()
+        self.settings_window.show()
+
+
+    def recompile(self, weak):
+        def inner(success):
+            if not success:
+                logfile = self.main_tex_file.replace('.tex', '.log')
+                if os.path.isfile(logfile):
+                    self.viewer.show_err(logfile)
+            else:
+                pdffile = self.main_tex_file.replace('.tex', '.pdf')
+                if os.path.isfile(pdffile):
+                    self.viewer.load(path = pdffile)
+
+        if not self.main_tex_file is None:
+            self.thread = Compiler(self.main_tex_file, weak)
+            self.thread.success.connect(inner)
+            self.thread.start()
+
+    def weak(self):
+        self.recompile(True)
+
+    def hard(self):
+        self.recompile(False)
+
+
+app = QApplication(sys.argv)
+# app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
+window = MainWindow()
+window.show()
+
+sys.exit(app.exec())

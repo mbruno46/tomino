@@ -1,0 +1,80 @@
+name: 'publish'
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  draft_release:
+    name: Draft release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup
+        run: |
+          VER=$(cat VERSION)
+          echo "version=$VER" >> $GITHUB_ENV
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.version }}
+          release_name: ${{ env.version }}
+          draft: true
+          prerelease: false
+
+  publish-tomino:
+    needs: draft_release
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, macos-13]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: setup
+        if: matrix.platform == 'macos-latest'
+        run: |
+          VER=$(cat VERSION)
+          echo "SRC=tomino.app" >> $GITHUB_ENV
+          echo "OUTPUT=tomino-$VER.darwin-aarch64" >> $GITHUB_ENV
+      
+      - name: setup
+        if: matrix.platform == 'macos-13'
+        run: |
+          VER=$(cat VERSION)
+          echo "SRC=tomino.app" >> $GITHUB_ENV
+          echo "OUTPUT=tomino-$VER.darwin-amd64" >> $GITHUB_ENV
+
+      - name: install python3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      
+      - name: build
+        run: |
+          sh bootstrap.sh python3 && . pyenv/bin/activate
+          pyinstaller -y tomino.spec
+          tar czf ${{ env.OUTPUT }}.tar.gz dist/${{ env.SRC }}
+
+      - name: upload artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.draft_release.outputs.upload_url }}
+          asset_path: ${{ env.OUTPUT }}.tar.gz
+          asset_name: ${{ env.OUTPUT }}.tar.gz
+          asset_content_type: application/gzip
