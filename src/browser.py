@@ -233,7 +233,8 @@ class FileBrowserTree(QTreeView):
         if self.editable(index, texonly=True):
             path = self.fsm.filePath(index)
             self.app.main_tex_file = path
-            self.main = latex.TexFile(path)
+            latex.init(path)
+            self.app.browser.toc.expandAll()
             self.fsm.setMain(index)
         else:
             if sys.platform == 'darwin':
@@ -291,6 +292,24 @@ class FileBrowser(QWidget):
         self.file_browser.load(path)
         self.label.setText(os.path.basename(path))
 
+
+class TOC(QTreeView):
+    def __init__(self, app = None):
+        self.app = app
+        super().__init__(app)
+        self.setPalette(settings.browser["palette"])
+        self.setFont(settings.browser["font"])
+
+        self.setHeaderHidden(True)
+        self.setModel(latex.model)
+
+        self.doubleClicked.connect(self.onDoubleClick)
+
+    def onDoubleClick(self, index: QModelIndex):
+        fn, ln = index.internalPointer().location
+        self.app.file_editor.focus_on_line(fn, ln)
+
+
 class Browser(QWidget):
     class ToolBar(QToolBar):
         def __init__(self, parent):
@@ -344,13 +363,22 @@ class Browser(QWidget):
         toolbar = self.ToolBar(self)
         self.layout().addWidget(toolbar)
 
-        self.browser = QStackedWidget()
-
         self.file_browser = FileBrowser(app)
-        self.browser.addWidget(self.file_browser)
 
-        lab = QLabel("Not implemented")
-        self.browser.addWidget(lab)
+        # lab = QLabel("Not implemented")
+        w = QWidget()
+        w.setPalette(settings.browser["palette"])
+        w.setAutoFillBackground(True)
+
+        w.setLayout(QVBoxLayout())
+        w.layout().setContentsMargins(0,0,0,0)
+        w.layout().addSpacing(20)
+        self.toc = TOC(app)        
+        w.layout().addWidget(self.toc)
+
+        self.browser = QStackedWidget()
+        self.browser.addWidget(self.file_browser)
+        self.browser.addWidget(w)
         self.layout().addWidget(self.browser)
 
         toolbar.switch_tab(0)

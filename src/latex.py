@@ -1,4 +1,6 @@
-from PyQt5.QtCore import QRegExp, QThread, pyqtSignal, QFileSystemWatcher
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QFileSystemWatcher, QAbstractItemModel, QModelIndex
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+
 from subprocess import PIPE, Popen
 import os, re
 
@@ -119,14 +121,30 @@ class BibFile:
         cite.delete(self.filename)
         cite.extend(self.filename, [f'{key} [{self.data[key]}]' for key in self.data])
 
+    def __del__(self):
+        if cite:
+            cite.delete(self.filename)
+
+class TexNode:
+    def __init__(self, tag, square='', curly='', file='', line=-1):
+        self.tag = tag
+        self.square = square
+        self.curly = curly
+        self.location = [file, line]
+        self.children = []
+        self.parent = None
+
+    def addChild(self, child):
+        child.parent = self
+        self.children.append(child)
+
+    def getLastChild(self):
+        return self.children[-1]
+    
+    def hasChildren(self):
+        return len(self.children)>0
+    
 class TexFile:
-    class TexCmd:
-        def __init__(self, tag, square, curly, file, line):
-            self.tag = tag
-            self.square = square
-            self.curly = curly
-            self.location = [file, line]
-        
     def __init__(self, filename):
         self.filename = os.path.abspath(filename)
         self.root = os.path.dirname(self.filename)
@@ -140,7 +158,6 @@ class TexFile:
 
     def __call__(self):
         self.data = {}
-        toadd = []
         toremove = list(self.children.keys())
 
         for i, l in enumerate(open(self.filename,'r').readlines()):
@@ -163,8 +180,10 @@ class TexFile:
                             toremove.remove(fname)
                 else:
                     self.data[tag].append(
-                        self.TexCmd(tag, None if arg1 is None else arg1[1:-1], arg2, self.filename, i)
+                        TexNode(tag, None if arg1 is None else arg1[1:-1], arg2, self.filename, i)
                     )
+                    if tag in latex_sections:
+                        model.populate(tag, self.data[tag][-1])
             
         ref.delete(self.filename)
         ref.extend(self.filename, [d.curly for d in self.data['label']])
@@ -177,4 +196,70 @@ class TexFile:
             del self.children[r]
 
     def __del__(self):
-        ref.delete(self.filename)
+        if ref:
+            ref.delete(self.filename)
+
+
+class TexModel(QAbstractItemModel):
+    def __init__(self):
+        super().__init__()
+        self.init()
+
+    def init(self, init_string=None):
+        if hasattr(self, 'root'):
+            del self.root
+        self.root = TexNode('part')
+        self.root.addChild(TexNode('chapter', curly='Select a main .tex file' if init_string is None else init_string))
+
+    def index(self, row, column, _parent: QModelIndex):
+        if column==0:
+            parent = _parent.internalPointer() if _parent.isValid() else self.root
+            if row<len(parent.children):
+                return self.createIndex(row, column, parent.children[row])
+        return QModelIndex()
+    
+    def parent(self, index):
+        if index.isValid():
+            child = index.internalPointer()
+            if not child.parent is None:
+                return self.createIndex(child.parent.children.index(child), 0, child.parent)
+        return QModelIndex()
+    
+    def rowCount(self, index: QModelIndex):
+        if index.isValid():
+            return len(index.internalPointer().children)
+        return len(self.root.children)
+    
+    def columnCount(self, index: QModelIndex):
+        return 1
+    
+    def data(self, index: QModelIndex, role):
+        if (role==Qt.DisplayRole):
+            return index.internalPointer().curly
+        return None
+    
+    def populate(self, tag, child):
+        def get_last_child(node: TexNode, level, depth):
+            if depth==level:
+                return node
+            else:
+                if not node.hasChildren():
+                    node.addChild(TexNode(latex_sections[level]))
+                return get_last_child(node.getLastChild(), level+1, depth)
+    
+        get_last_child(self.root, 0, latex_sections[tag]).addChild(child)
+
+
+model = TexModel()
+latex_sections = {
+    'chapter': 0,
+    'section': 1,
+    'subsection': 2
+}
+main = None
+
+def init(filename):
+    global model
+    model.init(os.path.basename(filename))
+    global main
+    main = TexFile(filename)

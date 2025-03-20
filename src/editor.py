@@ -199,7 +199,12 @@ class Editor(QPlainTextEdit):
             return
         self.setTextCursor(tc)
 
-        
+    def focus_on_line(self, number):
+        tc = self.textCursor()
+        b = self.document().findBlockByNumber(number)
+        tc.setPosition(b.position())
+        self.setTextCursor(tc)
+
 class FileEditor(QTabWidget):
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -266,6 +271,12 @@ class FileEditor(QTabWidget):
         w = self.currentWidget()
         if not w is None:
             w.find(word, back)
+
+    def focus_on_line(self, filename, idx):
+        self.load_file(filename)
+        e: Editor = self.currentWidget()
+        e.focus_on_line(idx)
+        e.setFocus()
 
     # def onFileChanged(self, path):
     #     idx = self.files.index(path)
