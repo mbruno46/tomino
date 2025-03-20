@@ -2,10 +2,6 @@ Add
  - button to fold browser
  - replace
  - add h scrollbar when many tabs open
- - tree view of sections/chapters etc..
- - title in citations
-
- - separate thread for latex compiler to avoid freezing GUI
 
  - dynamic settings update
 

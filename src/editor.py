@@ -9,10 +9,6 @@ import settings
 import style
 from autocompleter import AutoCompleter
 
-# TODO
-# parser -> input for linked tex files
-#  -> refs for refs
-# parser_bib
 
 completer = AutoCompleter()
 
@@ -68,7 +64,6 @@ class Editor(QPlainTextEdit):
             
 
     def __init__(self, parent = None, filename = None):
-        # self.app = app
         super().__init__(parent)
         with open(filename,'r') as f:
             self.setPlainText(f.read())
@@ -82,7 +77,6 @@ class Editor(QPlainTextEdit):
         self.number_bar = self.NumberBar(self)                
         self.highlighter = Highlighter(self.document())
         
-        # self.textChanged.connect(parent.text_changed)
         
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -103,31 +97,13 @@ class Editor(QPlainTextEdit):
             self.indent(True)
             return
         
-        # if event.modifiers() & Qt.KeyboardModifier.MetaModifier:
-        #     if event.key() == Qt.Key.Key_Slash:
-        #         self.comment_selection()
-        #         return
         super().keyPressEvent(event)
         completer.check_and_launch()
 
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):
             self.indent_newline()
-        # super().keyPressEvent(e)
-        # # on macos CMD is ControlModifier
-        # if (e.modifiers() == Qt.ControlModifier):
-        #     if e.key() == Qt.Key_R:
-        #         print("cmd+R")
-        #         # self.app.viewer.load()
-        
-        # if self.cursorPositionChanged():
-        #     print("changed!!")
         
 
-    # def autocomplete(self, choice):
-    #     tc = self.textCursor()
-    #     word = self.current_word
-    #     tc.insertText(choice[len(word):])
-    #     self.setTextCursor(tc)
 
     def selected_lines(self):
         tc = self.textCursor()
@@ -278,15 +254,3 @@ class FileEditor(QTabWidget):
         e.focus_on_line(idx)
         e.setFocus()
 
-    # def onFileChanged(self, path):
-    #     idx = self.files.index(path)
-    #     if not os.path.exists(path):
-    #         self.close_file(idx)
-    #     else: # changed content, not file name
-    #         if not self.has_saved:
-    #             # destroy editor and create new one
-    #             self.close_file(idx)
-    #             self.load_file(path)
-    #             end = self.tabBar().count()
-    #             self.tabBar().move(end - 1, idx)
-    #     self.has_saved = False

@@ -16,110 +16,6 @@ svg_icons = {
     'Document': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M8 8H20M11 12H20M14 16H20M4 8H4.01M7 12H7.01M10 16H10.01" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>'
 }
 
-# def build_tree(parent, path):
-#     item = Item(parent, path)
-#     if item.is_file:
-#         ext = file_database.add(path)
-#         if ext is None:
-#             item.parent().removeChild(item)
-#         item.set_ext(ext)
-#         return
-#     for f in sorted(glob.glob(f"{path}/*")):
-#         build_tree(item, f)
-
-# class FileDatabase:
-#     def __init__(self):
-#         pass
-
-#     def init(self, root):
-#         self.root = root
-#         self.tex = []
-#         self.bib = []
-#         self.figures = []
-
-#     def add(self, filename):
-#         rel_path = os.path.relpath(filename, self.root)
-#         # base = os.path.basename(filename)
-#         ext = os.path.splitext(filename)[1]
-#         if ext=='.tex':
-#             self.tex.append(rel_path)
-#         elif ext=='.bib':
-#             self.bib.append(rel_path) 
-#         elif ext in ('.pdf','.eps','.png','.jpg'):
-#             self.figures.append(rel_path)
-#         else:
-#             ext = None
-#         return ext
-
-# file_database = FileDatabase()
-
-# class Item(QTreeWidgetItem):
-#     def __init__(self, parent, path):
-#         super().__init__(parent)
-#         self.setText(0, os.path.basename(path))
-#         self.path = path
-#         self.is_file = os.path.isfile(path)
-
-#     def set_ext(self, ext):
-#         self.extension = ext
-
-#     @property
-#     def is_tex(self):
-#         return self.extension == '.tex'
-    
-#     def setMainTex(self, condition):
-#         if condition:
-#             self.setForeground(0, settings.browser["palette"].brightText())
-#         else:
-#             self.setForeground(0, settings.browser["palette"].text())
-
-# class FileBrowser2(QTreeWidget):
-#     def __init__(self, app):
-#         self.app = app
-#         super().__init__()
-#         self.setPalette(settings.browser["palette"])
-#         self.setFont(settings.browser["font"])
-        
-#         self.itemClicked.connect(self.onItemClicked)
-#         self.doubleClicked.connect(self.setMainTex)
-#         self.setHeaderHidden(True)
-#         self.setAnimated(True)
-
-#         self.main_index = None
-        
-#     def load(self, path):
-#         self.path = path
-#         self.clear()
-#         self.app.file_editor.clear()
-#         file_database.init(path)
-
-#         build_tree(self, path)
-#         if self.topLevelItemCount()==1:
-#             self.topLevelItem(0).setExpanded(True)
-        
-#         autocompleter.input = file_database.tex
-#         print(file_database.__dict__)
-        
-#     def onItemClicked(self, item: Item, col):
-#         if item.is_file:
-#             if item.is_tex:
-#                 self.app.file_editor.load_file(item.path)
-
-#     def setMainTex(self, index):
-#         item = self.itemFromIndex(index)
-#         if item.is_file and item.is_tex:
-#             if not self.main_index is None:
-#                 old_item = self.itemFromIndex(self.main_index)
-#                 old_item.setMainTex(False)
-#             self.main_index = index
-#             item.setMainTex(True)
-#             self.app.main_tex_file = item.path
-
-#             autocompleter.parser.main = item.path
-#             autocompleter.parser()
-
-
-
 
 class FileBrowserTree(QTreeView):
     class FileSystemModel(QFileSystemModel):
@@ -159,8 +55,6 @@ class FileBrowserTree(QTreeView):
         self.clicked.connect(self.onClick)
         self.doubleClicked.connect(self.onDoubleClick)
 
-        # self.watcher = QFileSystemWatcher()
-        # self.watcher.fileChanged.connect(self.onFileChanged)
         
     def load(self, path):
         self.root = path
@@ -181,25 +75,8 @@ class FileBrowserTree(QTreeView):
         else:
             ext = None
 
-        # if ext in ('.tex', '.bib'):
-        #     if remove:
-        #         del self.files[filename]
-        #         # self.watcher.removePath(filename)
-        #     else:
-        #         cls = latex.TexFile if ext=='.tex' else latex.BibFile
-        #         self.files[filename] = cls(filename)
-        #         # self.watcher.addPath(filename)
-
         return ext
     
-
-    # def onFileChanged(self, path):
-    #     if not os.path.exists(path):
-    #         # file removal or renamed handled by rowsremoved
-    #         return
-
-    #     if path in self.files:
-    #         self.files[path]()
 
 
     def onRowsInserted(self, idx, i0, i1):
@@ -239,37 +116,6 @@ class FileBrowserTree(QTreeView):
         else:
             if sys.platform == 'darwin':
                 os.popen(f'open {self.fsm.filePath(index)}')
-
-    # def parse_main(self, filename):
-    #     # root = os.path.dirname(filename)
-    #     self.files = [latex.TexFile(filename)]
-    #     for fn in self.files[0].data['input']:
-    #         self.files += [latex.TexFile(fn)]
-        
-    # def parse_main_0(self, filename):
-    #     text = open(filename, 'r').read()
-
-    #     for f in self.files.values():
-    #         f.setLinked(False)
-    #     self.files[filename].setLinked(True)
-    #     root = os.path.dirname(filename)
-
-    #     for keyword in ['input', 'bibliography']:
-    #         re = QRegExp("\\\\%s\\{(.*)\\}" % keyword)
-    #         re.setMinimal(True)
-    #         index = re.indexIn(text)
-
-    #         print(re)
-    #         while index >= 0:
-    #             word = re.cap(1)
-    #             for w in word.split(','):
-    #                 fn = os.path.join(root, w)
-    #                 if fn in self.files:
-    #                     self.files[fn].setLinked(True)
-    #             index = re.indexIn(text, index + 9 + len(word))
-
-    #     for f in self.files.values():
-    #         f()
 
 
 class FileBrowser(QWidget):
