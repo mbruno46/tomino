@@ -1,15 +1,16 @@
-# <img src="src/assets/1024x1024.png" height='48px' style='vertical-align: bottom'> tomino
+# <img src="icons/1024x1024.png" height='48px' style='vertical-align: bottom'> tomino
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Publish](https://github.com/mbruno46/tomino/actions/workflows/publish.yml/badge.svg)](https://github.com/mbruno46/tomino/actions/workflows/publish.yml)
 [![Latest Release](https://img.shields.io/github/v/release/mbruno46/tomino)](https://github.com/mbruno46/tomino/releases/latest)
 
-A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is built using [Vue3](https://vuejs.org), [Vite](https://vitejs.dev) and [Tauri](https://tauri.app), and supersedes its older predecessor [ToM](https://github.com/mbruno46/ToM).
+A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is built using Python and the PyQt library.
+
+Versions older than v1 were built using [Vue3](https://vuejs.org), [Vite](https://vitejs.dev) and [Tauri](https://tauri.app), and supersededed the older predecessor [ToM](https://github.com/mbruno46/ToM).
 
 - **Website:** https://mbruno46.github.io/tomino/
 - **Source code:** https://github.com/mbruno46/tomino/
 - **Bug reports:** https://github.com/mbruno46/tomino/issues
-
 
 ### Authors
 
@@ -27,13 +28,7 @@ Copyright (C) 2023-2025, Mattia Bruno
 macOS prevents its installation and execution.
 To use tomino on macOS users should follow the instructions below.*
 
-  * To automatically download and install the latest version in `$HOME/Applications/` 
-    open a terminal and type
-```bash
-# macOS
-curl -Ls https://raw.githubusercontent.com/mbruno46/tomino/main/scripts/macos_installer.sh | bash -s
-```
-  * Alternatively, download the lastest `.tar.gz` release from [here](https://github.com/mbruno46/tomino/releases/), unpack it and run the following command
+  * Download the lastest `.tar.gz` release from [here](https://github.com/mbruno46/tomino/releases/), unpack it and run the following command
 ```bash
 xattr -dr com.apple.quarantine /path/to/tomino.app
 ```
