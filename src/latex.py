@@ -6,6 +6,19 @@ import os, re
 import settings
 from autocompleter import ref, cite
 
+def safe_path(tag, path, root):
+    if tag=='input':
+        path += '' if path[-4:]=='.tex' else '.tex'
+    elif tag=='bibliography':
+        path += '' if path[-4:]=='.bib' else '.bib'
+
+    if os.path.exists(path):
+        return path
+    else:
+        fn = os.path.join(root, path)
+        if os.path.exists(fn):
+            return fn
+    return None
 
 
 class Compiler(QThread):
@@ -108,7 +121,7 @@ class TexFile:
 
                 if tag in ('input', 'bibliography'):
                     for _arg2 in arg2.split(','):
-                        fname = _arg2 if _arg2[0]=='/' else os.path.join(self.root, _arg2)
+                        fname = safe_path(tag, _arg2.strip(), self.root)
                         self.data[tag].append(fname)
                         if not fname in self.children:
                             self.children[fname] = TexFile(fname) if tag=='input' else BibFile(fname)

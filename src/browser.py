@@ -40,22 +40,22 @@ class FileBrowserTree(QTreeView):
         self.setFont(settings.browser["font"])
 
         self.allowed_figures = ['.pdf','.eps','.png','.jpg']
+        
+        self.clicked.connect(self.onClick)
+        self.doubleClicked.connect(self.onDoubleClick)
+        
+    def load(self, path):
         self.fsm = self.FileSystemModel()
         self.fsm.setNameFilters(["*.tex","*.bib"] + [f"*{e}" for e in self.allowed_figures])
         self.fsm.setNameFilterDisables(False)
         self.fsm.rowsInserted.connect(self.onRowsInserted)
         self.fsm.rowsAboutToBeRemoved.connect(self.onRowsRemoved)
         self.setModel(self.fsm)
-        
+
         for i in [1,2,3]:
             self.hideColumn(i)
         self.setHeaderHidden(True)
 
-        self.clicked.connect(self.onClick)
-        self.doubleClicked.connect(self.onDoubleClick)
-
-        
-    def load(self, path):
         self.root = path
         self.files = {}
 
@@ -75,8 +75,6 @@ class FileBrowserTree(QTreeView):
             ext = None
 
         return ext
-    
-
 
     def onRowsInserted(self, idx, i0, i1):
         for i in range(i0, i1+1):

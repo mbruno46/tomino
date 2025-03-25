@@ -94,9 +94,7 @@ class MainWindow(QMainWindow):
         splitter.setStretchFactor(2, 2)
         splitter.setStyleSheet(style.splitter_style)
         
-        # browser_layout = QHBoxLayout()
         self.browser = Browser(self)
-        # browser_layout.addWidget(self.browser, 4)
         self.browser.load("/Users/mbruno/Physics/tomino/dummy")
 
         main = QWidget()

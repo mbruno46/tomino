@@ -1,12 +1,15 @@
-from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget, QPlainTextEdit
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget, QPlainTextEdit, QListView, QStyledItemDelegate, QAbstractItemView
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QColorConstants
+from PyQt5.QtCore import QSize, Qt, QThread, QAbstractListModel, QModelIndex, QRectF
+from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
 import pymupdf
 
 from highligher import ErrorHighligther
 import settings
 import style
 import svg
+
+import pyinstrument
 
 svg_icons = {
     "Zoom In": '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M20 20L14.9497 14.9497M14.9497 14.9497C16.2165 13.683 17 11.933 17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 13.866 6.13401 17 10 17C11.933 17 13.683 16.2165 14.9497 14.9497ZM7 10H13M10 7V13" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>',
@@ -17,74 +20,208 @@ svg_icons = {
 }
 
 
-class PDFViewer(QWidget):
+# class LoadPage(QThread):
+#     def __init__(self, path, layout, load_page):
+#         self.path = path
+#         self.load_page = load_page
+#         self.layout = layout
+#         super().__init__()
+
+#     def run(self):
+#         doc = pymupdf.open(self.path)
+
+#         for i in reversed(range(self.layout().count())): 
+#             self.layout().itemAt(i).widget().setParent(None)
+    
+#         for i, p in enumerate(doc):
+#             page = self.load_page(p)
+#             self.layout().addWidget(page)
+        
+#         doc.close()
+
+
+
+class PDFPageDelegate(QStyledItemDelegate):
     def __init__(self, parent = None):
         super().__init__(parent)
-        self.setLayout(QVBoxLayout())
-        self.layout().setContentsMargins(0,0,0,0)
-        self.layout().setSpacing(32)
-        self.darkTheme = False
+        self.r = QSvgRenderer()
+        self.invert = False
         self.scale = 1.0
         self.page_size = None
-        self.path = None
 
-    def load_page(self, p):
-        tmp = svg.SVG(p.get_svg_image())
-        theme = settings.get_theme()
-        if self.darkTheme:
-            tmp.setAttr("path", "fill", theme['text'])
-            _svg = tmp.getQSvgWidget(self.scale)
-            _svg.setStyleSheet(style.set_item('QSvgWidget', f'background: {theme["text-background"]}'))
-        else:
-            _svg = tmp.getQSvgWidget(self.scale)
-            _svg.setStyleSheet(style.set_item('QSvgWidget', f'background: white;'))
+    def zoom(self, incr):
+        if incr and (self.scale<2.0):
+            self.scale += 0.1
+        if not incr and (self.scale>0.2):
+            self.scale -= 0.1
 
-        self.page_size = _svg.sizeHint()
-        return _svg
+    def fit(self, tag, val):
+        if tag=='W':
+            self.scale = val / self.page_size.width()
+        elif tag=='H':
+            self.scale = val / self.page_size.height()
 
+    def paint(self, painter, option, index):
+        idx = index.data(Qt.DisplayRole)
+        data_svg = index.data(Qt.UserRole+123)
+        self.r.load(data_svg)
+
+        self.page_size = self.r.viewBox()
+        rect = QRectF(option.rect)
+        rect.setWidth(rect.height() * self.page_size.width() / self.page_size.height())
+
+        if not self.invert:
+            painter.fillRect(rect, QColorConstants.White)
+
+        self.r.render(painter, rect)
+
+    def sizeHint(self, option, index):
+        data_svg = index.data(Qt.UserRole+123)
+        self.r.load(data_svg)
+        r = self.r.viewBox()
+        return QSize(int(r.width() * self.scale), int(r.height() * self.scale))
+
+
+class PDFModel(QAbstractListModel):
+    def __init__(self):
+        super().__init__()
+        self.pages = []
+        
+    def rowCount(self, index: QModelIndex):
+        return len(self.pages)
     
+    def data(self, index: QModelIndex, role):
+        if index.isValid():
+            if (role==Qt.DisplayRole):
+                return index.row()
+            elif (role==Qt.UserRole+123):
+                return self.pages[index.row()]
+        return None
+    
+
+class PDFViewer(QListView):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setPalette(settings.app["palette"]) # not workig?
+        self.setSpacing(10)
+        self.verticalScrollBar().setSingleStep(10)
+        self.horizontalScrollBar().setSingleStep(20)
+
+        self.pdfmodel = PDFModel()
+        self.setModel(self.pdfmodel)
+        self.path = None
+        self.pdfpage = PDFPageDelegate(self)
+        self.setItemDelegate(self.pdfpage)
+    
+        self.repaint = lambda : self.pdfmodel.layoutChanged.emit()
+
     def load(self):
         if self.path is None:
             return
         
         doc = pymupdf.open(self.path)
-
-        for i in reversed(range(self.layout().count())): 
-            self.layout().itemAt(i).widget().setParent(None)
-    
         for i, p in enumerate(doc):
-            page = self.load_page(p)
-            self.layout().addWidget(page)
-        
+            self.pdfmodel.pages.append(p.get_svg_image().encode('utf-8'))
         doc.close()
+        self.repaint()
 
     def close(self):
-        for i in reversed(range(self.layout().count())): 
-            self.layout().itemAt(i).widget().setParent(None)
+        self.pdfmodel.pages = []
+        self.repaint()
 
     def invert(self, bool):
-        self.darkTheme = bool#not self.darkTheme
-        self.load()
+        self.pdfpage.invert = bool
+        self.repaint()
 
     def zoomin(self):
-        if self.scale<2.0:
-            self.scale += 0.1
-            self.load()
+        self.pdfpage.zoom(True)
+        self.repaint()
 
     def zoomout(self):
-        if self.scale>0.2:
-            self.scale -= 0.1
-            self.load()
+        self.pdfpage.zoom(False)
+        self.repaint()
 
     def fitW(self):
-        if self.page_size:
-            self.scale = self.parent().width() / self.page_size.width()
-            self.load()
+        self.pdfpage.fit('W', self.width() - 20)
+        self.repaint()
 
     def fitH(self):
-        if self.page_size:
-            self.scale = self.parent().height() / self.page_size.height()
-            self.load()
+        self.pdfpage.fit('H', self.height() - 20)
+        self.repaint()
+
+
+# class PDFViewer2(QWidget):
+#     def __init__(self, parent = None):
+#         super().__init__(parent)
+#         self.setLayout(QVBoxLayout())
+#         self.layout().setContentsMargins(0,0,0,0)
+#         self.layout().setSpacing(32)
+#         self.darkTheme = False
+#         self.scale = 1.0
+#         self.page_size = None
+#         self.path = None
+
+#     def load_page(self, p):
+#         pass
+        # tmp = svg.SVG(p.get_svg_image())
+        # theme = settings.get_theme()
+        # if self.darkTheme:
+        #     # tmp.setAttr("path", "fill", theme['text'])
+        #     _svg = tmp.getQSvgWidget(self.scale)
+        #     _svg.setStyleSheet(style.set_item('QSvgWidget', f'background: {theme["text-background"]}'))
+        # else:
+        #     _svg = tmp.getQSvgWidget(self.scale)
+        #     _svg.setStyleSheet(style.set_item('QSvgWidget', f'background: white;'))
+
+        # self.page_size = _svg.sizeHint()
+        # return _svg
+
+    # @pyinstrument.profile()
+    # def load(self):
+    #     if self.path is None:
+    #         return
+        
+    #     doc = pymupdf.open(self.path)
+
+    #     for i in reversed(range(self.layout().count())): 
+    #         self.layout().itemAt(i).widget().setParent(None)
+    
+    #     for i, p in enumerate(doc):
+    #         page = self.load_page(p)
+    #         self.layout().addWidget(page)
+        
+    #     doc.close()
+
+    # def close(self):
+    #     for i in reversed(range(self.layout().count())): 
+    #         self.layout().itemAt(i).widget().setParent(None)
+
+    # def invert(self, bool):
+    #     pass
+    #     # self.pdf.invert_colors = bool
+    #     # self.pdf.load(self.path)
+
+    # def zoomin(self):
+    #     if self.scale<2.0:
+    #         self.scale += 0.1
+    #         self.load()
+
+    # def zoomout(self):
+    #     if self.scale>0.2:
+    #         self.scale -= 0.1
+    #         self.load()
+
+    # def fitW(self):
+    #     if self.page_size:
+    #         self.scale = self.parent().width() / self.page_size.width()
+    #         self.load()
+
+    # def fitH(self):
+    #     if self.page_size:
+    #         self.scale = self.parent().height() / self.page_size.height()
+    #         self.load()
+
+
 
 class PDFError(QPlainTextEdit):
     def __init__(self, parent = None):
@@ -175,7 +312,7 @@ class Viewer(QWidget):
 
         self.scroll = QScrollArea(widgetResizable=True)
         self.pdfviewer = PDFViewer(self)
-        self.pdfviewer.setPalette(settings.app["palette"])
+        # self.pdfviewer.setPalette(settings.app["palette"])
         self.scroll.setWidget(self.pdfviewer)
 
         self.errmsg = PDFError(self)
@@ -185,8 +322,6 @@ class Viewer(QWidget):
         self.panel.addWidget(self.errmsg)
         self.layout().addWidget(self.panel)
         
-        self.invertPixels = False
-
         toolbar.init()
 
         def wrapper(f):

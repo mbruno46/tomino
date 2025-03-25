@@ -40,6 +40,7 @@ class SVGIconEngine(QIconEngine):
 class SVG:
     def __init__(self, svg):
         self.svg = svg.encode('utf-8') if type(svg) is str else svg
+        # self.bytearray = bytearray(self.svg)
         self.doc = QDomDocument()
         self.doc.setContent(self.svg)
 
@@ -48,6 +49,7 @@ class SVG:
 
     def getQSvgWidget(self, scale = 1):
         svg = QSvgWidget()
+        # svg.load(self.bytearray)
         svg.load(bytearray(self.doc.toByteArray()))
         size = svg.sizeHint()
         svg.setFixedHeight(int(size.height() * scale))
@@ -55,6 +57,7 @@ class SVG:
         return svg
     
     def getQIcon(self):
+        # return QIcon(SVGIconEngine(self.bytearray))
         return QIcon(SVGIconEngine(self.doc.toByteArray()))
 
 
