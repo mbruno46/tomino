@@ -30,6 +30,7 @@ viewer_style = '\n'.join([
     # set_item('Viewer', f'border-left: 2px solid {theme["app-background"]};'),
     # set_item('Viewer', 'margin-left: 4px solid;'),
     set_item('Viewer QScrollArea', f'border: 0px'),
+    set_item('Viewer QScrollArea PDFViewer', f'border: 0px; background: {theme["app-background"]}'),
     set_item('Viewer ToolBar', f'min-height: 3.2em; border: 0px;'),
     set_item('Viewer ToolBar QToolButton', 'padding: 4px; border-radius: 4px; margin-left: auto'),
     set_item('Viewer ToolBar QToolButton:hover', f'background: {theme["hover"]}'),

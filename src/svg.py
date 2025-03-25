@@ -1,17 +1,6 @@
-from PyQt5.QtSvg import QSvgWidget, QSvgRenderer
+from PyQt5.QtSvg import QSvgRenderer
 from PyQt5.QtGui import QIconEngine, QIcon, QImage, QPixmap, QPainter, qRgba
-from PyQt5.QtXml import QDomDocument
 from PyQt5.QtCore import QRectF, Qt, QRect, QPoint, QSize
-
-def setAttrRecur(elem, tag, attr, val):
-    if elem.tagName()==tag:
-        elem.setAttribute(attr, val)
-    else:
-        for i in range(elem.childNodes().count()):
-            if (not elem.childNodes().at(i).isElement()):
-                continue
-            else:
-                setAttrRecur(elem.childNodes().at(i).toElement(), tag, attr, val)
 
 class SVGIconEngine(QIconEngine):
     def __init__(self, s):
@@ -20,9 +9,7 @@ class SVGIconEngine(QIconEngine):
 
     def paint(self, painter, rect, mode, state):
         r = QSvgRenderer(self.svg)
-        # re = QRectF(0, 0, rect.width()*2, rect.height() * 2)
         r.render(painter, QRectF(rect))
-        # return super().paint(painter, rect, mode, state)
 
     def pixmap(self, size, mode, state):        
         img = QImage(size, QImage.Format_ARGB32)
@@ -36,29 +23,28 @@ class SVGIconEngine(QIconEngine):
         return pix
 
 
+def setAttr(root, tag, attr, val):
+    if root.tag.split('}')[1] == tag:
+        root.attrib[attr] = val
+    else:
+        for child in root:
+            setAttr(child, tag, attr, val)
+
+import xml.etree.ElementTree as ET
 
 class SVG:
-    def __init__(self, svg):
-        self.svg = svg.encode('utf-8') if type(svg) is str else svg
-        # self.bytearray = bytearray(self.svg)
-        self.doc = QDomDocument()
-        self.doc.setContent(self.svg)
+    def __init__(self, svg: str):
+        self.svg = svg
+        self.root = ET.fromstring(svg)
 
     def setAttr(self, tag, attr, val):
-        setAttrRecur(self.doc.documentElement(), tag, attr, val)
-
-    def getQSvgWidget(self, scale = 1):
-        svg = QSvgWidget()
-        # svg.load(self.bytearray)
-        svg.load(bytearray(self.doc.toByteArray()))
-        size = svg.sizeHint()
-        svg.setFixedHeight(int(size.height() * scale))
-        svg.setFixedWidth(int(size.width() * scale))
-        return svg
+        setAttr(self.root, tag, attr, val)
+    
+    def data(self):
+        return ET.tostring(self.root)
     
     def getQIcon(self):
-        # return QIcon(SVGIconEngine(self.bytearray))
-        return QIcon(SVGIconEngine(self.doc.toByteArray()))
+        return QIcon(SVGIconEngine(ET.tostring(self.root)))
 
 
 def create_icon(s, *args):
