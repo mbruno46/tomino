@@ -74,10 +74,10 @@ class AutoCompleterBasic(Base):
         def inner(choice):
             word = self.completionPrefix()
             shift_backward = 0
-            re = QRegExp("\\\\[a-zA-Z]+\\[\\]\\{\\}")
+            re = QRegExp(r"\\[a-zA-Z]+\[\]\{\}")
             if re.indexIn(choice) == 0:
                 shift_backward = 3
-            re = QRegExp("\\\\[a-zA-Z]+\\{\\}")
+            re = QRegExp(r"\\[a-zA-Z]+\{\}")
             if re.indexIn(choice) == 0:
                 shift_backward = 1
             return choice[len(word):], shift_backward
@@ -227,7 +227,7 @@ class AutoCompleter:
 
         if word[0]=='\\':
             for trigger in self.completers:
-                re = QRegularExpression('\\\\%s(\\[.*?\\])?\\{' % trigger)
+                re = QRegularExpression(r'\\%s(\[.*?\])?\{' % trigger)
                 m = re.globalMatch(word)
                 if m.hasNext():
                     n = len(m.next().captured(0))

@@ -206,6 +206,13 @@ class FileEditor(QTabWidget):
         for f in ['undo','redo','cut','copy','paste','comment']:
             setattr(self, f, wrapper(f))
 
+        def wrapper_setCurrentIndex(i):
+            def inner():
+                self.setCurrentIndex(i)
+            return inner
+        
+        for i in range(4):
+            setattr(self, f'setCurrentIndex{i+1}', wrapper_setCurrentIndex(i))
 
     def text_changed(self, changed):
         e = self.sender()

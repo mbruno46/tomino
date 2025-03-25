@@ -43,6 +43,11 @@ menus = {
         ("&Find", 'Ctrl+F', 'finder.toggle'),
         ('separator', '', ''),
         ("&Invert colors", 'Ctrl+I', 'viewer.invert'),
+        ('separator', '', ''),
+        ("&Switch panel 1", 'Ctrl+1', 'file_editor.setCurrentIndex1'),
+        ("&Switch panel 2", 'Ctrl+2', 'file_editor.setCurrentIndex2'),
+        ("&Switch panel 3", 'Ctrl+3', 'file_editor.setCurrentIndex3'),
+        ("&Switch panel 4", 'Ctrl+4', 'file_editor.setCurrentIndex4'),
     ]
 }
 

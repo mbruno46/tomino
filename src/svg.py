@@ -1,6 +1,6 @@
 from PyQt5.QtSvg import QSvgRenderer
 from PyQt5.QtGui import QIconEngine, QIcon, QImage, QPixmap, QPainter, qRgba
-from PyQt5.QtCore import QRectF, Qt, QRect, QPoint, QSize
+from PyQt5.QtCore import QRectF, Qt, QRect, QPoint
 
 class SVGIconEngine(QIconEngine):
     def __init__(self, s):
