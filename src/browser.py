@@ -115,27 +115,6 @@ class FileBrowserTree(QTreeView):
                 os.popen(f'open {self.fsm.filePath(index)}')
 
 
-class FileBrowser(QWidget):
-    def __init__(self, app):
-        super().__init__(app)
-        self.setPalette(settings.browser["palette"])
-        self.setAutoFillBackground(True)
-        self.setLayout(QVBoxLayout())
-        self.layout().setContentsMargins(0,10,0,10)
-
-        self.label = QLabel("")
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.setFont(settings.browser["font"])
-        self.layout().addWidget(self.label)
-
-        self.file_browser = FileBrowserTree(app)
-        self.layout().addWidget(self.file_browser)
-
-    def load(self, path):
-        self.file_browser.load(path)
-        self.label.setText(os.path.basename(path))
-
-
 class TOC(QTreeView):
     def __init__(self, app = None):
         self.app = app
@@ -149,8 +128,10 @@ class TOC(QTreeView):
         self.doubleClicked.connect(self.onDoubleClick)
 
     def onDoubleClick(self, index: QModelIndex):
-        fn, ln = index.internalPointer().location
-        self.app.file_editor.focus_on_line(fn, ln)
+        if index.isValid():
+            if not index.internalPointer().parent.parent is None:
+                fn, ln = index.internalPointer().location
+                self.app.file_editor.focus_on_line(fn, ln)
 
 
 class Browser(QWidget):
@@ -206,26 +187,35 @@ class Browser(QWidget):
         toolbar = self.ToolBar(self)
         self.layout().addWidget(toolbar)
 
-        self.file_browser = FileBrowser(app)
 
-        # lab = QLabel("Not implemented")
         w = QWidget()
         w.setPalette(settings.browser["palette"])
         w.setAutoFillBackground(True)
 
         w.setLayout(QVBoxLayout())
         w.layout().setContentsMargins(0,0,0,0)
-        w.layout().addSpacing(20)
-        self.toc = TOC(app)        
-        w.layout().addWidget(self.toc)
+        w.layout().addSpacing(10)
+
+        # w.layout().addWidget(self.toc)
 
         self.browser = QStackedWidget()
+        self.file_browser = FileBrowserTree(app)
         self.browser.addWidget(self.file_browser)
-        self.browser.addWidget(w)
-        self.layout().addWidget(self.browser)
+        self.toc = TOC(app)        
+        self.browser.addWidget(self.toc)
+
+        self.label = QLabel()
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(settings.browser["font"])
+
+        w.layout().addWidget(self.label)
+        w.layout().addWidget(self.browser)
+
+        self.layout().addWidget(w)
 
         toolbar.switch_tab(0)
     
     def load(self, path):
         self.file_browser.load(path)
+        self.label.setText(os.path.basename(path))
 
