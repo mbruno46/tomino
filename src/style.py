@@ -12,13 +12,16 @@ editor_style = '\n'.join([
     set_item('QTabBar::tab', f'min-height: 3.2em; border: 0px; padding: -4px 0 0 4px; border-top: 4px solid {theme["app-background"]}; color: {theme["gray"]}'),
     set_item('QTabBar::tab:selected', f'background: {theme["text-background"]}; color: {theme["text"]}; padding: -4px 0 0 4px; border-top: 4px solid {theme["highlight"]};'),
     set_item('QTabBar::close-button', 'subcontrol-position: right;'),
+    set_item('QTabBar QToolButton', f'background: {theme["app-background"]}'),
+    set_item('QTabBar::tear', f'width: 0px;'),
 ])
 
 
 browser_style = '\n'.join([
     set_item('Browser QToolBar', f'border: 0px;'),
     set_item('Browser QToolBar QToolButton', f'background: {theme["app-background"]}; padding: 8px; border: 0px; border-left: 4px solid {theme["app-background"]}'),
-    set_item('Browser QToolBar QToolButton:checked', f'border-left: 4px solid {theme["hover"]};')
+    set_item('Browser QToolBar QToolButton:checked', f'border-left: 4px solid {theme["hover"]};'),
+    set_item('Browser QTreeView', f'padding-top: 10px')
 ])
 
 

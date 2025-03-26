@@ -190,6 +190,8 @@ class FileEditor(QTabWidget):
         self.setPalette(settings.editor["palette"])
         self.setFont(settings.editor["font"])
         self.setAutoFillBackground(True)
+        self.setUsesScrollButtons(True)
+        self.setElideMode(Qt.ElideNone)
 
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.close_file)

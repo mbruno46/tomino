@@ -192,10 +192,6 @@ class Browser(QWidget):
         w.setPalette(settings.browser["palette"])
         w.setAutoFillBackground(True)
 
-        w.setLayout(QVBoxLayout())
-        w.layout().setContentsMargins(0,0,0,0)
-        w.layout().addSpacing(10)
-
         # w.layout().addWidget(self.toc)
 
         self.browser = QStackedWidget()
@@ -208,6 +204,9 @@ class Browser(QWidget):
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setFont(settings.browser["font"])
 
+        w.setLayout(QVBoxLayout())
+        w.layout().setContentsMargins(0,0,0,0)
+        w.layout().addSpacing(10)
         w.layout().addWidget(self.label)
         w.layout().addWidget(self.browser)
 
