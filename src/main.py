@@ -32,6 +32,8 @@ menus = {
         ("&Copy", 'Ctrl+C', 'file_editor.copy'),
         ("&Paste", 'Ctrl+V', 'file_editor.paste'),
         ('separator', '', ''),
+        ("&Find", 'Ctrl+F', 'finder.toggle'),
+        ('separator', '', ''),
         ("&Toggle line comment", 'Ctrl+/', 'file_editor.comment'),
     ],
     "&View": [
@@ -39,15 +41,15 @@ menus = {
         ("&Zoom Out", 'Ctrl+-', 'viewer.zoomout'),
         ("&Fit Width", 'Ctrl+W', 'viewer.fitW'),
         ("&Fit Height", 'Ctrl+Shift+W', 'viewer.fitH'),
-        ('separator', '', ''),
-        ("&Find", 'Ctrl+F', 'finder.toggle'),
-        ('separator', '', ''),
         ("&Invert colors", 'Ctrl+I', 'viewer.invert'),
         ('separator', '', ''),
         ("&Switch panel 1", 'Ctrl+1', 'file_editor.setCurrentIndex1'),
         ("&Switch panel 2", 'Ctrl+2', 'file_editor.setCurrentIndex2'),
         ("&Switch panel 3", 'Ctrl+3', 'file_editor.setCurrentIndex3'),
         ("&Switch panel 4", 'Ctrl+4', 'file_editor.setCurrentIndex4'),
+        ('separator', '', ''),
+        ("&Side Bar", 'Ctrl+B','toggle_browser_visibility'),
+        ('separator', '', ''),
     ]
 }
 
@@ -165,6 +167,9 @@ class MainWindow(QMainWindow):
     def hard(self):
         self.recompile(False)
 
+    def toggle_browser_visibility(self):
+        self.browser.toggle_visibility(int(self.width() * 0.20))
+        self.browser.setFixedWidth(self.browser.width())
 
 app = QApplication(sys.argv)
 # app.setAttribute(Qt.AA_EnableHighDpiScaling, True)

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QStackedWidget,QToolBar, QAction,  QLabel, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
+from PyQt5.QtWidgets import QStackedWidget,QToolBar, QAction, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QSize, Qt, QModelIndex
 
@@ -184,15 +184,8 @@ class Browser(QWidget):
         self.layout().setContentsMargins(0,0,0,0)
         self.setStyleSheet(style.browser_style)
 
-        toolbar = self.ToolBar(self)
-        self.layout().addWidget(toolbar)
-
-
-        w = QWidget()
-        w.setPalette(settings.browser["palette"])
-        w.setAutoFillBackground(True)
-
-        # w.layout().addWidget(self.toc)
+        self.toolbar = self.ToolBar(self)
+        self.layout().addWidget(self.toolbar)
 
         self.browser = QStackedWidget()
         self.file_browser = FileBrowserTree(app)
@@ -204,15 +197,23 @@ class Browser(QWidget):
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setFont(settings.browser["font"])
 
-        w.setLayout(QVBoxLayout())
-        w.layout().setContentsMargins(0,0,0,0)
-        w.layout().addSpacing(10)
-        w.layout().addWidget(self.label)
-        w.layout().addWidget(self.browser)
+        self.vpanel = QWidget()
+        self.vpanel.setPalette(settings.browser["palette"])
+        self.vpanel.setAutoFillBackground(True)
+        self.vpanel.setLayout(QVBoxLayout())
+        self.vpanel.layout().setContentsMargins(0,0,0,0)
+        self.vpanel.layout().addSpacing(10)
+        self.vpanel.layout().addWidget(self.label)
+        self.vpanel.layout().addWidget(self.browser)
 
-        self.layout().addWidget(w)
+        self.layout().addWidget(self.vpanel)
 
-        toolbar.switch_tab(0)
+        self.toolbar.switch_tab(0)
+    
+    def toggle_visibility(self, width):
+        w = self.toolbar.width() if self.vpanel.isVisible() else width
+        self.vpanel.setVisible(not self.vpanel.isVisible())
+        self.setFixedWidth(w)
     
     def load(self, path):
         self.file_browser.load(path)

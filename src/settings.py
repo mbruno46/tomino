@@ -76,11 +76,6 @@ def init():
         'hard': 'latexmk -g -f -pdf -silent'
     }
 
-# def apply_stylesheet(style, object):
-#     f = QFile(f':/assets/{style}.qss')
-#     f.open(QIODevice.ReadOnly)
-#     object.setStyleSheet(str(f.readAll(), 'utf-8'))
-#     f.close()
 
 def get_theme():
     return themes['dark']
