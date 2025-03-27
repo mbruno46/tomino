@@ -102,7 +102,8 @@ class MainWindow(QMainWindow):
         splitter.setStyleSheet(style.splitter_style)
         
         self.browser = Browser(self)
-        self.browser.load("/Users/mbruno/Physics/tomino/dummy")
+        # self.browser.load("/Users/mbruno/Physics/tomino/dummy")
+        self.browser.load("/Users/mbruno/Physics/letters/MorandiG")
 
         main = QWidget()
 

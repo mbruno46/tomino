@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget, QPlainTextEdit, QListView, QStyledItemDelegate
-from PyQt5.QtGui import QIcon, QColorConstants
+from PyQt5.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget, QPlainTextEdit, QListView, QStyledItemDelegate, QLabel
+from PyQt5.QtGui import QIcon, QColorConstants, QImage, QPixmap
 from PyQt5.QtCore import QSize, Qt, QAbstractListModel, QModelIndex, QRectF
 from PyQt5.QtSvg import QSvgRenderer
 import pymupdf
@@ -20,7 +20,7 @@ svg_icons = {
 }
 
 
-class PDFPageDelegate(QStyledItemDelegate):
+class PDFPageDelegate2(QStyledItemDelegate):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.r = QSvgRenderer()
@@ -64,6 +64,39 @@ class PDFPageDelegate(QStyledItemDelegate):
         return QSize(int(r.width() * self.scale), int(r.height() * self.scale))
 
 
+class PDFPageDelegate(QStyledItemDelegate):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.r = QSvgRenderer()
+        self.invert = False
+        self.scale = 1.0
+        self.page_size = None
+
+    def zoom(self, incr):
+        if incr and (self.scale<2.0):
+            self.scale += 0.1
+        if not incr and (self.scale>0.2):
+            self.scale -= 0.1
+
+    def fit(self, tag, val):
+        if tag=='W':
+            self.scale = val / self.page_size.width()
+        elif tag=='H':
+            self.scale = val / self.page_size.height()
+
+    def paint(self, painter, option, index):
+        # idx = index.data(Qt.DisplayRole)
+        data_svg = index.data(Qt.UserRole+123)
+        rect = QRectF(option.rect)
+    
+        
+
+    def sizeHint(self, option, index):
+        data_svg = index.data(Qt.UserRole+123)
+        self.r.load(data_svg.encode('utf-8'))
+        r = self.r.viewBox()
+        return QSize(int(r.width() * self.scale), int(r.height() * self.scale))
+
 
 class PDFModel(QAbstractListModel):
     def __init__(self):
@@ -103,9 +136,12 @@ class PDFViewer(QListView):
         if self.path is None:
             return
         
+        self.pdfmodel.pages = []
         doc = pymupdf.open(self.path)
         for i, p in enumerate(doc):
-            page = p.get_svg_image()
+            page = p.get_pixmap()
+            # page = page.replace('g clip-path','g fill="red" clip-path')
+            # page = page.replace('clipPath id','clipPath fill="green" id')
             self.pdfmodel.pages.append(page)
         doc.close()
         self.repaint()
@@ -226,7 +262,17 @@ class Viewer(QWidget):
 
         self.scroll = QScrollArea(widgetResizable=True)
         self.pdfviewer = PDFViewer(self)
-        self.scroll.setWidget(self.pdfviewer)
+        # self.scroll.setWidget(self.pdfviewer)
+
+        doc = pymupdf.open('/Users/mbruno/Physics/letters/MorandiG/letter.pdf')
+        pix = doc[0].get_pixmap(alpha=False)
+        fmt = QImage.Format_RGBA8888 if pix.alpha else QImage.Format_RGB888
+        qtimg = QImage(pix.samples_ptr, pix.width, pix.height, QImage.Format_RGB888)
+        l = QLabel()
+        l.setPixmap(QPixmap.fromImage(qtimg, Qt.NoFormatConversion))
+        doc.close()
+
+        self.scroll.setWidget(l)
 
         self.errmsg = PDFError(self)
 

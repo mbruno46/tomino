@@ -209,7 +209,7 @@ class AutoCompleter:
     def trigger_word(self):
         tc = self.editor.textCursor()
         while True:
-            if tc.atStart() or tc.atBlockStart():
+            if tc.atStart() or tc.atBlockStart() or tc.hasSelection():
                 break
             else:
                 tc.movePosition(QTextCursor.PreviousCharacter, QTextCursor.KeepAnchor)
