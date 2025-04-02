@@ -1,8 +1,9 @@
 import sys
 import os
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QAction, QFileDialog, QSplitter
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog, QSplitter
+from PyQt6.QtGui import QAction
 
 import settings
 import style
@@ -41,7 +42,7 @@ menus = {
         ("&Zoom Out", 'Ctrl+-', 'viewer.zoomout'),
         ("&Fit Width", 'Ctrl+W', 'viewer.fitW'),
         ("&Fit Height", 'Ctrl+Shift+W', 'viewer.fitH'),
-        ("&Invert colors", 'Ctrl+I', 'viewer.invert'),
+        # ("&Invert colors", 'Ctrl+I', 'viewer.invert'),
         ('separator', '', ''),
         ("&Switch panel 1", 'Ctrl+1', 'file_editor.setCurrentIndex1'),
         ("&Switch panel 2", 'Ctrl+2', 'file_editor.setCurrentIndex2'),
@@ -102,8 +103,8 @@ class MainWindow(QMainWindow):
         splitter.setStyleSheet(style.splitter_style)
         
         self.browser = Browser(self)
-        # self.browser.load("/Users/mbruno/Physics/tomino/dummy")
-        self.browser.load("/Users/mbruno/Physics/letters/MorandiG")
+        self.browser.load("/Users/mbruno/Physics/tomino/dummy")
+        # self.browser.load("/Users/mbruno/Physics/letters/MorandiG")
 
         main = QWidget()
 
@@ -173,8 +174,8 @@ class MainWindow(QMainWindow):
         self.browser.setFixedWidth(self.browser.width())
 
 app = QApplication(sys.argv)
-# app.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+# app.setAttribute(Qt.AA_EnableHighDpiScaling, True) # maybe useful for QImage?
+# app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
 window = MainWindow()
 window.show()

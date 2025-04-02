@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtWidgets import QTabWidget, QWidget, QPlainTextEdit
-from PyQt5.QtGui import QPainter, QColor, QFontMetricsF, QKeyEvent, QTextCursor, QTextDocument
+from PyQt6.QtCore import Qt, QRect
+from PyQt6.QtWidgets import QTabWidget, QWidget, QPlainTextEdit
+from PyQt6.QtGui import QPainter, QColor, QFontMetricsF, QKeyEvent, QTextCursor, QTextDocument
 
 from highligher import Highlighter
 import settings
@@ -19,7 +19,7 @@ class Editor(QPlainTextEdit):
             super().__init__(editor)
             self.editor = editor
 
-            width = self.fontMetrics().width("10000") + 10
+            width = self.fontMetrics().averageCharWidth()*5 + 10
             self.setFixedWidth(width)
             self.editor.setViewportMargins(width, 0, 0, 0)
 
@@ -48,7 +48,7 @@ class Editor(QPlainTextEdit):
                 
                 # draw line number
                 paint_rect = QRect(0, int(block_top), self.width(), self.editor.fontMetrics().height())
-                painter.drawText(paint_rect, Qt.AlignRight, str(blockNumber+1))
+                painter.drawText(paint_rect, Qt.AlignmentFlag.AlignRight, str(blockNumber+1))
  
                 block = block.next()
 
@@ -92,17 +92,17 @@ class Editor(QPlainTextEdit):
         ]:
             event.ignore()
             return
-        if event.key() == Qt.Key_Tab:
+        if event.key() == Qt.Key.Key_Tab:
             self.indent(False)
             return
-        if event.key() == Qt.Key_Backtab:
+        if event.key() == Qt.Key.Key_Backtab:
             self.indent(True)
             return
         
         super().keyPressEvent(event)
         completer.check_and_launch()
 
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.indent_newline()
         
 
@@ -191,7 +191,7 @@ class FileEditor(QTabWidget):
         self.setFont(settings.editor["font"])
         self.setAutoFillBackground(True)
         self.setUsesScrollButtons(True)
-        self.setElideMode(Qt.ElideNone)
+        self.setElideMode(Qt.TextElideMode.ElideNone)
 
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.close_file)

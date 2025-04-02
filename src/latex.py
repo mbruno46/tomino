@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QFileSystemWatcher, QAbstractItemModel, QModelIndex
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QFileSystemWatcher, QAbstractItemModel, QModelIndex
 
 from subprocess import PIPE, Popen
 import os, re
@@ -183,7 +183,7 @@ class TexModel(QAbstractItemModel):
         return 1
     
     def data(self, index: QModelIndex, role):
-        if (role==Qt.DisplayRole):
+        if (role==Qt.ItemDataRole.DisplayRole):
             return index.internalPointer().curly
         return None
     

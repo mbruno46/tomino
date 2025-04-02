@@ -1,6 +1,6 @@
-from PyQt5.QtGui import QFont, QFontDatabase, QColor, QPalette
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpinBox
-from PyQt5.QtCore import Qt, QFile, QIODevice
+from PyQt6.QtGui import QFont, QFontDatabase, QColor, QPalette
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpinBox
+from PyQt6.QtCore import Qt #, QFile, QIODevice
 
 import os
 
@@ -35,16 +35,16 @@ def init():
     families = QFontDatabase.applicationFontFamilies(id)
 
     palette = QPalette()
-    palette.setColor(QPalette.Highlight, QColor(theme['highlight']))
-    palette.setColor(QPalette.Text, QColor(theme['text']))
-    palette.setColor(QPalette.HighlightedText, QColor(theme['text']))
-    palette.setColor(QPalette.WindowText, QColor(theme['text']))
-    palette.setColor(QPalette.Window, QColor(theme['app-background']))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(theme['highlight']))
+    palette.setColor(QPalette.ColorRole.Text, QColor(theme['text']))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor(theme['text']))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor(theme['text']))
+    palette.setColor(QPalette.ColorRole.Window, QColor(theme['app-background']))
 
     editor["tab"] = 4
     editor["font"] = QFont(families[0], 16)
     editor["palette"] = QPalette(palette)
-    editor["palette"].setColor(QPalette.Base, QColor(theme['text-background']))
+    editor["palette"].setColor(QPalette.ColorRole.Base, QColor(theme['text-background']))
 
     font = QFont()
     font.setFamily(font.defaultFamily())
@@ -53,18 +53,18 @@ def init():
     app["palette"] = QPalette(palette)
 
     browser["palette"] = QPalette(palette)
-    browser["palette"].setColor(QPalette.Base, QColor(theme['browser-background']))
-    browser["palette"].setColor(QPalette.Window, QColor(theme['browser-background']))
-    browser["palette"].setColor(QPalette.BrightText, QColor(theme['green']))
+    browser["palette"].setColor(QPalette.ColorRole.Base, QColor(theme['browser-background']))
+    browser["palette"].setColor(QPalette.ColorRole.Window, QColor(theme['browser-background']))
+    browser["palette"].setColor(QPalette.ColorRole.BrightText, QColor(theme['green']))
     browser["font"] = font
 
     viewer["palette"] = QPalette(palette)
-    viewer["palette"].setColor(QPalette.Window, QColor(theme['text-background']))
+    viewer["palette"].setColor(QPalette.ColorRole.Window, QColor(theme['text-background']))
 
     palette = QPalette()
-    palette.setColor(QPalette.Highlight, QColor(theme['highlight']))
-    palette.setColor(QPalette.Text, QColor(theme['gray']))
-    palette.setColor(QPalette.Base, QColor(theme['text-background']))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(theme['highlight']))
+    palette.setColor(QPalette.ColorRole.Text, QColor(theme['gray']))
+    palette.setColor(QPalette.ColorRole.Base, QColor(theme['text-background']))
 
     viewer["error"] = {
         "palette": palette,
@@ -86,7 +86,7 @@ class SpinBox(QWidget):
         layout = QHBoxLayout()
         
         self.label = QLabel(name)
-        self.label.setAlignment(Qt.AlignRight)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addWidget(self.label)
 
         self.input = QSpinBox()

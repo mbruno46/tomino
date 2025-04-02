@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QCompleter
-from PyQt5.QtCore import Qt, QRegExp, QRegularExpression
-from PyQt5.QtGui import QTextCursor, QFontMetrics
+from PyQt6.QtWidgets import QCompleter
+from PyQt6.QtCore import Qt, QRegularExpression
+from PyQt6.QtGui import QTextCursor, QFontMetrics
 
 import json, os
 for _f in ['math', 'cmds', 'envs']:
@@ -13,8 +13,8 @@ class Base(QCompleter):
         self.keywords = keywords
         super().__init__(self.keywords)
 
-        self.setModelSorting(QCompleter.CaseSensitivelySortedModel)
-        self.setCaseSensitivity(Qt.CaseInsensitive)
+        self.setModelSorting(QCompleter.ModelSorting.CaseSensitivelySortedModel)
+        self.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setWrapAround(False)
         self.activated.connect(self.onActivated)
 
@@ -32,13 +32,13 @@ class Base(QCompleter):
     def delete_right_matching_char(self, char):
         tc = self.widget().textCursor()
         if (not tc.atEnd()) or (not tc.atBlockEnd()):
-            tc.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+            tc.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
             if tc.selectedText()[0]==char:
                 tc.deletePreviousChar()
 
     def delete_left_nchars(self, n):
         tc = self.widget().textCursor()
-        tc.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, n=n)
+        tc.movePosition(QTextCursor.MoveOperation.Left, QTextCursor.MoveMode.KeepAnchor, n=n)
         tc.deletePreviousChar()
 
     def onActivated(self, choice, func):
@@ -47,7 +47,7 @@ class Base(QCompleter):
         editor = self.widget()
         tc = editor.textCursor()
         tc.insertText(new_text)
-        tc.movePosition(QTextCursor.Left, n=shift_backward)        
+        tc.movePosition(QTextCursor.MoveOperation.Left, n=shift_backward)        
         editor.setTextCursor(tc)
 
     def update_keyword(self, value, remove):
@@ -74,10 +74,10 @@ class AutoCompleterBasic(Base):
         def inner(choice):
             word = self.completionPrefix()
             shift_backward = 0
-            re = QRegExp(r"\\[a-zA-Z]+\[\]\{\}")
+            re = QRegularExpression(r"\\[a-zA-Z]+\[\]\{\}")
             if re.indexIn(choice) == 0:
                 shift_backward = 3
-            re = QRegExp(r"\\[a-zA-Z]+\{\}")
+            re = QRegularExpression(r"\\[a-zA-Z]+\{\}")
             if re.indexIn(choice) == 0:
                 shift_backward = 1
             return choice[len(word):], shift_backward
@@ -159,7 +159,7 @@ class AutoCompleterRef(AutoCompleterMultiple):
 class AutoCompleterCite(AutoCompleterMultiple):
     def __init__(self):
         super().__init__()
-        self.setFilterMode(Qt.MatchContains)
+        self.setFilterMode(Qt.MatchFlag.MatchContains)
 
     def onActivated(self, choice):
         def inner(choice):
@@ -212,7 +212,7 @@ class AutoCompleter:
             if tc.atStart() or tc.atBlockStart() or tc.hasSelection():
                 break
             else:
-                tc.movePosition(QTextCursor.PreviousCharacter, QTextCursor.KeepAnchor)
+                tc.movePosition(QTextCursor.MoveOperation.PreviousCharacter, QTextCursor.MoveMode.KeepAnchor)
                 if tc.selectedText()[0] == "\\":
                     break
         return tc.selectedText()

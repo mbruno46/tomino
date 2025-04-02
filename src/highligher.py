@@ -1,6 +1,5 @@
-from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QTextDocument
-from PyQt5 import Qt
-from PyQt5.QtCore import QRegExp, QRegularExpression
+from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QTextDocument
+from PyQt6.QtCore import QRegularExpression
 
 import settings
 
@@ -20,7 +19,7 @@ class Highlighter(QSyntaxHighlighter):
             self.formats[tag] = format(theme[tag])
 
     def highlightBlock(self, text):
-        re = QRegularExpression("(\\\\[a-zA-Z]+)(\\[.*?\\])?(\\{.*?\\})?")
+        re = QRegularExpression(r"(\\[a-zA-Z]+)(\[.*?\])?(\{.*?\})?")
         m = re.globalMatch(text)
         while m.hasNext():
             n = m.next()
@@ -30,12 +29,19 @@ class Highlighter(QSyntaxHighlighter):
                 self.setFormat(index+e, length-2*e, self.formats[c])
                 index += length
 
-        re = QRegExp("(%.*)")
-        index = re.indexIn(text)
-        while index >= 0:
-            length = len(re.cap(1))
+        re = QRegularExpression("(%.*)")
+        m = re.globalMatch(text) 
+        while m.hasNext():
+            n = m.next()
+            index = n.capturedStart()
+            length = len(n.captured(1))
             self.setFormat(index, length, self.formats["comment"])
-            index = re.indexIn(text, index + length)
+
+        # index = re.indexIn(text)
+        # while index >= 0:
+        #     length = len(re.cap(1))
+        #     self.setFormat(index, length, self.formats["comment"])
+        #     index = re.indexIn(text, index + length)
 
 class ErrorHighligther(QSyntaxHighlighter):
     def __init__(self, parent: QTextDocument) -> None:

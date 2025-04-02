@@ -1,6 +1,9 @@
-from PyQt5.QtSvg import QSvgRenderer
-from PyQt5.QtGui import QIconEngine, QIcon, QImage, QPixmap, QPainter, qRgba
-from PyQt5.QtCore import QRectF, Qt, QRect, QPoint
+from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtGui import QIconEngine, QIcon, QImage, QPixmap, QPainter, qRgba
+from PyQt6.QtCore import QRectF, Qt, QRect, QPoint
+from PyQt6.QtXml import QDomDocument
+
+import xml.etree.ElementTree as ET
 
 class SVGIconEngine(QIconEngine):
     def __init__(self, s):
@@ -12,9 +15,9 @@ class SVGIconEngine(QIconEngine):
         r.render(painter, QRectF(rect))
 
     def pixmap(self, size, mode, state):        
-        img = QImage(size, QImage.Format_ARGB32)
+        img = QImage(size, QImage.Format.Format_ARGB32)
         img.fill(qRgba(0, 0, 0, 0))
-        pix = QPixmap.fromImage(img, Qt.NoFormatConversion)
+        pix = QPixmap.fromImage(img, Qt.ImageConversionFlag.NoFormatConversion)
 
         painter = QPainter(pix)
         r = QRect(QPoint(0, 0), size)
@@ -23,28 +26,42 @@ class SVGIconEngine(QIconEngine):
         return pix
 
 
-def setAttr(root, tag, attr, val):
-    if root.tag.split('}')[1] == tag:
-        root.attrib[attr] = val
+# def setAttr(root, tag, attr, val):
+#     if root.tag.split('}')[1] == tag:
+#         root.attrib[attr] = val
+#     else:
+#         for child in root:
+#             setAttr(child, tag, attr, val)
+def setAttrRecur(elem, tag, attr, val):
+    if elem.tagName()==tag:
+        elem.setAttribute(attr, val)
     else:
-        for child in root:
-            setAttr(child, tag, attr, val)
+        for i in range(elem.childNodes().count()):
+            if (not elem.childNodes().at(i).isElement()):
+                continue
+            else:
+                setAttrRecur(elem.childNodes().at(i).toElement(), tag, attr, val)
 
-import xml.etree.ElementTree as ET
+
 
 class SVG:
     def __init__(self, svg: str):
-        self.svg = svg
-        self.root = ET.fromstring(svg)
+        # self.svg = svg
+        self.svg = svg.encode('utf-8') if type(svg) is str else svg
+        self.doc = QDomDocument()
+        self.doc.setContent(self.svg)
+        # self.root = ET.fromstring(svg)
 
     def setAttr(self, tag, attr, val):
-        setAttr(self.root, tag, attr, val)
-    
-    def data(self):
-        return ET.tostring(self.root)
+        # setAttrRecur(self.root, tag, attr, val)
+        setAttrRecur(self.doc.documentElement(), tag, attr, val)
+
+    # def data(self):
+    #     return ET.tostring(self.root)
     
     def getQIcon(self):
-        return QIcon(SVGIconEngine(ET.tostring(self.root)))
+        return QIcon(SVGIconEngine(self.doc.toByteArray()))
+        # return QIcon(SVGIconEngine(ET.tostring(self.root)))
 
 
 def create_icon(s, *args):

@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QStackedWidget,QToolBar, QAction, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QFileSystemModel, QTreeView
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import QSize, Qt, QModelIndex
+from PyQt6.QtWidgets import QStackedWidget,QToolBar, QLabel, QWidget, QVBoxLayout, QHBoxLayout, QTreeView
+from PyQt6.QtGui import QFont, QFileSystemModel, QAction
+from PyQt6.QtCore import QSize, Qt, QModelIndex
 
 import os, sys
 
@@ -26,8 +26,8 @@ class FileBrowserTree(QTreeView):
             self.main = self.filePath(index)
             self.dataChanged.emit(QModelIndex(), QModelIndex())
 
-        def data(self, index, role = Qt.DisplayRole):
-            if (self.main == self.filePath(index)) and (role == Qt.FontRole):
+        def data(self, index, role = Qt.ItemDataRole.DisplayRole):
+            if (self.main == self.filePath(index)) and (role == Qt.ItemDataRole.FontRole):
                 font = QFont()
                 font.setUnderline(True)
                 return font
@@ -139,7 +139,7 @@ class Browser(QWidget):
         def __init__(self, parent):
             super().__init__(parent)
             self.parent = parent
-            self.setOrientation(Qt.Vertical)
+            self.setOrientation(Qt.Orientation.Vertical)
             self.setPalette(settings.app["palette"])
             self.setIconSize(QSize(42,42))
             
@@ -194,7 +194,7 @@ class Browser(QWidget):
         self.browser.addWidget(self.toc)
 
         self.label = QLabel()
-        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setFont(settings.browser["font"])
 
         self.vpanel = QWidget()

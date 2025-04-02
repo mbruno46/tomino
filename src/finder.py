@@ -1,6 +1,5 @@
-from PyQt5.QtWidgets import QGroupBox, QLineEdit, QLabel, QGridLayout, QPushButton
-from PyQt5.QtCore import QSize
-# from PyQt5.QtGui import QColor
+from PyQt6.QtWidgets import QGroupBox, QLineEdit, QLabel, QGridLayout, QPushButton
+from PyQt6.QtCore import QSize
 
 import svg
 import style
