@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget
-from PyQt6.QtWidgets import QPlainTextEdit, QListView, QStyledItemDelegate, QLabel, QSizePolicy
-from PyQt6.QtGui import QIcon, QColorConstants, QImage, QPixmap, QPalette, QPainter, QBrush
-from PyQt6.QtCore import QSize, Qt, QAbstractListModel, QModelIndex, QRectF
-from PyQt6.QtSvg import QSvgRenderer
+from PyQt6.QtWidgets import QPlainTextEdit, QSizePolicy
+from PyQt6.QtGui import QIcon, QPalette
+from PyQt6.QtCore import QSize, QSizeF, Qt #, QAbstractListModel, QModelIndex, QRectF
+#from PyQt6.QtSvg import QSvgRenderer
 
-from PyQt6.QtPdf import QPdfDocument
+from PyQt6.QtPdf import QPdfDocument, QPdfPageNavigator
 from PyQt6.QtPdfWidgets import QPdfView
 # import pymupdf
 
@@ -24,157 +24,6 @@ svg_icons = {
 }
 
 
-class PDFPageDelegate2(QStyledItemDelegate):
-    def __init__(self, parent = None):
-        super().__init__(parent)
-        self.r = QSvgRenderer()
-        self.invert = False
-        self.scale = 1.0
-        self.page_size = None
-
-    def zoom(self, incr):
-        if incr and (self.scale<2.0):
-            self.scale += 0.1
-        if not incr and (self.scale>0.2):
-            self.scale -= 0.1
-
-    def fit(self, tag, val):
-        if tag=='W':
-            self.scale = val / self.page_size.width()
-        elif tag=='H':
-            self.scale = val / self.page_size.height()
-
-    def paint(self, painter, option, index):
-        # idx = index.data(Qt.DisplayRole)
-        data_svg = index.data(Qt.UserRole+123)
-        rect = QRectF(option.rect)
-    
-        if not self.invert:
-            painter.fillRect(rect, QColorConstants.White)
-        else:
-            theme = settings.get_theme()
-            data_svg = data_svg.replace('path id=', f'path fill="{theme["text"]}" id=')
-        self.r.load(data_svg.encode('utf-8'))
-
-        self.page_size = self.r.viewBox()
-        rect.setWidth(rect.height() * self.page_size.width() / self.page_size.height())
-
-        self.r.render(painter, rect)
-
-    def sizeHint(self, option, index):
-        data_svg = index.data(Qt.UserRole+123)
-        self.r.load(data_svg.encode('utf-8'))
-        r = self.r.viewBox()
-        return QSize(int(r.width() * self.scale), int(r.height() * self.scale))
-
-
-class PDFPageDelegate(QStyledItemDelegate):
-    def __init__(self, parent = None):
-        super().__init__(parent)
-        self.r = QSvgRenderer()
-        self.invert = False
-        self.scale = 1.0
-        self.page_size = None
-
-    def zoom(self, incr):
-        if incr and (self.scale<2.0):
-            self.scale += 0.1
-        if not incr and (self.scale>0.2):
-            self.scale -= 0.1
-
-    def fit(self, tag, val):
-        if tag=='W':
-            self.scale = val / self.page_size.width()
-        elif tag=='H':
-            self.scale = val / self.page_size.height()
-
-    def paint(self, painter, option, index):
-        # idx = index.data(Qt.DisplayRole)
-        data_svg = index.data(Qt.UserRole+123)
-        rect = QRectF(option.rect)
-    
-        
-
-    def sizeHint(self, option, index):
-        data_svg = index.data(Qt.UserRole+123)
-        self.r.load(data_svg.encode('utf-8'))
-        r = self.r.viewBox()
-        return QSize(int(r.width() * self.scale), int(r.height() * self.scale))
-
-
-class PDFModel(QAbstractListModel):
-    def __init__(self):
-        super().__init__()
-        self.pages = []
-        
-    def rowCount(self, index: QModelIndex):
-        return len(self.pages)
-    
-    def data(self, index: QModelIndex, role):
-        if index.isValid():
-            if (role==Qt.DisplayRole):
-                return index.row()
-            elif (role==Qt.UserRole+123):
-                return self.pages[index.row()]
-        return None
-
-
-
-class PDFViewer3(QListView):
-    def __init__(self, parent = None):
-        super().__init__(parent)
-        # self.setPalette(settings.app["palette"])
-        self.setSpacing(10)
-        self.verticalScrollBar().setSingleStep(10)
-        self.horizontalScrollBar().setSingleStep(20)
-
-        self.pdfmodel = PDFModel()
-        self.setModel(self.pdfmodel)
-        self.path = None
-        self.pdfpage = PDFPageDelegate(self)
-        self.setItemDelegate(self.pdfpage)
-    
-        self.repaint = lambda : self.pdfmodel.layoutChanged.emit()
-
-    def load(self):
-        if self.path is None:
-            return
-        
-        self.pdfmodel.pages = []
-        doc = pymupdf.open(self.path)
-        for i, p in enumerate(doc):
-            page = p.get_pixmap()
-            # page = page.replace('g clip-path','g fill="red" clip-path')
-            # page = page.replace('clipPath id','clipPath fill="green" id')
-            self.pdfmodel.pages.append(page)
-        doc.close()
-        self.repaint()
-
-    def close(self):
-        self.pdfmodel.pages = []
-        self.repaint()
-
-    def invert(self, bool):
-        self.pdfpage.invert = bool
-        self.repaint()
-
-    def zoomin(self):
-        self.pdfpage.zoom(True)
-        self.repaint()
-
-    def zoomout(self):
-        self.pdfpage.zoom(False)
-        self.repaint()
-
-    def fitW(self):
-        self.pdfpage.fit('W', self.width() - 20)
-        self.repaint()
-
-    def fitH(self):
-        self.pdfpage.fit('H', self.height() - 20)
-        self.repaint()
-
-
 class PDFViewer(QPdfView):
     def __init__(self, parent):
         super().__init__(parent)
@@ -185,11 +34,35 @@ class PDFViewer(QPdfView):
         palette.setBrush(QPalette.ColorRole.Dark, settings.app["palette"].window())
         # palette.setBrush(QPalette.ColorRole.Dark, settings.app["palette"].ColorRole.Window())
         self.setPalette(palette)
-        
+
         self.path = None
         self.scale = 1.0
 
-    
+        
+    # def mousePressEvent(self, event):
+    #     print('clicked')
+    #     pos = event.position()
+    #     # x = pos.x() - self.padding
+    #     # y = pos.y() - self.padding
+    #     viewsize = QSizeF(self.viewport().size())
+    #     pagesize = self.document().pagePointSize( self.pageNavigator().currentPage()) * self.scale
+    #     scrollx = self.horizontalScrollBar().value()
+    #     scrolly = self.verticalScrollBar().value()
+    #     dx = 0 if (viewsize.width() < pagesize.width()) else (viewsize.width() - pagesize.width())/2
+    #     x = (pos.x() - dx + scrollx) / pagesize.width()
+    #     print(pos)
+    #     idp = int((pos.y() + scrolly) / pagesize.height())
+        
+    #     print(x, idp)
+
+        # print(event.)
+        # x = (pos.x() - (vw - pagesize.width()) / 2) / pagesize.width()
+        # print(pos, viewsize, pagesize)
+        # print(x)
+        # return super().mousePressEvent(event)
+        # test = QPdfPageNavigator(self)
+        # print(self.horizontalScrollBar().value())
+
     def load(self):
         if self.path is None:
             return
@@ -197,6 +70,7 @@ class PDFViewer(QPdfView):
         doc = QPdfDocument(self)
         doc.load(self.path)
         self.setDocument(doc)
+        del doc
 
     def close(self):
         self.setDocument(None)
@@ -259,8 +133,7 @@ class Viewer(QWidget):
             self.setOrientation(Qt.Orientation.Horizontal)
             self.setIconSize(QSize(32, 32))
             self.setPalette(settings.app["palette"])
-            # self.layout().setAlignment(Qt.AlignRight)
-            # self.setAllowedAreas(Qt.RightToolBarArea)
+
             self.policy = QSizePolicy()
             self.policy.setHorizontalPolicy(QSizePolicy.Policy.Expanding)
             
@@ -297,8 +170,8 @@ class Viewer(QWidget):
             # self.actions['invert'] = b
             # b.click()
 
-        def invert(self):
-            pass
+        # def invert(self):
+            # pass
         #     w = self.sender()
         #     if w:
         #         self.parent.pdfviewer.invert(not w.isChecked())
@@ -317,18 +190,6 @@ class Viewer(QWidget):
         self.scroll = QScrollArea(widgetResizable=True)
         self.pdfviewer = PDFViewer(None)
         self.scroll.setWidget(self.pdfviewer)
-
-
-        #doc = pymupdf.open('/Users/mbruno/Physics/tomino/dummy/main.pdf')
-        #pix = doc[0].get_pixmap()#alpha=False, dpi=72)
-        #fmt = QImage.Format_RGBA8888 if pix.alpha else QImage.Format_RGB888
-        #qtimg = QImage(pix.samples_ptr, pix.width, pix.height, pix.stride, fmt)
-        #qtpix = QPixmap.fromImage(qtimg)
-        #l = QLabel()
-        #l.setPixmap(qtpix) #, Qt.NoFormatConversion))
-        #doc.close()
-
-        # self.scroll.setWidget(self.pdfviewer)
 
         self.errmsg = PDFError(self)
 

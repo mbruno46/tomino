@@ -134,7 +134,7 @@ class MainWindow(QMainWindow):
                 menu.addAction(action)
 
     def open(self):
-        f = QFileDialog.getExistingDirectory(self, "Open folder ...", None, QFileDialog.ShowDirsOnly)
+        f = QFileDialog.getExistingDirectory(self, "Open folder ...", None, QFileDialog.Option.ShowDirsOnly)
         if os.path.exists(f):
             completer.reset()
             self.browser.load(f)

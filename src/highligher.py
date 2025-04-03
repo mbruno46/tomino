@@ -51,10 +51,10 @@ class ErrorHighligther(QSyntaxHighlighter):
         self.force = False
 
     def highlightBlock(self, text):
-        if QRegExp("Runaway\\sargument.*|! pdfTeX error|! LaTeX error|I found no.*").indexIn(text)>=0:
+        if QRegularExpression("Runaway\\sargument.*|! pdfTeX error|! LaTeX error|I found no.*").globalMatch(text).hasNext():
             self.force = True
         else:
-            if QRegExp("l\\.\\d+").indexIn(text)>=0:
+            if QRegularExpression("l\\.\\d+").globalMatch(text).hasNext():
                 self.setFormat(0, len(text), self.format)
                 self.force = False
 

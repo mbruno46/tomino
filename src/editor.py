@@ -127,7 +127,6 @@ class Editor(QPlainTextEdit):
         tc.insertText(' ' * n)
 
     def indent(self, shift):
-        print(shift)
         tc, l0, l1 = self.selected_lines()
         for i in range(l0, l1+1):
             b = self.document().findBlockByNumber(i)
@@ -135,7 +134,7 @@ class Editor(QPlainTextEdit):
             if shift:
                 tstrip = b.text().lstrip()
                 n = min(len(b.text()) - len(tstrip), settings.editor["tab"])
-                tc.movePosition(QTextCursor.Right, tc.KeepAnchor, n)
+                tc.movePosition(QTextCursor.MoveOperation.Right, tc.MoveMode.KeepAnchor, n)
                 tc.deleteChar()
             else:
                 tc.insertText(' ' * settings.editor["tab"])
@@ -166,10 +165,9 @@ class Editor(QPlainTextEdit):
                     tc.deleteChar()
 
     def find(self, word, back):
-        # word = 'prova'
         tc = self.textCursor()
         if back:
-            tc = self.document().find(word, tc.anchor(), QTextDocument.FindBackward)
+            tc = self.document().find(word, tc.anchor(), QTextDocument.FindFlag.FindBackward)
         else:
             tc = self.document().find(word, tc.position())
         if tc.position() == -1:

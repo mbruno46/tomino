@@ -75,11 +75,11 @@ class AutoCompleterBasic(Base):
             word = self.completionPrefix()
             shift_backward = 0
             re = QRegularExpression(r"\\[a-zA-Z]+\[\]\{\}")
-            if re.indexIn(choice) == 0:
+            if re.match(choice).hasMatch():
                 shift_backward = 3
             re = QRegularExpression(r"\\[a-zA-Z]+\{\}")
-            if re.indexIn(choice) == 0:
-                shift_backward = 1
+            if re.match(choice).hasMatch():
+                shift_backward = 1 
             return choice[len(word):], shift_backward
 
         super().onActivated(choice, inner)
@@ -208,8 +208,11 @@ class AutoCompleter:
     @property
     def trigger_word(self):
         tc = self.editor.textCursor()
+        if tc.hasSelection():
+            return tc.selectedText()
+        
         while True:
-            if tc.atStart() or tc.atBlockStart() or tc.hasSelection():
+            if tc.atStart() or tc.atBlockStart():
                 break
             else:
                 tc.movePosition(QTextCursor.MoveOperation.PreviousCharacter, QTextCursor.MoveMode.KeepAnchor)
@@ -249,7 +252,7 @@ class AutoCompleter:
 
         cr = self.editor.cursorRect()
         popup.setCurrentIndex(_completer.completionModel().index(0, 0))
-        delta = self.min_left - QFontMetrics(popup.font()).width(word)
+        delta = self.min_left - QFontMetrics(popup.font()).horizontalAdvance(word)
         cr.setWidth(
             popup.sizeHintForColumn(0)
             + popup.verticalScrollBar().sizeHint().width()
@@ -266,6 +269,7 @@ class AutoCompleter:
             self.completers[key].setEditor(editor)
         self.editor = editor
         self.min_left = self.editor.number_bar.width()
+
 
     def reset(self):
         self.completers['input'].clean()

@@ -33,6 +33,7 @@ class FileBrowserTree(QTreeView):
                 return font
             return super().data(index, role)
 
+
     def __init__(self, app = None):
         self.app = app
         super().__init__(app)
@@ -50,6 +51,7 @@ class FileBrowserTree(QTreeView):
         self.fsm.setNameFilterDisables(False)
         self.fsm.rowsInserted.connect(self.onRowsInserted)
         self.fsm.rowsAboutToBeRemoved.connect(self.onRowsRemoved)
+        self.fsm.directoryLoaded.connect(self.onDirectoryLoaded)
         self.setModel(self.fsm)
 
         for i in [1,2,3]:
@@ -61,6 +63,7 @@ class FileBrowserTree(QTreeView):
 
         self.fsm.setRootPath(path)
         self.setRootIndex(self.fsm.index(path))
+
         
     def update(self, filename, remove):
         rel_path = os.path.relpath(filename, self.root)
@@ -80,6 +83,7 @@ class FileBrowserTree(QTreeView):
         for i in range(i0, i1+1):
             _idx = self.fsm.index(i, 0, idx)
             self.update(self.fsm.filePath(_idx), remove=False)
+            print('here ', self.fsm.filePath(_idx), i0, i1)
         
     def onRowsRemoved(self, idx, i0, i1):
         for i in range(i0, i1+1):
@@ -102,6 +106,10 @@ class FileBrowserTree(QTreeView):
     def onClick(self, index):
         if self.editable(index, texonly=False):
             self.app.file_editor.load_file(self.fsm.filePath(index))
+
+    def onDirectoryLoaded(self):
+        self.expandAll() # forces call to insertRows for all subfolders
+        self.collapseAll()
 
     def onDoubleClick(self, index: QModelIndex):        
         if self.editable(index, texonly=True):
