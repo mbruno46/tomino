@@ -73,7 +73,7 @@ class VPanel(QWidget):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, debug):
         super().__init__()
         settings.init()
 
@@ -103,8 +103,8 @@ class MainWindow(QMainWindow):
         splitter.setStyleSheet(style.splitter_style)
         
         self.browser = Browser(self)
-        self.browser.load("/Users/mbruno/Physics/tomino/dummy")
-        # self.browser.load("/Users/mbruno/Physics/letters/MorandiG")
+        if debug:
+            self.browser.load("/Users/mbruno/Physics/tomino/dummy")
 
         main = QWidget()
 
@@ -173,11 +173,23 @@ class MainWindow(QMainWindow):
         self.browser.toggle_visibility(int(self.width() * 0.20))
         self.browser.setFixedWidth(self.browser.width())
 
+    def close(self):
+        self.file_editor.close_all()
+        self.viewer.close()
+        super().close()
+
 app = QApplication(sys.argv)
 # app.setAttribute(Qt.AA_EnableHighDpiScaling, True) # maybe useful for QImage?
 # app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
-window = MainWindow()
+debug = False
+if len(sys.argv)>1:
+    debug = sys.argv[1]=='-d'
+
+window = MainWindow(debug)
 window.show()
 
-sys.exit(app.exec())
+pid = app.exec()
+# useful to prevent strange seg fault
+window.close()
+sys.exit(pid)

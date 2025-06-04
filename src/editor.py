@@ -154,7 +154,7 @@ class Editor(QPlainTextEdit):
             b = self.document().findBlockByNumber(i)
             tstrip = b.text().lstrip()
             tc.setPosition(b.position())
-            tc.movePosition(QTextCursor.Right, n=len(b.text()) - len(tstrip))
+            tc.movePosition(QTextCursor.MoveOperation.Right, n=len(b.text()) - len(tstrip))
             if should_comment:
                 tc.insertText('% ')
             else:

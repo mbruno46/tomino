@@ -217,6 +217,9 @@ class AutoCompleter:
             else:
                 tc.movePosition(QTextCursor.MoveOperation.PreviousCharacter, QTextCursor.MoveMode.KeepAnchor)
                 if tc.selectedText()[0] == "\\":
+                    tc.movePosition(QTextCursor.MoveOperation.PreviousCharacter, QTextCursor.MoveMode.KeepAnchor)
+                    if tc.selectedText()[0] != "\\":
+                        tc.movePosition(QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.KeepAnchor)
                     break
         return tc.selectedText()
     
