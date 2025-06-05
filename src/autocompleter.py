@@ -66,6 +66,21 @@ class Base(QCompleter):
         m = self.model()
         m.removeRows(0, m.rowCount())
 
+    def indentation(self):
+        tc = self.widget().textCursor()
+        capture = False
+        n = 0
+        while not (tc.atStart() or tc.atBlockStart()):
+            tc.movePosition(QTextCursor.MoveOperation.PreviousCharacter, QTextCursor.MoveMode.KeepAnchor)
+            if capture is True:
+                if (tc.selectedText()[0]==' '):
+                    n += 1
+                else:
+                    capture = False        
+            if tc.selectedText()[0]=='\\':
+                capture = True
+        return n if (tc.selectedText()[0]==' ') else 0 
+
     def __call__(self):
         pass
 
@@ -89,8 +104,9 @@ class AutoCompleterEnvironments(Base):
         def inner(choice):
             self.delete_right_matching_char('}')
             word = self.completionPrefix()
-            t = choice[len(word):] + "}" + "\n" + f"\n\\end{{{choice}}}"
-            return t, 7 + len(choice)
+            indent = self.indentation()
+            t = choice[len(word):] + "}" + "\n" + (" " * indent) + f"\n{' ' * indent}\\end{{{choice}}}"
+            return t, 7 + indent + len(choice)
 
         super().onActivated(choice, inner)
 
