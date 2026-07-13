@@ -41,14 +41,18 @@ class Base(QCompleter):
         tc.movePosition(QTextCursor.MoveOperation.Left, QTextCursor.MoveMode.KeepAnchor, n=n)
         tc.deletePreviousChar()
 
-    def onActivated(self, choice, func):
-        new_text, shift_backward = func(choice)
-
+    def insert_completion(self, new_text, shift_backward):
         editor = self.widget()
         tc = editor.textCursor()
         tc.insertText(new_text)
-        tc.movePosition(QTextCursor.MoveOperation.Left, n=shift_backward)        
+        tc.movePosition(QTextCursor.MoveOperation.Left, n=shift_backward)
         editor.setTextCursor(tc)
+
+    def onActivated(self, choice):
+        self.delete_right_matching_char('}')
+        word = self.completionPrefix()
+        new_text = choice[len(word):] + "}"
+        self.insert_completion(new_text, 0)
 
     def update_keyword(self, value, remove):
         m = self.model()
@@ -86,39 +90,27 @@ class Base(QCompleter):
 
 class AutoCompleterBasic(Base):
     def onActivated(self, choice):
-        def inner(choice):
-            word = self.completionPrefix()
-            shift_backward = 0
-            re = QRegularExpression(r"\\[a-zA-Z]+\[\]\{\}")
-            if re.match(choice).hasMatch():
-                shift_backward = 3
-            re = QRegularExpression(r"\\[a-zA-Z]+\{\}")
-            if re.match(choice).hasMatch():
-                shift_backward = 1 
-            return choice[len(word):], shift_backward
-
-        super().onActivated(choice, inner)
+        word = self.completionPrefix()
+        shift_backward = 0
+        re = QRegularExpression(r"\\[a-zA-Z]+\[\]\{\}")
+        if re.match(choice).hasMatch():
+            shift_backward = 3
+        re = QRegularExpression(r"\\[a-zA-Z]+\{\}")
+        if re.match(choice).hasMatch():
+            shift_backward = 1
+        new_text = choice[len(word):]
+        self.insert_completion(new_text, shift_backward)
 
 class AutoCompleterEnvironments(Base):
     def onActivated(self, choice):
-        def inner(choice):
-            self.delete_right_matching_char('}')
-            word = self.completionPrefix()
-            indent = self.indentation()
-            t = choice[len(word):] + "}" + "\n" + (" " * indent) + f"\n{' ' * indent}\\end{{{choice}}}"
-            return t, 7 + indent + len(choice)
-
-        super().onActivated(choice, inner)
+        self.delete_right_matching_char('}')
+        word = self.completionPrefix()
+        indent = self.indentation()
+        new_text = choice[len(word):] + "}" + "\n" + (" " * indent) + f"\n{' ' * indent}\\end{{{choice}}}"
+        self.insert_completion(new_text, 7 + indent + len(choice))
 
 class AutoCompleterGeneric(Base):
-    def onActivated(self, choice):
-        def inner(choice):
-            self.delete_right_matching_char('}')
-            word = self.completionPrefix()
-            t = choice[len(word):] + "}"
-            return t, 0
-
-        super().onActivated(choice, inner)
+    pass
 
 class AutoCompleterMultiple(Base):
     def __init__(self):
@@ -163,14 +155,7 @@ class AutoCompleterMultiple(Base):
         self()
 
 class AutoCompleterRef(AutoCompleterMultiple):
-    def onActivated(self, choice):
-        def inner(choice):
-            self.delete_right_matching_char('}')
-            word = self.completionPrefix()
-            t = choice[len(word):] + "}"
-            return t, 0
-
-        super().onActivated(choice, inner)
+    pass
 
 class AutoCompleterCite(AutoCompleterMultiple):
     def __init__(self):
@@ -178,15 +163,11 @@ class AutoCompleterCite(AutoCompleterMultiple):
         self.setFilterMode(Qt.MatchFlag.MatchContains)
 
     def onActivated(self, choice):
-        def inner(choice):
-            self.delete_right_matching_char('}')
-            word = self.completionPrefix()
-            self.delete_left_nchars(len(word))
-            choice = choice.split(' [')[0]
-            t = choice + "}"
-            return t, 0
-
-        super().onActivated(choice, inner)
+        self.delete_right_matching_char('}')
+        word = self.completionPrefix()
+        self.delete_left_nchars(len(word))
+        new_text = choice.split(' [')[0] + "}"
+        self.insert_completion(new_text, 0)
 
 input = AutoCompleterGeneric([])
 bibliography = AutoCompleterGeneric([])
