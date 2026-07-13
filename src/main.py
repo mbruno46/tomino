@@ -105,8 +105,11 @@ class MainWindow(QMainWindow):
         splitter.setStyleSheet(style.splitter_style)
         
         self.browser = Browser(self)
-        if debug:
-            self.browser.load("/Users/mbruno/Physics/tomino/dummy")
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if debug==1:
+            self.browser.load(os.path.join(root, "dummy"))
+        elif debug==2:
+            self.browser.load(os.path.join(root, "dummy2"))
 
         main = QWidget()
 
@@ -198,9 +201,12 @@ app = QApplication(sys.argv)
 # app.setAttribute(Qt.AA_EnableHighDpiScaling, True) # maybe useful for QImage?
 # app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
-debug = False
+debug = 0
 if len(sys.argv)>1:
-    debug = sys.argv[1]=='-d'
+    if sys.argv[1]=='-d':
+        debug = 1
+    elif sys.argv[1]=='-d2':
+        debug = 2
 
 window = MainWindow(debug)
 window.show()

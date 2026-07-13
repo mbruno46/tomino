@@ -123,6 +123,8 @@ class TexFile:
                 if tag in ('input', 'bibliography'):
                     for _arg2 in arg2.split(','):
                         fname = safe_path(tag, _arg2.strip(), self.root)
+                        if fname is None:
+                            continue
                         self.data[tag].append(fname)
                         if not fname in self.children:
                             self.children[fname] = TexFile(fname) if tag=='input' else BibFile(fname)
