@@ -12,6 +12,7 @@ from finder import Finder
 from viewer import Viewer
 from browser import Browser
 from latex import Compiler
+from synctex import Synctex
 
 menus = {
     "&File": [
@@ -87,9 +88,10 @@ class MainWindow(QMainWindow):
         self.main_tex_file = None
         self.latex = None
         self.settings_window = None
+        self.synctex = Synctex()
 
         editor_panel = VPanel()
-        self.file_editor = FileEditor()
+        self.file_editor = FileEditor(self)
         self.finder = Finder(self)
         editor_panel.add(self.file_editor)
         editor_panel.add(self.finder)
@@ -169,9 +171,23 @@ class MainWindow(QMainWindow):
     def hard(self):
         self.recompile(False)
 
+    def sync_to_pdf(self, tex_file, line, column):
+        if self.main_tex_file is None:
+            return
+        pdf_file = self.main_tex_file.replace('.tex', '.pdf')
+        result = self.synctex.forward(tex_file, line, column, pdf_file)
+        if result is not None:
+            page, x, y = result
+            self.viewer.goto_location(page, x, y)
+
+    def sync_to_source(self, pdf_file, page, x, y):
+        result = self.synctex.backward(pdf_file, page, x, y)
+        if result is not None:
+            tex_file, line = result
+            self.file_editor.focus_on_line(tex_file, line - 1)
+
     def toggle_browser_visibility(self):
         self.browser.toggle_visibility(int(self.width() * 0.20))
-        self.browser.setFixedWidth(self.browser.width())
 
     def close(self):
         self.file_editor.close_all()

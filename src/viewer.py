@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QScrollArea, QVBoxLayout, QWidget, QToolButton, QToolBar, QStackedWidget
 from PyQt6.QtWidgets import QPlainTextEdit, QSizePolicy
 from PyQt6.QtGui import QIcon, QPalette
-from PyQt6.QtCore import QSize, QSizeF, Qt #, QAbstractListModel, QModelIndex, QRectF
+from PyQt6.QtCore import QSize, QSizeF, QPointF, Qt #, QAbstractListModel, QModelIndex, QRectF
 #from PyQt6.QtSvg import QSvgRenderer
 
 from PyQt6.QtPdf import QPdfDocument, QPdfPageNavigator
@@ -25,8 +25,9 @@ svg_icons = {
 
 
 class PDFViewer(QPdfView):
-    def __init__(self, parent):
+    def __init__(self, parent, app = None):
         super().__init__(parent)
+        self.app = app
         self.setPageSpacing(10)
         self.setPageMode(QPdfView.PageMode.MultiPage)
 
@@ -38,30 +39,34 @@ class PDFViewer(QPdfView):
         self.path = None
         self.scale = 1.0
 
-        
-    # def mousePressEvent(self, event):
-    #     print('clicked')
-    #     pos = event.position()
-    #     # x = pos.x() - self.padding
-    #     # y = pos.y() - self.padding
-    #     viewsize = QSizeF(self.viewport().size())
-    #     pagesize = self.document().pagePointSize( self.pageNavigator().currentPage()) * self.scale
-    #     scrollx = self.horizontalScrollBar().value()
-    #     scrolly = self.verticalScrollBar().value()
-    #     dx = 0 if (viewsize.width() < pagesize.width()) else (viewsize.width() - pagesize.width())/2
-    #     x = (pos.x() - dx + scrollx) / pagesize.width()
-    #     print(pos)
-    #     idp = int((pos.y() + scrolly) / pagesize.height())
-        
-    #     print(x, idp)
+    def mouseDoubleClickEvent(self, event):
+        super().mouseDoubleClickEvent(event)
+        if self.app is None or self.document() is None or self.path is None:
+            return
 
-        # print(event.)
-        # x = (pos.x() - (vw - pagesize.width()) / 2) / pagesize.width()
-        # print(pos, viewsize, pagesize)
-        # print(x)
-        # return super().mousePressEvent(event)
-        # test = QPdfPageNavigator(self)
-        # print(self.horizontalScrollBar().value())
+        pos = event.position()
+        zoom = self.zoomFactor()
+        pagesize = self.document().pagePointSize(self.pageNavigator().currentPage()) * zoom
+        stride = pagesize.height() + self.pageSpacing()
+
+        viewsize = QSizeF(self.viewport().size())
+        dx = 0 if (viewsize.width() < pagesize.width()) else (viewsize.width() - pagesize.width())/2
+
+        scrollx = self.horizontalScrollBar().value()
+        scrolly = self.verticalScrollBar().value()
+
+        total_y = pos.y() + scrolly
+        page = int(total_y // stride)
+        y_in_page = total_y - page * stride
+        x_in_page = pos.x() - dx + scrollx
+
+        x_pt = x_in_page / zoom
+        y_pt = y_in_page / zoom
+
+        self.app.sync_to_source(self.path, page + 1, x_pt, y_pt)
+
+    def goto(self, page, x, y):
+        self.pageNavigator().jump(page - 1, QPointF(x, y))
 
     def load(self):
         if self.path is None:
@@ -179,6 +184,7 @@ class Viewer(QWidget):
 
     def __init__(self, app):
         super().__init__()
+        self.app = app
         self.setLayout(QVBoxLayout())
         self.setStyleSheet(style.viewer_style)
         self.layout().setContentsMargins(4,0,0,0)
@@ -188,7 +194,7 @@ class Viewer(QWidget):
         self.layout().addWidget(toolbar)
 
         self.scroll = QScrollArea(widgetResizable=True)
-        self.pdfviewer = PDFViewer(None)
+        self.pdfviewer = PDFViewer(None, app)
         self.scroll.setWidget(self.pdfviewer)
 
         self.errmsg = PDFError(self)
@@ -212,6 +218,9 @@ class Viewer(QWidget):
         self.pdfviewer.path = path
         self.pdfviewer.load()
         self.panel.setCurrentIndex(0)
+
+    def goto_location(self, page, x, y):
+        self.pdfviewer.goto(page, x, y)
 
     def show_err(self, logfile):
         self.panel.setCurrentIndex(1)

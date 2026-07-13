@@ -68,10 +68,15 @@ sh bootstrap.sh python3
 
 - Menus are declared as data (`menus` dict: label → list of `(text, shortcut, action_path)`), and `get_nested_attr` resolves dotted action paths (e.g. `'file_editor.save_file'`) against `self` at menu-build time — when adding a menu action, prefer extending this dict over writing bespoke `QAction` wiring.
 
+### SyncTeX (`src/synctex.py`)
+
+- `Synctex` shells out to the external `synctex` CLI (bundled with TeX Live/MiKTeX, same tier of dependency as `latexmk`) rather than parsing `.synctex.gz` directly — `forward()` wraps `synctex view` (source line/column → PDF page/point), `backward()` wraps `synctex edit` (PDF page/point → source file/line). Both parse the CLI's repeated `key:value` stdout blocks and return `None` on any failure (missing binary, no `.synctex.gz`, no match).
+- `Editor.mouseDoubleClickEvent` (`src/editor.py`) computes the 1-indexed line/column under the cursor and calls `MainWindow.sync_to_pdf`; `PDFViewer.mouseDoubleClickEvent` (`src/viewer.py`) computes the clicked page/point (accounting for `pageSpacing()` and the current `zoomFactor()`) and calls `MainWindow.sync_to_source`. Both widgets reach `MainWindow` via a plain `app` reference threaded through their constructors, matching the convention `Browser`/`FileBrowserTree`/`TOC` already use for cross-panel navigation (direct `self.app.xxx` calls, not Qt signals).
+- `MainWindow.main_tex_file` remains the single source of truth for the PDF path (`self.main_tex_file.replace('.tex', '.pdf')`), consistent with how `recompile` derives it.
+
 ## Known gaps (see `src/todo` and `CHANGELOG.md` `[Unreleased]`)
 
 - No settings persistence (per-project `.tomino` config file, font/theme customization) yet — `SettingsWindow` is a placeholder.
-- No SyncTeX support (jumping between PDF and source) yet.
 - Find/replace (`Finder`) currently only supports "find", not "replace".
 - Right-click context menu (Set Main / Preview / Delete / Rename) not implemented; "Set Main" is currently only reachable via double-click in the file browser.
 

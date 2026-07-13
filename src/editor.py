@@ -65,11 +65,12 @@ class Editor(QPlainTextEdit):
                 self.update(0, rect.y(), self.width(), rect.height())
             
 
-    def __init__(self, parent = None, filename = None):
+    def __init__(self, parent = None, filename = None, app = None):
         super().__init__(parent)
         with open(filename,'r') as f:
             self.setPlainText(f.read())
         self.filename = filename
+        self.app = app
  
         # self.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.setTabStopDistance(QFontMetricsF(self.font()).horizontalAdvance(' ') * 4)
@@ -181,9 +182,18 @@ class Editor(QPlainTextEdit):
         tc.setPosition(b.position())
         self.setTextCursor(tc)
 
+    def mouseDoubleClickEvent(self, event):
+        super().mouseDoubleClickEvent(event)
+        if self.app is not None:
+            cursor = self.cursorForPosition(event.position().toPoint())
+            line = cursor.blockNumber() + 1
+            column = cursor.positionInBlock() + 1
+            self.app.sync_to_pdf(self.filename, line, column)
+
 class FileEditor(QTabWidget):
-    def __init__(self, parent = None):
+    def __init__(self, app = None, parent = None):
         super().__init__(parent)
+        self.app = app
         self.setStyleSheet(style.editor_style)
         self.setPalette(settings.editor["palette"])
         self.setFont(settings.editor["font"])
@@ -230,7 +240,7 @@ class FileEditor(QTabWidget):
 
     def load_file(self, filename):
         if not filename in self.files:
-            e = Editor(self, filename)  
+            e = Editor(self, filename, self.app)
             e.modificationChanged.connect(self.text_changed)
             self.addTab(e, f'  {os.path.basename(filename)} ')
             self.files.append(filename)
