@@ -185,6 +185,10 @@ class AutoCompleter:
             'ref': ref,
             'cite': cite,
         }
+        self.trigger_patterns = {
+            trigger: QRegularExpression(r'\\%s(\[.*?\])?\{' % trigger)
+            for trigger in self.completers
+        }
         # in case basic_completer has inserted text, e.g. \begin{}
         # then a new completer should be fired
         self.basic_completer.activated.connect(self.check_and_launch)
@@ -228,14 +232,12 @@ class AutoCompleter:
             return
 
         if word[0]=='\\':
-            for trigger in self.completers:
-                re = QRegularExpression(r'\\%s(\[.*?\])?\{' % trigger)
-                m = re.globalMatch(word)
+            for trigger, pattern in self.trigger_patterns.items():
+                m = pattern.globalMatch(word)
                 if m.hasNext():
                     n = len(m.next().captured(0))
                     _completer = self.completers[trigger]
                     word = word[n:]
-                    print('activate ', input, _completer.model().stringList())
                     break
 
             _completer = self.basic_completer if _completer is None else _completer
