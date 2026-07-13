@@ -188,12 +188,13 @@ class TexModel(QAbstractItemModel):
         return None
     
     def populate(self, tag, child):
-        def get_last_child(node: TexNode, level, depth):
+        def get_last_child(node: TexNode, level: int, depth: int):
             if depth==level:
                 return node
             else:
                 if not node.hasChildren():
-                    node.addChild(TexNode(latex_sections[level]))
+                    key = next(k for k, v in latex_sections.items() if v == level)
+                    node.addChild(TexNode(key))
                 return get_last_child(node.getLastChild(), level+1, depth)
     
         get_last_child(self.root, 0, latex_sections[tag]).addChild(child)
@@ -203,7 +204,7 @@ model = TexModel()
 latex_sections = {
     'chapter': 0,
     'section': 1,
-    'subsection': 2
+    'subsection': 2,
 }
 main = None
 

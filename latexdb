@@ -1,15 +1,13 @@
 #!/usr/bin/python3
 
-import sys, json
+import json
 from argparse import ArgumentParser
 
-parser = ArgumentParser()
-parser.add_argument('-t','--type',default='math',type=str)
-parser.add_argument('-a','--add',default='none',type=str)
+files = ['math','cmds','envs']
 
-files = ['math','cmds']
-for f in files:
-    print(f)
+parser = ArgumentParser()
+parser.add_argument('-t','--type',default='math',type=str,choices=files)
+parser.add_argument('-a','--add',default='none',type=str)
 
 root = f'./src/latex.'
 args = parser.parse_args()
@@ -19,20 +17,16 @@ for _f in files:
     with open(f'{root}{_f}.json','r') as f:
         data[_f] = json.load(f)
 
-if not args.type in data:
-    print(f'Error: type {args.type} not found in available types = {files}')
-    sys.exit()
+d = data[args.type]
+if args.add == 'none':
+    print(args.type)
+    print(d)
 else:
-    d = data[args.type]
-    if args.add == 'none':
-        print(args.type)
-        print(d)
-    else:
-        if not args.add in d:
-            x = input(f'{args.add} not present. Are you sure you want to add it (y/n)?').lower().strip()
-            if x=='y':
-                d.append(args.add)
-                with open(f'{root}{args.type}.json','w') as f:
-                    f.write(json.dumps(d))
+    if not args.add in d:
+        x = input(f'{args.add} not present. Are you sure you want to add it (y/n)?').lower().strip()
+        if x=='y':
+            d.append(args.add)
+            with open(f'{root}{args.type}.json','w') as f:
+                f.write(json.dumps(d))
 
 
