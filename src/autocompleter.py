@@ -91,13 +91,12 @@ class Base(QCompleter):
 class AutoCompleterBasic(Base):
     def onActivated(self, choice):
         word = self.completionPrefix()
-        shift_backward = 0
-        re = QRegularExpression(r"\\[a-zA-Z]+\[\]\{\}")
-        if re.match(choice).hasMatch():
+        if choice.endswith('[]{}'):
             shift_backward = 3
-        re = QRegularExpression(r"\\[a-zA-Z]+\{\}")
-        if re.match(choice).hasMatch():
+        elif choice.endswith('{}'):
             shift_backward = 1
+        else:
+            shift_backward = 0
         new_text = choice[len(word):]
         self.insert_completion(new_text, shift_backward)
 
