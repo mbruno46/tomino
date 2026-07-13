@@ -1,7 +1,7 @@
-# <img src="icons/1024x1024.png" height='48px' style='vertical-align: bottom'> tomino
+# <img src="icons/icon.png" height='48px' style='vertical-align: bottom'> tomino
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Publish](https://github.com/mbruno46/tomino/actions/workflows/publish.yml/badge.svg)](https://github.com/mbruno46/tomino/actions/workflows/publish.yml)
+[![Publish](https://github.com/mbruno46/tomino/actions/workflows/release.yml/badge.svg)](https://github.com/mbruno46/tomino/actions/workflows/release.yml)
 [![Latest Release](https://img.shields.io/github/v/release/mbruno46/tomino)](https://github.com/mbruno46/tomino/releases/latest)
 
 A lightweight and intuitive TeX editor for the everyday physicist. **tomino** is built using Python and the PyQt library.

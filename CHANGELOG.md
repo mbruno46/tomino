@@ -5,21 +5,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Added 
+### Added
 
-- Documentation
-- Context menu (right-click) currently not supported in tauri. When available the following features will be implemented: Set Main, Preview, Delete File, Rename. Temporary solution for `Set Main` under `File` menu.
-- Settings panel. Add support to customize font size in editor, global theme
-- Settings: add suport for config file in every project, e.g. .tomino file storing name of main.tex
-- Editor. Add syntax helpers for unclosed parethensis {}
-- Footer. Add git support to detect unstaged changes
-- File menu. Add support for `Save as..`
+- Settings persistence (per-project `.tomino` config file, font/theme customization)
+- Find/replace in the `Finder` bar (currently only "find" is supported)
+- Right-click context menu in the file browser (Set Main / Preview / Delete / Rename)
 
-### Fixed
 
-- Fixed TeX error messages pile up
-- Fixed PDF viewer not keeping in memory previous page despite being viewport
-- Fixed automatic detection of newcommands with arguments 
+## [1.0] - 2026-07-14
+
+Complete rewrite: **tomino** is now a native desktop app built with Python and PyQt6,
+replacing the previous Vue3/Vite/Tauri stack. This is a full break from the `0.x`
+releases below — no migration path, own versioning going forward.
+
+### Added
+
+- Three-panel desktop UI: file browser + table of contents, tabbed editor, PDF viewer
+- Autocomplete for LaTeX commands, math symbols, environments, cross-references,
+  citations, and file paths (`\input`, `\bibliography`, `\includegraphics`)
+- Syntax highlighting, line numbers, indentation-aware editing, line commenting
+- Find bar
+- LaTeX compilation via `latexmk`, run in the background so the UI never freezes,
+  with inline log view on compile errors
+- PDF viewer with zoom/fit controls, preserving scroll position across recompiles
+- SyncTeX support: double-click in the editor jumps to the matching PDF location
+  and vice versa
+- macOS and Linux app bundles via PyInstaller
 
 
 ## [0.4.2] - 2023-05-01
