@@ -75,6 +75,7 @@ def init():
         'weak': 'latexmk -pdf -silent',
         'hard': 'latexmk -g -f -pdf -silent'
     }
+    app["synctex"] = '-synctex=1'
 
 
 def get_theme():

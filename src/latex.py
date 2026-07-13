@@ -31,6 +31,7 @@ class Compiler(QThread):
 
     def run(self):
         cmd = settings.app['compiler']['weak'] if self.weak else settings.app['compiler']['hard']
+        cmd = f"{cmd} {settings.app['synctex']}"
         root = os.path.dirname(self.main)
         file = os.path.basename(self.main).replace('.tex','')
         p = Popen(f'cd {root}; {cmd} {file}', shell=True, stdout=PIPE, stderr=PIPE)
